@@ -1,0 +1,135 @@
+<%- include("../layout/user_header.ejs") %>
+    <main class="main">
+        <!-- Main banner -->
+        
+        <div class="container mt-4">
+            <div id="carouselBanner" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="/imgs/slider/Slider1.webp" class="d-block w-100" alt="Slide 1">
+                        <img src="/imgs/shop/product-2-1.webp" alt="">
+                        <div class="carousel-caption d-none d-md-block">
+                       
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="/imgs/slider/Slider1.webp" class="d-block w-100" alt="Slide 2">
+                        <div class="carousel-caption d-none d-md-block">
+                           
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <img src="/imgs/slider/Slider1.webp" class="d-block w-100" alt="Slide 3">
+                        <div class="carousel-caption d-none d-md-block">
+                           
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselBanner" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselBanner" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+              </div>
+        </div>
+       
+
+
+       
+        <!-- banner deals -->
+        <!-- <section class="banner-2 section-padding pb-0">
+            <div class="container">
+                <div class="banner-img banner-big wow fadeIn animated f-none">
+                    <img src="/imgs/banner/banner-4.png" alt="">
+                    <div class="banner-text d-md-block d-none">
+                        <h4 class="mb-15 mt-40 text-brand">Repair Services</h4>
+                        <h1 class="fw-600 mb-20">We're an Apple <br>Authorised Service Provider</h1>
+                        <a href="" class="btn">Learn More <i class="fi-rs-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+
+
+        <section class="popular-categories section-padding mt-15">
+            <div class="container wow fadeIn animated">
+                <h3 class="section-title mb-20"><span>Popular</span> Categories</h3>
+                
+                <div class="carausel-6-columns-cover position-relative">
+                    <div class="slider-arrow slider-arrow-2 carausel-6-columns-arrow" id="carausel-6-columns-arrows"></div>
+                    <div class="carausel-6-columns" id="carausel-6-columns">
+                        <% categories.forEach((cat)=>{ %>
+                        <div class="card-1">
+                            <figure class=" img-hover-scale overflow-hidden">
+                                <a href="/shop?catId=<%= cat._id %>"><img src="/imgs/categories/<%= cat.image %>" alt="" height="200px"></a>
+                            </figure>
+                            <h5><a href="/shop?catId=<%= cat._id %>"><%= cat.name %></a></h5>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+               
+            </div>
+        </section>
+
+
+        <section class="product-tabs pt-25 pb-20 wow fadeIn animated">
+            <div class="container">
+                <div class="row product-grid-4">
+                    <% products.forEach((product,index)=>{ %>
+                    <div class="col-lg-4 col-md-4 col-12 col-sm-6">
+                        <div class="product-cart-wrap mb-30">
+                            <div class="product-img-action-wrap">
+                                <div class="product-img product-img-zoom">
+                                    <a href="/product-details/<%= product._id %>">
+                                        <% product.product_images.forEach(image=>{%>
+                                            <img class="default-img img-fluid"  src="/imgs/products/<%= image %>" >
+                                        <img class="hover-img img-fluid" src="/imgs/products/<%= image %>" >
+                                       <% }) %>
+                                    </a>
+                                </div>
+                                <div class="product-action-1">
+                                    <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal"><i class="fi-rs-eye"></i></a>
+                                    <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/"><i class="fi-rs-heart"></i></a>
+                                    <a aria-label="Compare" class="action-btn hover-up" href="/"><i class="fi-rs-shuffle"></i></a>
+                                </div>
+                            </div>
+                            <div class="product-content-wrap">
+                                <div class="product-category">
+                                    <a href="/"><%= product.product_category.name %></a>
+                                </div>
+                                <h2><a href="/product-details/<%= product._id %>"><%= product.product_name %></a></h2>
+                                <div class="rating-result" >
+                                    <span>
+                                        <span></span>
+                                    </span>
+                                </div>
+                                <div class="product-price">
+                                    <span>₹ <%= product.product_regular_price %> </span>
+                                    <span class="old-price">₹ <%= product.product_sale_price %></span>
+                                </div>
+                                <div class="product-action-1 show">
+                                    <a aria-label="Add To Cart" class="action-btn hover-up" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+                <!--End product-grid-4-->
+            </div>
+            </div>
+        </section>
+        
+        <div class="container d-flex justify-content-center">
+            <div class="mb">
+                <a href="/shop"><button type="button" class="btn btn-secondary btn-sm">Show More</button></a>
+            </div>
+        </div>
+        
+
+       <%- include("../layout/user_footer.ejs") %>

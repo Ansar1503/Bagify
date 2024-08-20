@@ -1,0 +1,86 @@
+<%- include('../layout/user_header.ejs') %>
+    <!-- OTP Verification -->
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="login-box p-4">
+            <h1 class="text-center mb-4">OTP Verification</h1>
+            <% if(locals.success){ %>
+                <span style="color: green;"><%= success%></span>
+                <% }else if(locals.fail){ %>
+                    <span style="color: red;"><%= fail%></span>
+                    <% } %>
+            <form id="otp-verification-form" action="/verify-otp" method="post">
+                <input type="hidden" name="email" value="<%= locals.email %>">
+                <div class="form-group">
+                    <label for="otp">Enter OTP</label>
+                    <div class="timer-container">
+                        <input type="text" class="form-control" id="otp" name="otp" placeholder="Enter the OTP sent to your email" required>
+                        <span id="otp-timer" class="timer"></span>
+                    </div>
+                    <div class="text-center mt-2">
+                       <a href="/resendOtp">
+                        <input type="hidden" name="email" value="<%= locals.email %>">
+                            <button type="submit" id="resend-otp-btn" class="btn btn-dark resend-btn rounded-pill" disabled>Resend OTP</button>
+                       </a>                            
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-dark btn-login rounded-pill ">VERIFY OTP</button>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/" class="text-dark">login page?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    
+const TIMER_DURATION = 10; 
+
+function startOtpTimer(timerElementId, resendButtonId) {
+    const timerDisplay = document.getElementById(timerElementId);
+    const resendButton = document.getElementById(resendButtonId);
+    let timeLeft = TIMER_DURATION;
+
+    function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerDisplay.textContent = `${minutes}m ${seconds}s`;
+
+        if (timeLeft <= 0) {
+            timerDisplay.textContent = ''; 
+            resendButton.style.display = 'block'; 
+            resendButton.disabled = false; 
+        } else {
+            timeLeft -= 1;
+            setTimeout(updateTimer, 1000);
+        }
+    }
+
+   
+    resendButton.disabled = true;
+
+    updateTimer(); 
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    if (document.getElementById('otp-verification-form')) {
+        startOtpTimer('otp-timer', 'resend-otp-btn'); 
+    }
+
+   
+    const resendOtpButton = document.getElementById('resend-otp-btn');
+    if (resendOtpButton) {
+        resendOtpButton.addEventListener('click', function() {
+            if (!resendOtpButton.disabled) {
+               return startOtpTimer('otp-timer', 'resend-otp-btn'); 
+            }
+        });
+    }
+});
+
+
+    </script>
+<%- include('../layout/user_footer.ejs') %>

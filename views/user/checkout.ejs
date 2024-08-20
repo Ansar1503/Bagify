@@ -1,0 +1,295 @@
+<%- include('../layout/user_header.ejs') %>
+<main class="container my-5">
+    <!-- Checkout Header -->
+    <h1 class="h2 mb-4" style="font-size: 28px; font-weight: bold; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px;">CHECKOUT</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Product Details Section -->
+            <h4 class="mb-4" style="font-size: 24px; font-weight: bold; color: #333;">PRODUCT DETAILS</h4>
+            <div class="card shadow-sm mb-4">
+                <div class="accordion" id="productAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="productDetailsHeading">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#productDetailsCollapse" aria-expanded="true" aria-controls="productDetailsCollapse">
+                                Product Details
+                                <i class="bi bi-plus toggle-icon ms-2"></i>
+                                <i class="bi bi-dash toggle-icon d-none ms-2"></i>
+                            </button>
+                        </h2>
+                        <div id="productDetailsCollapse" class="accordion-collapse collapse show" aria-labelledby="productDetailsHeading" data-bs-parent="#productAccordion">
+                            <div class="accordion-body">
+                                <% cartdata.items.forEach((item) => { %>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="/imgs/products/<%= item.product.product_images[0] %>" class="card-img" style="width: 60px; height: 60px; object-fit: cover; margin-right: 15px;" alt="Product Image">
+                                        <div>
+                                            <p class="mb-1"><strong><%= item.product.product_name %></strong></p>
+                                            <p class="mb-0">Rs <%= item.price %> x <%= item.quantity %></p>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Details Section -->
+            <h4 class="mb-4" style="font-size: 24px; font-weight: bold; color: #333;">ADDRESS DETAILS</h4>
+
+            <!-- Manage Addresses Accordion -->
+            <div class="card shadow-sm mb-4">
+                <div class="accordion" id="addressAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="addressDetailsHeading">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#addressDetailsCollapse" aria-expanded="true" aria-controls="addressDetailsCollapse">
+                                Address Details
+                                <i class="bi bi-plus toggle-icon ms-2"></i>
+                                <i class="bi bi-dash toggle-icon d-none ms-2"></i>
+                            </button>
+                        </h2>
+                        <div id="addressDetailsCollapse" class="accordion-collapse collapse" aria-labelledby="addressDetailsHeading" data-bs-parent="#addressAccordion">
+                            <div class="accordion-body">
+                                <!-- List of Addresses -->
+                                <div class="list-group mb-4">
+                                    <% if (cartdata.user.address.length > 0) { %>
+                                        <% cartdata.user.address.forEach((address, index) => { %>
+                                            <div class="list-group-item mb-2">
+                                                <div class="d-flex align-items-start">
+                                                    <div class="me-3">
+                                                        <input type="radio" onclick="selectAddress('<%= address._id %>')" name="selectedAddress" id="address-<%= index %>" value="<%= address._id %>" style="width: 20px; height: 20px;">
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <% if (address.primary) { %>
+                                                            <span class="badge bg-secondary">Primary</span>
+                                                        <% } %>
+                                                        <strong><%= address.fullname %> <%= address.mobile %></strong>
+                                                        <p><%= address.Address %>, <%= address.city %>, <%= address.state %></p>
+                                                    </div>
+                                                    <div>
+                                                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="collapse" data-bs-target="#edit-address-<%= index %>">Edit</button>
+                                                    </div>
+                                                </div>
+                                                <div id="edit-address-<%= index %>" class="collapse mt-3">
+                                                    <form method="post" action="/checkout/update-address/<%= address._id %>">
+                                                        <input type="hidden" name="user_id" value="<%= cartdata.user._id %>">
+                                                        <div class="row">
+                                                            <div class="form-group col-md-12">
+                                                                <label for="edit-name-<%= index %>">Name <span class="required">*</span></label>
+                                                                <input class="form-control" id="edit-name-<%= index %>" name="name" type="text" value="<%= address.fullname %>" required>
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="edit-phone-<%= index %>">Phone <span class="required">*</span></label>
+                                                                <input class="form-control" id="edit-phone-<%= index %>" name="phone" type="text" value="<%= address.mobile %>" required>
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="edit-alt_phone-<%= index %>">Alternative Phone</label>
+                                                                <input class="form-control" id="edit-alt_phone-<%= index %>" name="alt_phone" type="text" value="<%= address.altMobile %>">
+                                                            </div>
+                                                            <div class="form-group col-md-12">
+                                                                <label for="edit-address-<%= index %>">Address <span class="required">*</span></label>
+                                                                <input class="form-control" id="edit-address-<%= index %>" name="Address" type="text" value="<%= address.Address %>" required>
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="edit-city-<%= index %>">City <span class="required">*</span></label>
+                                                                <input class="form-control" id="edit-city-<%= index %>" name="city" type="text" value="<%= address.city %>" required>
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="edit-state-<%= index %>">State <span class="required">*</span></label>
+                                                                <select class="form-control" id="edit-state-<%= index %>" name="state" required>
+                                                                    <% statesArray.forEach(state => { %>
+                                                                        <option value="<%= state %>" <%= address.state === state ? 'selected' : '' %>><%= state %></option>
+                                                                    <% }); %>
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="edit-pincode-<%= index %>">Pincode <span class="required">*</span></label>
+                                                                <input class="form-control" id="edit-pincode-<%= index %>" name="pincode" type="text" value="<%= address.pincode %>" required>
+                                                            </div>
+                                                            <div class="form-group col-md-12">
+                                                                <button type="submit" class="btn btn-primary">Update Address</button>
+                                                                <button type="button" class="btn btn-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#edit-address-<%= index %>">Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <p>No addresses found.</p>
+                                    <% } %>
+                                </div>
+                                <!-- Add Address Button -->
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#add-address-form">Add New Address</button>
+                                </div>
+
+                                <!-- Add Address Form -->
+                                <div id="add-address-form" class="collapse mt-4">
+                                    <h5 class="mb-3">Add New Address</h5>
+                                    <form method="post" action="/checkout/add-address/<%= cartdata.user._id %>">
+                                        <div class="row">
+                                            <div class="form-group col-md-12">
+                                                <label for="name">Name <span class="required">*</span></label>
+                                                <input class="form-control" id="name" name="name" type="text" placeholder="Enter name" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="phone">Phone <span class="required">*</span></label>
+                                                <input class="form-control" id="phone" name="phone" type="text" placeholder="Enter phone number" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="alt_phone">Alternative Phone</label>
+                                                <input class="form-control" id="alt_phone" name="alt_phone" type="text" placeholder="Enter alternative phone number">
+                                            </div>
+                                            <div class="form-group col-md-12">
+                                                <label for="address">Address <span class="required">*</span></label>
+                                                <input class="form-control" id="address" name="Address" type="text" placeholder="Enter address" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="city">City <span class="required">*</span></label>
+                                                <input class="form-control" id="city" name="city" type="text" placeholder="Enter city" required>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="state">State/Province <span class="required">*</span></label>
+                                                <select class="form-control" id="state" name="state" required>
+                                                    <% statesArray.forEach(state => { %>
+                                                        <option value="<%= state %>"><%= state %></option>
+                                                    <% }); %>
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <label for="pincode">Pincode <span class="required">*</span></label>
+                                                <input class="form-control" id="pincode" name="pincode" type="text" placeholder="Enter pincode" required>
+                                            </div>
+                                            <!-- <div class="form-group col-md-6">
+                                                <label for="addressType">Address Type</label>
+                                                <select class="form-select" id="addressType" name="addressType">
+                                                    <option value="home">Home</option>
+                                                    <option value="professional">Professional</option>
+                                                </select>
+                                            </div> -->
+                                            <div class="form-group col-md-12">
+                                                <button type="submit" class="btn btn-primary">Save Address</button>
+                                                <button type="button" class="btn btn-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#add-address-form">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary and Payment Method -->
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">ORDER SUMMARY</h5>
+                    <p class="card-text d-flex justify-content-between">
+                        <span>SubTotal Amount</span>
+                        <span>Rs <%= cartdata.summary.subtotal %></span>
+                    </p>
+                    <input type="hidden" id="couponCode" name="couponCode" value="">
+                    <p class="card-text d-flex justify-content-between">
+                        <span>Coupon Discount</span>
+                        <span>Rs <%= cartdata.summary.couponDiscount%></span>
+                    </p>
+                    <p class="card-text d-flex justify-content-between">
+                        <span>Delivery Charges</span>
+                        <span class="text-success"><%= cartdata.summary.deliveryCharges == 0 ? 'Free': cartdata.summary.deliveryCharges %> </span>
+                    </p>
+                    <hr>
+                    <p class="card-text d-flex justify-content-between">
+                        <strong>Total Amount</strong>
+                        <strong>Rs <%= cartdata.summary.total %></strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="card-title h5 mb-3">Payment Method</h3>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input"  type="radio" name="payment_method" id="razorPay" value="razorPay">
+                        <label class="form-check-label" for="razorPay">Razor Pay</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" onclick="paymentSelect('Cash on Delivery')" type="radio" name="payment_method" id="cashOnDelivery" value="cashOnDelivery">
+                        <label class="form-check-label" for="cashOnDelivery">Cash on Delivery</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                        <label class="form-check-label" for="wallet">Wallet</label>
+                    </div>
+                </div>
+            </div>
+            <form action="/placeOrder" method="post">
+                <input type="hidden" name="cartId" value="<%= cartdata._id %>">
+                <input type="hidden" id="selectedPaymentMethod" name="paymentMethod" value="">
+                <input type="hidden" id="selectedAddressId" name="addressId" value="">
+                <button type="submit" onclick="checkInputs(event)" class="btn btn-primary btn-lg w-100" id="placeOrder">Place Order</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div id="preloader-active">
+    <div class="preloader d-flex align-items-center justify-content-center">
+        <div class="preloader-inner position-relative">
+            <div class="text-center">
+                <h5 class="mb-5">Now Loading</h5>
+                <div class="loader">
+                    <div class="bar bar1"></div>
+                    <div class="bar bar2"></div>
+                    <div class="bar bar3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var accordions = document.querySelectorAll('.accordion-button');
+        accordions.forEach(function (accordion) {
+            accordion.addEventListener('click', function () {
+                var plusIcon = this.querySelector('.bi-plus');
+                var dashIcon = this.querySelector('.bi-dash');
+                var isExpanded = this.getAttribute('aria-expanded') === 'true';
+
+                if (isExpanded) {
+                    plusIcon.classList.remove('d-none');
+                    dashIcon.classList.add('d-none');
+                } else {
+                    plusIcon.classList.add('d-none');
+                    dashIcon.classList.remove('d-none');
+                }
+            });
+        });
+    });
+
+   function selectAddress(addressId) {
+       document.getElementById('selectedAddressId').value = addressId;
+       
+   }
+   function paymentSelect(method){
+    document.getElementById('selectedPaymentMethod').value = method
+   }
+   function checkInputs(event){
+    event.preventDefault()
+    addressId = document.getElementById('selectedAddressId').value
+    paymentMethod = document.getElementById('selectedPaymentMethod').value
+    if(addressId == ''){
+        swal.fire('info','please select an Address','info')
+    }else if(paymentMethod == ''){
+        swal.fire('info','please choose A payment method','info')
+    }else{
+        document.querySelector('form[action="/placeOrder"]').submit()
+    }
+
+   }
+</script>
+
+<%- include('../layout/user_footer.ejs') %>

@@ -1,0 +1,168 @@
+const path =require('path')
+const Products = require('../model/product_schema')
+const fs = require('fs')
+const Category = require('../model/category_schema')
+
+
+
+const loadProducts = async function (req,res){
+    try {
+      const products = await Products.find().populate('product_category')
+       return res.render('products',{products})
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("server error")
+    }
+}
+const loadAddproduct=async function(req,res){
+    try {
+        const categories = await Category.find()
+        // console.log(categories);
+        res.render('add_product',{categories})
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("server error")
+    }
+}
+const addProduct = async function(req,res){
+    try {        
+        const product_images = req.files ? req.files.map(images => images.filename) : null
+        if(!product_images){
+            return res.status(404).send("files not found")
+        }
+        const products =  new Products({
+            product_name: req.body.pro_name,
+            product_sale_price: req.body.pro_sale_price, 
+            product_regular_price: req.body.pro_reg_price,
+            product_category: req.body.pro_category,
+            product_description: req.body.pro_description,
+            product_quantity: req.body.pro_quantity,
+            product_images,
+            // product_color:req.body.pro_colors,
+            product_brand:req.body.pro_brand,
+        })
+        // console.log(req.body);
+        
+        await products.save()
+        if(products){
+           return res.redirect('/admin/products')
+        }
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send("server error")
+    }
+}
+const loadEditProduct = async function(req,res){
+    try {
+        const categories = await Category.find()
+        const product = await Products.findOne({_id:req.params.id}).populate('product_category')
+        // console.log(product);
+     
+        if(product){
+            return res.render('edit-product',{product,categories})
+        }else{
+            res.redirect('/admin/products')
+        }
+    } catch (error) {
+        console.log(error.message);
+       res.status(500).send('edit product page loading error') 
+    }
+}
+const  editProduct = async function(req,res){
+    try {
+        // existig products
+        const existingProduct = await Products.findById(req.body.id);
+        
+        // console.log(existingProduct);
+        
+        const product_images = req.files.length > 0 ? req.files.map(file => file.filename) : existingProduct.product_images;
+        // console.log(req.body);
+        // console.log(req.files);
+        
+    
+        // updated products
+        const updatedProduct = await Products.findByIdAndUpdate(req.body.id, {
+            $set: {
+                product_name: req.body.pro_name || existingProduct.product_name,
+                product_sale_price: req.body.pro_sale_price || existingProduct.product_sale_price,
+                product_regular_price: req.body.pro_reg_price || existingProduct.product_regular_price,
+                product_category: req.body.pro_category || existingProduct.product_category,
+                product_description: req.body.pro_description || existingProduct.product_description,
+                product_quantity: req.body.pro_quantity || existingProduct.product_quantity,
+                product_images,
+                // product_color:req.body.pro_colors || existingProduct.product_color,
+                product_brand:req.body.pro_brand   || existingProduct.product_brand
+            }
+        });
+       
+    if (!updatedProduct) {
+        return res.status(404).send("Product update failed!");
+    }
+    
+
+    // delete old path 
+    try {
+        if(req.files.length>0){
+        existingProduct.product_images.forEach((image)=>{
+            const oldImagePath = path.join(__dirname, '../public/imgs/products/', image)
+            fs.unlinkSync(oldImagePath)
+            console.log('successfully deleted file');
+            
+        })
+    }
+    } catch (error) {
+        return res.status(404).send('file unlink error')
+    }
+
+    // redirect to products page
+    return res.redirect('/admin/products');
+
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send('edit product error')
+    }
+}
+
+const deactivateProduct = async function(req,res){
+    try { 
+        await Products.findByIdAndUpdate(req.params.id,{$set:{isActive:false}})
+        // redirect to products page 
+        return res.redirect('/admin/products')
+
+    } catch (error) {
+        res.status(500).send('could not deactivate product')
+    }
+}
+
+const activateProduct = async function(req,res){
+    try {       
+        await Products.findByIdAndUpdate(req.params.id,{$set:{isActive:true}})
+        // redirect to products page 
+        return res.redirect('/admin/products')
+
+    } catch (error) {
+        res.status(500).send('couldnot activate account')
+    }
+}
+
+const productdetail = async(req,res)=>{
+    try {
+        const product = await Products.findById(req.params.id).populate('product_category')
+        return res.render('productDetails',{product})
+    } catch (error) {
+        console.log(error.message);
+        return  res.satus(500).send('product details page loaded error')
+    }
+}
+
+module.exports = {
+    loadProducts,
+    loadAddproduct,
+    addProduct,
+    loadEditProduct,
+    editProduct,
+    deactivateProduct,
+    activateProduct,
+    productdetail
+}
