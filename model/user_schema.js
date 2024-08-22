@@ -48,7 +48,8 @@ const user_schema = new mongoose.Schema({
     otpexp:{
         type:Date
         
-    }
+    },
+ 
 })
 
 

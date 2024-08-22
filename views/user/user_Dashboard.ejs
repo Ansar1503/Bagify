@@ -433,7 +433,8 @@
                                                 </div>
                                             </form>
                                         </div>
-                                    </div>                                    
+                                    </div>            
+                                                            
                                 
                                     <!-- Section 3: Change Password -->
                                     <div class="card mt-4">
@@ -445,24 +446,27 @@
                                 
                                         <!-- Edit Mode: Change Password Form (Visible when Edit is clicked) -->
                                         <div class="card-body" id="change-password-edit" style="display: none;">
-                                            <form method="post" id="change-password-form">
+                                            <form method="post" id="change-password-form" onsubmit="changePassword(event)">
                                                 <div class="row">
                                                     <!-- Current Password -->
                                                     <div class="form-group col-md-6">
                                                         <label for="current-password">Current Password</label>
                                                         <input id="current-password" class="form-control" name="currentPass" type="password" required />
+                                                        <span id="current-password-error" class="error-message"></span>
                                                     </div>
                                 
                                                     <!-- New Password -->
                                                     <div class="form-group col-md-6">
                                                         <label for="new-password">New Password</label>
                                                         <input id="new-password" class="form-control" name="newPass" type="password" required />
+                                                        <span id="new-password-error" class="error-message"></span>
                                                     </div>
                                 
                                                     <!-- Confirm New Password -->
                                                     <div class="form-group col-md-6">
                                                         <label for="confirm-new-password">Confirm New Password</label>
                                                         <input id="confirm-new-password" class="form-control" name="confirmNewPass" type="password" required />
+                                                        <span id="confirm-new-password-error" class="error-message"></span>
                                                     </div>
                                 
                                                     <!-- Save and Cancel Buttons -->
@@ -638,9 +642,10 @@
         const confirmNewEmailInput = form.querySelector('input[name="confirmNewEmail"]');
         const newEmailValue = newEmailInput.value.trim();
         const confirmNewEmailValue = confirmNewEmailInput.value.trim();
+        const currentEmailInput = form.querySelector('input[name="currentEmail"]')
     
-        const newEmailError = document.getElementById('new-email-error'); // Create an error message span if needed
-        const confirmEmailError = document.getElementById('confirm-new-email-error'); // Create an error message span if needed
+        const newEmailError = document.getElementById('new-email-error');
+        const confirmEmailError = document.getElementById('confirm-new-email-error');
     
         // Clear previous error messages
         if (newEmailError) newEmailError.textContent = '';
@@ -667,34 +672,243 @@
         }
     
         try {
-            const response = await fetch('/userDashboard/changeEmail', {
-                method: 'PATCH',
-                body: formData 
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we update your email.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
     
-            if (!response.ok) throw new Error('Server responded with an error');
+            const response = await fetch('/userDashboard/changeEmail', {
+                method: 'PATCH',
+                body: formData
+            });
     
-            const data = await response.json();
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Server responded with an error');
+                }
     
-            if (data.success) {
-                document.querySelector('#change-email-view p').innerHTML = `<strong>Email:</strong> ${newEmailValue}`;
+                Swal.close(); // Close the loading alert
     
-                document.getElementById('change-email-edit').style.display = 'none';
-                document.getElementById('change-email-view').style.display = 'block';
+                if (data.success) {
+                    const newEmail = data.newEmail;
+                    const email = data.user.email;
     
-                Swal.fire('Success', 'Your email has been updated!', 'success');
+                    // Show OTP input prompt
+                    const { value: otp } = await Swal.fire({
+                        title: 'Verify OTP',
+                        input: 'text',
+                        inputLabel: 'Please enter the OTP sent to your new email address.',
+                        inputPlaceholder: 'Enter OTP',
+                        showCancelButton: true,
+                        confirmButtonText: 'Verify',
+                        cancelButtonText: 'Cancel',
+                        inputValidator: (value) => {
+                            if (!value) {
+                                return 'OTP is required';
+                            }
+                        }
+                    });
+    
+                    if (otp) {
+                        // Verify OTP
+                        const otpResponse = await fetch('/userDashboard/verifyOtpAndChangeEmail', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ otp, email, newEmail })
+                        });
+    
+                        if (otpResponse.headers.get('content-type').includes('application/json')) {
+                            const otpData = await otpResponse.json();
+    
+                            if (!otpResponse.ok) {
+                                throw new Error(otpData.message || 'Failed to verify OTP');
+                            }
+    
+                            if (otpData.success) {
+                                // Success: Update the view and show success message
+                                newEmailInput.value = '';
+                                confirmNewEmailInput.value = '';
+                                document.querySelector('#change-email-view p').innerHTML = `<strong>Email:</strong> ${otpData.user.email}`;
+                                currentEmailInput.value = otpData.user.email
+                                document.getElementById('change-email-edit').style.display = 'none';
+                                document.getElementById('change-email-view').style.display = 'block';
+                                Swal.fire('Success', 'Your email has been updated and verified!', 'success');
+                            } else {
+                                Swal.fire('Error', otpData.message || 'Failed to verify OTP.', 'error');
+                            }
+                        } else {
+                            const text = await otpResponse.text();
+                            throw new Error(`Unexpected response: ${text}`);
+                        }
+                    }
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to update your email.', 'error');
+                }
             } else {
-                Swal.fire('Error', data.message || 'Failed to update your email.', 'error');
+                const text = await response.text();
+                throw new Error(`Unexpected response format: ${text}`);
             }
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire('Error', 'An unexpected error occurred. Please try again.', 'error');
+            Swal.fire('Error', error.message || 'An unexpected error occurred. Please try again.', 'error');
         } finally {
             // Re-enable the buttons
             form.querySelector('button.btn-secondary').disabled = false;
             form.querySelector('button.btn-primary').disabled = false;
         }
     }
+    
+    
+
+    async function changePassword(event) {
+        event.preventDefault(); // Prevent default form submission
+    
+        const form = document.getElementById('change-password-form');
+        const formData = new FormData(form);
+    
+        // Disable buttons to prevent multiple submissions
+        form.querySelector('button.btn-secondary').disabled = true;
+        form.querySelector('button.btn-primary').disabled = true;
+    
+        const currentPasswordInput = form.querySelector('input[name="currentPass"]');
+        const newPasswordInput = form.querySelector('input[name="newPass"]');
+        const confirmNewPasswordInput = form.querySelector('input[name="confirmNewPass"]');
+    
+        const currentPasswordError = document.getElementById('current-password-error');
+        const newPasswordError = document.getElementById('new-password-error');
+        const confirmNewPasswordError = document.getElementById('confirm-new-password-error');
+    
+        // Clear previous error messages
+        if (currentPasswordError) currentPasswordError.textContent = '';
+        if (newPasswordError) newPasswordError.textContent = '';
+        if (confirmNewPasswordError) confirmNewPasswordError.textContent = '';
+        currentPasswordInput.classList.remove('error');
+        newPasswordInput.classList.remove('error');
+        confirmNewPasswordInput.classList.remove('error');
+    
+        const currentPasswordValue = currentPasswordInput.value.trim();
+        const newPasswordValue = newPasswordInput.value.trim();
+        const confirmNewPasswordValue = confirmNewPasswordInput.value.trim();
+    
+        // Validate current password
+        if (currentPasswordValue === '') {
+            if (currentPasswordError) currentPasswordError.textContent = 'Current password is required.';
+            currentPasswordInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+            return;
+        }
+    
+        // Validate new password
+        if (newPasswordValue === '' || newPasswordValue.length < 6) {
+            if (newPasswordError) newPasswordError.textContent = 'New password must be at least 6 characters long.';
+            newPasswordInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+            return;
+        }
+    
+        // Validate new password confirmation
+        if (newPasswordValue !== confirmNewPasswordValue) {
+            if (confirmNewPasswordError) confirmNewPasswordError.textContent = 'New password and confirmation do not match.';
+            confirmNewPasswordInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+            return;
+        }
+    
+        try {
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we send the OTP to your email.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            // Request OTP
+            const response = await fetch('/userDashboard/changePassword', {
+                method: 'PATCH',
+                body: formData
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to request OTP.');
+            }
+            const data = await response.json()
+            Swal.close(); // Close the loading alert
+
+            if(data.success){
+            const email = data.user.email
+            const newpass = data.newpass
+
+            // Show OTP input prompt
+            const { value: otp } = await Swal.fire({
+                title: 'Verify OTP',
+                input: 'text',
+                inputLabel: 'Please enter the OTP sent to your email address.',
+                inputPlaceholder: 'Enter OTP',
+                showCancelButton: true,
+                confirmButtonText: 'Verify',
+                cancelButtonText: 'Cancel',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'OTP is required.';
+                    }
+                }
+            });
+    
+            if (otp) {
+                // Verify OTP and update password
+                const otpResponse = await fetch('/userDashboard/verifyOtpAndChangePassword', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otp, newpass, email })
+                });
+    
+                if (!otpResponse.ok) {
+                    const otpErrorData = await otpResponse.json();
+                    throw new Error(otpErrorData.message || 'Failed to verify OTP.');
+                }
+    
+                const otpData = await otpResponse.json();
+    
+                if (otpData.success) {
+                    // Clear form inputs
+                    currentPasswordInput.value = '';
+                    newPasswordInput.value = '';
+                    confirmNewPasswordInput.value = '';
+    
+                    Swal.fire('Success', 'Your password has been updated!', 'success');
+                } else {
+                    Swal.fire('Error', otpData.message || 'Failed to update your password.', 'error');
+                }
+            }
+        }else{
+            swal.fire('Error',data.message||'failed request otp','error')
+        }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error', error.message || 'An unexpected error occurred. Please try again.', 'error');
+        } finally {
+            // Re-enable the buttons
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+        }
+    }
+    
+    
     
 
     function toggleEditMode(section) {

@@ -54,10 +54,12 @@ userRoute.patch('/orders',userAuth.isLoggedin,userController.cancelOrderItem)
 //dashbord profile
 userRoute.patch('/userDashboard/updatePersonal',upload.none(),userAuth.isLoggedin,userController.edituserPersonal) 
 userRoute.patch('/userDashboard/changeEmail',upload.none(),userAuth.isLoggedin,userController.editUserEmail)
-userRoute.post('/userDashboard/verifyotp',userAuth.isLoggedin,userController.dashboardOtpVerify)
+userRoute.patch('/userDashboard/changePassword',upload.none(),userAuth.isLoggedin,userController.changepassword)
+userRoute.post('/userDashboard/verifyOtpAndChangePassword',userAuth.isLoggedin,userController.verifyOtpAndChangePassword)
+userRoute.post('/userDashboard/verifyOtpAndChangeEmail',userAuth.isLoggedin,userController.verifyOtpAndChangeEmail)
 
 // google authentication
-userRoute.get('/auth/google',passport.authenticate('google',{scope:['email','profile']}))
+userRoute.get('/auth/google',passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/contacts.readonly'] }))
 userRoute.get('/auth/google/callback',passport.authenticate('google',{successRedirect:"/auth/protected",failureRedirect:"/"}))  
 userRoute.get('/auth/protected',userController.googleAuth)
 

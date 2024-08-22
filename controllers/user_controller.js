@@ -199,29 +199,34 @@ const verifyUser = async function(req,res){
     }
 }
 
-const googleAuth = async function(req,res){
+const googleAuth = async function(req, res) {
     try {
-        const {sub,name,email} = req.user._json
-        const existUser = await User.findOne({googleId:sub})
-        if(!existUser){
-        const userdata = new User({
-            name,
-            email,
-            googleId:sub,
-            isVerified:true
-        })
-       const googleUser = await userdata.save()  
-       req.session.user_id = googleUser._id
-       return  res.redirect('/')
-    }
+        const { sub, name, email, phoneNumbers } = req.user;
+        const mobile = (phoneNumbers && phoneNumbers.length > 0) ? phoneNumbers[0].value : null;
 
-   
-    req.session.user_id = existUser._id
-      return  res.redirect('/')
+        const existUser = await User.findOne({ googleId: sub });
+
+        if (!existUser) {
+            const userdata = new User({
+                name,
+                email,
+                mobile,
+                googleId: sub,
+                isVerified: true
+            });
+            const googleUser = await userdata.save();
+            req.session.user_id = googleUser._id;
+            return res.redirect('/');
+        }
+
+        req.session.user_id = existUser._id;
+        return res.redirect('/');
     } catch (error) {
-       return res.status(500).send('google authentication failure')
+        console.error('Google authentication failure:', error);
+        return res.status(500).send('Google authentication failure');
     }
-}
+};
+
 const loadproducts = async (req, res) => {
     try {
         const product = await Products.findOne({_id: req.params.id,isActive:true}).populate('product_category');
@@ -820,33 +825,143 @@ const edituserPersonal = async(req,res)=>{
     }
 
 }
+const verifyOtpAndChangeEmail = async (req, res) => {
+    const { email, otp, newEmail } = req.body;
 
-const dashboardOtpVerify = async(req,res)=>{
-    const {email,otp} = req.body
-    if(!req.body){
-        return res.status(400).json({success:false,message:'please provide the credentials'})
+    if (!email || !otp) {
+        return res.status(400).json({ success: false, message: 'Please provide both email and OTP.' });
     }
-    const user = User.findOne({email})
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid email.' });
+        }
+
+        if (user.otp === otp && user.otpexp > Date.now()) {
+            user.otp = null;
+            user.otpexp = null;
+            user.email = newEmail;
+            const userData = await user.save();
+            return res.status(200).json({ success: true, message: 'OTP verified successfully', user: userData });
+        } else if (user.otp !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid OTP.' });
+        } else if (user.otpexp < Date.now()) {
+            return res.status(400).json({ success: false, message: 'OTP expired.' });
+        }
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
+
+const editUserEmail = async (req, res) => {
+    if (!req.body || !req.body.newEmail || !req.body.confirmNewEmail) {
+        return res.status(400).json({ success: false, message: 'Please provide the new email address' });
+    }
+    const { newEmail, confirmNewEmail } = req.body;
+
+    if (newEmail !== confirmNewEmail) {
+        return res.status(400).json({ success: false, message: 'Emails do not match' });
+    }
+
+    const existingEmail = await User.findOne({ email: newEmail });
+    if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email already exists. Please enter another email.' });
+    }
+
+    try {
+        const otp = generateOtp();
+        const mailContent = `
+            <h1>Changing Email</h1>
+            <p>Please use the following code to verify your new email address:</p>
+            <p><strong>${otp}</strong></p>`;
+
+        const sendMailSuccess = await nodemailer(newEmail, mailContent, otp);
+        if (!sendMailSuccess) {
+            return res.status(500).json({ success: false, message: 'Failed to send OTP. Please try again later.' });
+        }
+
+        const user = await User.findById(req.session.user_id);
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'No user found. Please log in again.' });
+        }
+        
+        user.otp = otp;
+        user.otpexp = new Date(Date.now() + 5 * 60 * 1000); // OTP expiration time
+        const userData = await user.save();
+
+        return res.status(200).json({ success: true, message: 'OTP sent successfully. Please check your email.', user: userData, newEmail });
+
+    } catch (error) {
+        console.error('Error in editUserEmail:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error. Please try again later.' });
+    }
+};
+
+
+const changepassword = async(req,res)=>{
+    if(!req.body){
+        return res.status(400).json({success:false,message:'Please enter some credentials'})
+    }
+    
+    const {currentPass,newPass,confirmNewPass} = req.body
+    if(newPass!=confirmNewPass){
+        return res.status(400).json({success:false,message:'confirm password is not same as new password'})
+    }
+    const user = await User.findById(req.session.user_id)
     if(!user){
-        return res.status(400).json({success:false,message:'Invalid email'})
+        return res.status(400).json({success:false,message:'no user found please login'})
     }
-    if(user.otp == otp && user.otpexp>Date.now()){
-        user.otp = null
-        user.otpexp = null
+    const passmatch = await bcrypt.compare(currentPass,user.password)
+    if(!passmatch){
+        return res.status(400).json({success:false,message:'Invalid password'})
+    }
+    try {
+        const otp = generateOtp()
+        const mailcontent = `<h1>Requested to change password</h1>
+        <p>please confirm mail!  use the code below:</p>
+        ${otp}`
+        const sendmail = await nodemailer(user.email,mailcontent,otp)
+        if(!sendmail){
+            return res.status(400).json({success:false,message:'mail send failed please provide check your mail'})
+        }
+        user.otp = otp
+        user.otpexp = new Date(Date.now() + 5 * 60 * 1000);
+        const newpass = await bcrypt.hash(newPass,10)
         const userData = await user.save()
-        return res.status(200).json({success:true,message:'otp verified successfully',user:userData})
-    }
-    if(user.otp != otp){
-        return res.status(400).json({success:false,message:'invalid otp'})
-    }
-    if(user.otpexp < Date.now()){
-       return res.status(400).json({success:false,message:'otp expired'}) 
-    }
-}
 
-const editUserEmail = async(req,res)=>{
+        return res.status(200).json({success:true,message:'Success! please verify your mail now',user:userData,newpass})
+    } catch (error) {
+        return res.status(500).json({success:false,message:'Internal server error'})
+    }
+
+}
+const verifyOtpAndChangePassword = async(req,res)=>{
     if(!req.body){
-        return res.status(400).json({success:false,message:'please provide the credentials'})
+        return res.status(400).json({success:false,message:'please enter the credentials'})
+    }
+    const {otp,newpass,email} = req.body
+
+    const user= await User.findOne({email})
+    if(!user){
+        return res.status(400).json({success:false,message:'couldnt find the user try logging in again'})
+    }
+    try {
+        if(user.otp == otp && user.otpexp>Date.now()){
+            user.otp = null;
+            user.otpexp = null;
+            user.password = newpass;
+            await user.save()
+        }else if (user.otp !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid OTP.' });
+        } else if (user.otpexp < Date.now()) {
+            return res.status(400).json({ success: false, message: 'OTP expired.' });
+        }
+
+        return res.status(200).json({success:true,message:'otp verified successfully! password changed'})
+    } catch (error) {
+        return res.status(500).json({success:false,message:'Internal server error'})
     }
 }
 
@@ -879,6 +994,8 @@ module.exports = {
     checkoutupdateAddress,
     cancelOrderItem,
     edituserPersonal,
-    dashboardOtpVerify,
-    editUserEmail
+    verifyOtpAndChangeEmail,
+    editUserEmail,
+    changepassword,
+    verifyOtpAndChangePassword
 }
