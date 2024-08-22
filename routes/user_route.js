@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('../config/passport')
-
+const multer = require('multer')
+const upload = multer()
 // user middles
 const userController = require('../controllers/user_controller')
 const userAuth = require('../middlewares/user_session');
@@ -50,6 +51,10 @@ userRoute.post('/checkout/add-address/:user_id',userAuth.isLoggedin,userControll
 userRoute.post('/checkout/update-address/:address_id',userAuth.isLoggedin,userController.checkoutupdateAddress)
 userRoute.patch('/orders',userAuth.isLoggedin,userController.cancelOrderItem)
 
+//dashbord profile
+userRoute.patch('/userDashboard/updatePersonal',upload.none(),userAuth.isLoggedin,userController.edituserPersonal) 
+userRoute.patch('/userDashboard/changeEmail',upload.none(),userAuth.isLoggedin,userController.editUserEmail)
+userRoute.post('/userDashboard/verifyotp',userAuth.isLoggedin,userController.dashboardOtpVerify)
 
 // google authentication
 userRoute.get('/auth/google',passport.authenticate('google',{scope:['email','profile']}))

@@ -9,6 +9,7 @@ const orderModel = require('../model/order_schema')
 const nodemailer = require('../config/nodemailer');
 
 
+
 function generateOtp() {
     return Math.floor(100000 + Math.random() * 900000).toString(); 
 }
@@ -795,6 +796,59 @@ const cancelOrderItem = async(req,res)=>{
     }
 }
 
+const edituserPersonal = async(req,res)=>{
+    // console.log(req.body);
+    
+    const {name,mobile} = req.body
+    if(!name || !mobile){
+        return res.status(400).json({success:false,message:'please enter the required fields'})
+    }
+    const user = await User.findOne({_id:req.session.user_id});
+    if(!user){
+        return res.status(400).json({success:false,message:'user not found please login'})
+    }
+
+    try {
+    
+    user.name = name
+    user.mobile = mobile
+    const userData = await user.save()
+    return res.status(200).json({success:true,message:'user name changed successfully',user:userData})   
+    
+    } catch (error) {
+        return res.status(500).json({success:false,message:'server error'})
+    }
+
+}
+
+const dashboardOtpVerify = async(req,res)=>{
+    const {email,otp} = req.body
+    if(!req.body){
+        return res.status(400).json({success:false,message:'please provide the credentials'})
+    }
+    const user = User.findOne({email})
+    if(!user){
+        return res.status(400).json({success:false,message:'Invalid email'})
+    }
+    if(user.otp == otp && user.otpexp>Date.now()){
+        user.otp = null
+        user.otpexp = null
+        const userData = await user.save()
+        return res.status(200).json({success:true,message:'otp verified successfully',user:userData})
+    }
+    if(user.otp != otp){
+        return res.status(400).json({success:false,message:'invalid otp'})
+    }
+    if(user.otpexp < Date.now()){
+       return res.status(400).json({success:false,message:'otp expired'}) 
+    }
+}
+
+const editUserEmail = async(req,res)=>{
+    if(!req.body){
+        return res.status(400).json({success:false,message:'please provide the credentials'})
+    }
+}
 
 module.exports = {
     loadlogin,
@@ -823,5 +877,8 @@ module.exports = {
     getCartSummary,
     checkoutaddAddress,
     checkoutupdateAddress,
-    cancelOrderItem
+    cancelOrderItem,
+    edituserPersonal,
+    dashboardOtpVerify,
+    editUserEmail
 }

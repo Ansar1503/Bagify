@@ -346,41 +346,136 @@
                                    
                                 </div>
                                 <div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
+                                    <!-- Section 1: Personal Information -->
                                     <div class="card">
-                                        <div class="card-header">
-                                            <h5>Account Details</h5>
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5>Personal Information</h5>
+                                            <!-- Edit Button -->
+                                            <span class="edit-link text-primary" onclick="toggleEditMode('personal-info')" style="cursor: pointer;">Edit</span>
                                         </div>
-                                        <div class="card-body">
-                                            <form method="post" name="enq">
+                                    
+                                        <!-- View Mode: Personal Information -->
+                                        <div class="card-body" id="personal-info-view">
+                                            <p><strong>User Name:</strong> <%= user.name %></p>
+                                            <p><strong>Mobile:</strong> <%= user.mobile %></p>
+                                        </div>
+                                    
+                                        <!-- Edit Mode: Personal Information Form -->
+                                        <div class="card-body" id="personal-info-edit" style="display: none;">
+                                            <form method="post" id="personal-info-form" onsubmit="editPersonaldetails(event)">
                                                 <div class="row">
-                                                    <div class="form-group col-md-12">
-                                                        <label>User Name <span class="required">*</span></label>
-                                                        <input required="" class="form-control square" name="name" type="text">
+                                                    <!-- User Name -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="name">User Name</label>
+                                                        <input id="name" class="form-control" name="name" type="text" value="<%= user.name %>" required />
+                                                        <span id="username-error" class="error-message"></span>
                                                     </div>
-                                                    <div class="form-group col-md-12">
-                                                        <label>Email Address <span class="required">*</span></label>
-                                                        <input required="" class="form-control square" name="email" type="email">
+                                    
+                                                    <!-- Mobile Number -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="mobile">Mobile Number</label>
+                                                        <input id="mobile" class="form-control" name="mobile" type="text" value="<%= user.mobile %>" pattern="^(?:(?:\+91|91)?[6789]\d{9})$" required />
+                                                        <span id="mobile-error" class="error-message"></span>
                                                     </div>
-                                                    <div class="form-group col-md-12">
-                                                        <label>Current Password <span class="required">*</span></label>
-                                                        <input required="" class="form-control square" name="password" type="password">
+                                    
+                                                    <!-- Save and Cancel Buttons -->
+                                                    <div class="form-group col-md-12 d-flex justify-content-end">
+                                                        <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('personal-info')">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
                                                     </div>
-                                                    <div class="form-group col-md-12">
-                                                        <label>New Password <span class="required">*</span></label>
-                                                        <input required="" class="form-control square" name="npassword" type="password">
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Section 2: Change Email -->
+                                    <div class="card mt-4">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5>Change Email</h5>
+                                            <!-- Edit Button -->
+                                            <span class="edit-link text-primary" onclick="toggleEditMode('change-email')" style="cursor: pointer;">Edit</span>
+                                        </div>
+                                    
+                                        <!-- View Mode: Display Current Email -->
+                                        <div class="card-body" id="change-email-view">
+                                            <p><strong>Email:</strong> <%= user.email %></p>
+                                        </div>
+                                    
+                                        <!-- Edit Mode: Change Email Form -->
+                                        <div class="card-body" id="change-email-edit" style="display: none;">
+                                            <form method="post" id="change-email-form" onsubmit="changeEmail(event)">
+                                                <div class="row">
+                                                    <!-- Current Email -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="current-email">Current Email</label>
+                                                        <input id="current-email" class="form-control" name="currentEmail" type="email" value="<%= user.email %>" readonly />
                                                     </div>
-                                                    <div class="form-group col-md-12">
-                                                        <label>Confirm Password <span class="required">*</span></label>
-                                                        <input required="" class="form-control square" name="cpassword" type="password">
+                                    
+                                                    <!-- New Email -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="new-email">New Email</label>
+                                                        <input id="new-email" class="form-control" name="newEmail" type="email" required />
+                                                        <span id="new-email-error" class="error-message"></span>
                                                     </div>
-                                                    <div class="col-md-12">
-                                                        <button type="submit" class="btn btn-fill-out submit" name="submit" value="Submit">Save</button>
+                                    
+                                                    <!-- Confirm New Email -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="confirm-new-email">Confirm New Email</label>
+                                                        <input id="confirm-new-email" class="form-control" name="confirmNewEmail" type="email" required />
+                                                        <span id="confirm-new-email-error" class="error-message"></span>
+                                                    </div>
+                                    
+                                                    <!-- Save and Cancel Buttons -->
+                                                    <div class="form-group col-md-12 d-flex justify-content-end">
+                                                        <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('change-email')">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>                                    
+                                
+                                    <!-- Section 3: Change Password -->
+                                    <div class="card mt-4">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5>Change Password</h5>
+                                            <!-- Edit Button -->
+                                            <span class="edit-link text-primary" onclick="toggleEditMode('change-password')" style="cursor: pointer;">Edit</span>
+                                        </div>
+                                
+                                        <!-- Edit Mode: Change Password Form (Visible when Edit is clicked) -->
+                                        <div class="card-body" id="change-password-edit" style="display: none;">
+                                            <form method="post" id="change-password-form">
+                                                <div class="row">
+                                                    <!-- Current Password -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="current-password">Current Password</label>
+                                                        <input id="current-password" class="form-control" name="currentPass" type="password" required />
+                                                    </div>
+                                
+                                                    <!-- New Password -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="new-password">New Password</label>
+                                                        <input id="new-password" class="form-control" name="newPass" type="password" required />
+                                                    </div>
+                                
+                                                    <!-- Confirm New Password -->
+                                                    <div class="form-group col-md-6">
+                                                        <label for="confirm-new-password">Confirm New Password</label>
+                                                        <input id="confirm-new-password" class="form-control" name="confirmNewPass" type="password" required />
+                                                    </div>
+                                
+                                                    <!-- Save and Cancel Buttons -->
+                                                    <div class="form-group col-md-12 d-flex justify-content-end">
+                                                        <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('change-password')">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
                                                     </div>
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                 </div>
+              
                             </div>
                         </div> 
                     </div>
@@ -406,11 +501,221 @@
 .form-check-input {
     margin-right: 5px; 
 }
+/* Style for the Edit and Cancel links */
+.edit-link {
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.edit-link:hover {
+    text-decoration: none;
+}
+
+/* Customizing form controls */
+.form-control {
+    border-radius: 4px;
+    border-color: #ced4da;
+}
+
+/* Adding padding to the card */
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Alignment for buttons */
+.form-group .btn {
+    border-radius: 4px;
+}
+
+/* Space between buttons */
+.btn-secondary.me-2 {
+    margin-right: 0.5rem;
+}
+.error {
+    border-color: red;
+}
+.error-message {
+    color: red;
+    font-size: 0.875em;
+}
+
 
 </style>
 
 
 <script>
+
+    async function editPersonaldetails(event) {
+        event.preventDefault(); // Corrected method name
+    
+        const form = document.getElementById('personal-info-form');
+        const formData = new FormData(form);
+    
+        // Disable buttons to prevent multiple submissions
+        form.querySelector('button.btn-secondary').disabled = true;
+        form.querySelector('button.btn-primary').disabled = true;
+    
+        const nameInput = form.querySelector('input[name="name"]');
+        const mobileInput = form.querySelector('input[name="mobile"]');
+        const usernameError = document.getElementById('username-error');
+        const mobileError = document.getElementById('mobile-error');
+    
+        // Clear previous error messages
+        usernameError.textContent = '';
+        mobileError.textContent = '';
+        nameInput.classList.remove('error');
+        mobileInput.classList.remove('error');
+    
+        const usernameValue = nameInput.value.trim();
+        const mobileValue = mobileInput.value.trim();
+    
+        // Validate username
+        if (usernameValue === '' || /\s/.test(usernameValue)) {
+            usernameError.textContent = 'Username cannot be empty or contain spaces.';
+            nameInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false; // Re-enable Cancel button
+            form.querySelector('button.btn-primary').disabled = false; // Re-enable Save button
+            return;
+        }
+    
+        // Validate mobile number
+        const mobilePattern = /^(?:(?:\+91|91)?[6789]\d{9})$/;
+        if (!mobilePattern.test(mobileValue)) {
+            mobileError.textContent = 'Please enter a valid mobile number.';
+            mobileInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false; // Re-enable Cancel button
+            form.querySelector('button.btn-primary').disabled = false; // Re-enable Save button
+            return;
+        }
+    
+        try {
+            const response = await fetch('/userDashboard/updatePersonal', {
+                method: 'PATCH',
+                body: formData 
+            });
+    
+            if (!response.ok) throw new Error('Server responded with an error');
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                document.querySelector('#personal-info-view p:nth-child(1)').innerHTML = `<strong>User Name:</strong> ${data.user.name}`;
+                document.querySelector('#personal-info-view p:nth-child(2)').innerHTML = `<strong>Mobile:</strong> ${data.user.mobile}`;
+                nameInput.value=data.user.name
+                mobileInput.value=data.user.mobile
+    
+                document.getElementById('personal-info-edit').style.display = 'none';
+                document.getElementById('personal-info-view').style.display = 'block';
+    
+                Swal.fire('Success', 'Your personal information has been updated!', 'success');
+            } else {
+                Swal.fire('Error', data.message || 'Failed to update your information.', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error', 'An unexpected error occurred. Please try again.', 'error');
+        } finally {
+            // Re-enable the buttons
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+        }
+    }
+
+    
+    async function changeEmail(event) {
+        event.preventDefault(); // Prevent default form submission
+    
+        const form = document.getElementById('change-email-form');
+        const formData = new FormData(form);
+    
+        // Disable buttons to prevent multiple submissions
+        form.querySelector('button.btn-secondary').disabled = true;
+        form.querySelector('button.btn-primary').disabled = true;
+    
+        const newEmailInput = form.querySelector('input[name="newEmail"]');
+        const confirmNewEmailInput = form.querySelector('input[name="confirmNewEmail"]');
+        const newEmailValue = newEmailInput.value.trim();
+        const confirmNewEmailValue = confirmNewEmailInput.value.trim();
+    
+        const newEmailError = document.getElementById('new-email-error'); // Create an error message span if needed
+        const confirmEmailError = document.getElementById('confirm-new-email-error'); // Create an error message span if needed
+    
+        // Clear previous error messages
+        if (newEmailError) newEmailError.textContent = '';
+        if (confirmEmailError) confirmEmailError.textContent = '';
+        newEmailInput.classList.remove('error');
+        confirmNewEmailInput.classList.remove('error');
+    
+        // Validate new email
+        if (newEmailValue === '' || !/\S+@\S+\.\S+/.test(newEmailValue)) {
+            if (newEmailError) newEmailError.textContent = 'Please enter a valid new email address.';
+            newEmailInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+            return;
+        }
+    
+        // Validate email confirmation
+        if (newEmailValue !== confirmNewEmailValue) {
+            if (confirmEmailError) confirmEmailError.textContent = 'New email and confirmation do not match.';
+            confirmNewEmailInput.classList.add('error');
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+            return;
+        }
+    
+        try {
+            const response = await fetch('/userDashboard/changeEmail', {
+                method: 'PATCH',
+                body: formData 
+            });
+    
+            if (!response.ok) throw new Error('Server responded with an error');
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                document.querySelector('#change-email-view p').innerHTML = `<strong>Email:</strong> ${newEmailValue}`;
+    
+                document.getElementById('change-email-edit').style.display = 'none';
+                document.getElementById('change-email-view').style.display = 'block';
+    
+                Swal.fire('Success', 'Your email has been updated!', 'success');
+            } else {
+                Swal.fire('Error', data.message || 'Failed to update your email.', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error', 'An unexpected error occurred. Please try again.', 'error');
+        } finally {
+            // Re-enable the buttons
+            form.querySelector('button.btn-secondary').disabled = false;
+            form.querySelector('button.btn-primary').disabled = false;
+        }
+    }
+    
+
+    function toggleEditMode(section) {
+        const viewMode = document.getElementById(`${section}-view`);
+        const editMode = document.getElementById(`${section}-edit`);
+    
+        // Ensure the elements exist (change-password section doesn't have a view mode)
+        if (editMode && (viewMode || section === 'change-password')) {
+            if (editMode.style.display === "none") {
+                // Switch to Edit Mode
+                editMode.style.display = "block";
+                if (viewMode) viewMode.style.display = "none";
+            } else {
+                // Switch back to View Mode
+                editMode.style.display = "none";
+                if (viewMode) viewMode.style.display = "block";
+            }
+        }
+    }
+    
+   
     document.addEventListener('DOMContentLoaded', function () {
         
         const activeTabId = localStorage.getItem('activeTab') || 'dashboard-tab';
