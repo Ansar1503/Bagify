@@ -1,33 +1,30 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const { OAuth2Client } = require('google-auth-library');
-const env = require('dotenv').config();
+const { google } = require('googleapis');
+require('dotenv').config();
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "http://localhost:3000/auth/google/callback",
-    scope: ['profile', 'email', 'https://www.googleapis.com/auth/contacts.readonly']
+    scope: ['profile', 'email', 'https://www.googleapis.com/auth/user.phonenumbers.read']
 },
 async function (accessToken, refreshToken, profile, done) {
-    // Initialize OAuth2Client with the access token
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
     try {
-        // Fetch additional user details from Google People API
-        const userInfo = await client.request({
-            url: 'https://people.googleapis.com/v1/people/me?personFields=phoneNumbers',
-            headers: {
-                Authorization: `Bearer ${accessToken}`
-            }
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: accessToken });
+
+        const people = google.people({ version: 'v1', auth: oauth2Client });
+        const res = await people.people.get({
+            resourceName: 'people/me',
+            personFields: 'phoneNumbers',
         });
 
-        // Add phoneNumbers to profile
-        profile.phoneNumbers = userInfo.data.phoneNumbers || [];
+        profile.phoneNumbers = res.data.phoneNumbers || [];
 
         return done(null, profile);
     } catch (error) {
-        console.error('Error fetching additional user info:', error);
+        console.error('Error fetching user info:', error);
         return done(error);
     }
 }));

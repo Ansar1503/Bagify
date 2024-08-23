@@ -3,7 +3,7 @@
     <div class="content-header">
         <div>
             <h2 class="content-title card-title">Order detail</h2>
-            <p>Details for Order ID: 3453012</p>
+            <p>Details for Order ID: #<%= orderData._id %></p>
         </div>
     </div>
     <div class="card">
@@ -11,9 +11,9 @@
             <div class="row align-items-center">
                 <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
                     <span>
-                        <i class="material-icons md-calendar_today"></i> <b>Wed, Aug 13, 2022, 4:34PM</b>
+                        <i class="material-icons md-calendar_today"></i> <b><%= formatdate %></b>
                     </span> <br>
-                    <small class="text-muted">Order ID: 3453012</small>
+                    <small class="text-muted">Order ID: #<%= orderData._id %></small>
                 </div>
                 <div class="col-lg-6 col-md-6 ms-auto text-md-end">
                     <select class="form-select d-inline-block mb-lg-0 mb-15 mw-200">

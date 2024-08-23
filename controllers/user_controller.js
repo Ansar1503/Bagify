@@ -203,7 +203,8 @@ const googleAuth = async function(req, res) {
     try {
         const { sub, name, email, phoneNumbers } = req.user;
         const mobile = (phoneNumbers && phoneNumbers.length > 0) ? phoneNumbers[0].value : null;
-
+        console.log(req.user);
+        
         const existUser = await User.findOne({ googleId: sub });
 
         if (!existUser) {
@@ -965,6 +966,71 @@ const verifyOtpAndChangePassword = async(req,res)=>{
     }
 }
 
+const forgotSendOtp = async (req, res) => {
+    try {
+        console.log(req.body);
+        const { email, newpass, currentpass, confirmPass } = req.body;
+        
+        // Check if all required fields are provided
+        if (!email || !newpass || !currentpass || !confirmPass) {
+            return res.status(400).json({ success: false, message: 'All fields are required.' });
+        }
+
+        // Validate email format
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'No user found with this email.' });
+        }
+
+        // Check if the new password is different from the current password
+        const passmatch = await bcrypt.compare(currentpass, user.password);
+        if (!passmatch) {
+            return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+        }
+
+        if (newpass === currentpass) {
+            return res.status(400).json({ success: false, message: 'New password must be different from the current password.' });
+        }
+
+        // Check if the new password is different from the old one
+        const newPassMatch = await bcrypt.compare(newpass, user.password);
+        if (newPassMatch) {
+            return res.status(400).json({ success: false, message: 'New password cannot be the same as the old password.' });
+        }
+
+        // Generate OTP and send email
+        const otp = generateOtp();
+        const mailContent = `
+            <h1>Password Reset Request</h1>
+            <p>Please use the following code to verify your request:</p>
+            <p><strong>${otp}</strong></p>
+        `;
+        
+        const sendmail = await nodemailer(user.email, mailContent, otp);
+        if (!sendmail) {
+            return res.status(400).json({ success: false, message: 'Failed to send email. Please try again.' });
+        }
+
+        // Save OTP and expiration
+        user.otp = otp;
+        user.otpexp = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+        user.password = await bcrypt.hash(newpass, 10); // Update password hash
+        await user.save();
+
+        return res.status(200).json({ success: true, message: 'OTP sent. Please check your email.', user });
+
+    } catch (error) {
+        console.error('Error in forgotSendOtp:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+};
+
+
+const fogotPassAndChangePassword = async (req,res)=>{
+
+
+}
+
 module.exports = {
     loadlogin,
     loadRegister,
@@ -997,5 +1063,7 @@ module.exports = {
     verifyOtpAndChangeEmail,
     editUserEmail,
     changepassword,
-    verifyOtpAndChangePassword
+    verifyOtpAndChangePassword,
+    forgotSendOtp,
+    fogotPassAndChangePassword
 }

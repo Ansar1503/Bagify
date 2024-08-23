@@ -20,12 +20,17 @@ userRoute.get('/register',userAuth.notLoggedin,userController.loadRegister)
 userRoute.get('/login',userAuth.notLoggedin,userController.loadlogin)
 userRoute.get('/userDashboard',userAuth.isLoggedin,userController.loadDashboard)
 userRoute.get('/logout',userAuth.isLoggedin,userController.Logout)
-// userRoute.get('/forgot',userAuth.notLoggedin,userController.loadForgotPassword)
+userRoute.get('/forgot',userAuth.notLoggedin,userController.loadForgotPassword)
 userRoute.get('/product-details/:id',userController.loadproducts)
 userRoute.get('/resendOtp',userController.resendOtp)
 userRoute.get('/shop',userController.loadShop)
 userRoute.get('/delete-address/:id',userAuth.isLoggedin,userController.deleteAdress)
 // userRoute.get('/edit-address',userAuth.isLoggedin,userController.loadEditAddress)
+
+
+// forgot
+userRoute.post('/forgot/send-otp',userAuth.isLoggedin,userController.forgotSendOtp)
+userRoute.patch('/forgot/verifyOtpAndChangePassword',userAuth.isLoggedin,userController.fogotPassAndChangePassword)
 
 
 // POST requests
@@ -59,7 +64,7 @@ userRoute.post('/userDashboard/verifyOtpAndChangePassword',userAuth.isLoggedin,u
 userRoute.post('/userDashboard/verifyOtpAndChangeEmail',userAuth.isLoggedin,userController.verifyOtpAndChangeEmail)
 
 // google authentication
-userRoute.get('/auth/google',passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/contacts.readonly'] }))
+userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/user.phonenumbers.read'] }))
 userRoute.get('/auth/google/callback',passport.authenticate('google',{successRedirect:"/auth/protected",failureRedirect:"/"}))  
 userRoute.get('/auth/protected',userController.googleAuth)
 

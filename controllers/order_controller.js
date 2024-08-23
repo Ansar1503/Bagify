@@ -1,4 +1,5 @@
 const orderModel = require('../model/order_schema')
+const { format, parseISO, formatDate } = require('date-fns');
 const mongoose = require('mongoose')
 const { ObjectId } = mongoose.Types;
 
@@ -20,7 +21,9 @@ const orderDetails = async (req,res)=>{
         if(!orderData){
             console.log('order data not found');            
         }
-        return res.render('orderDetails',{orderData})
+        let date = parseISO(orderData.orderDate)
+        let formatdate = formatDate(date,'EEE, MMM d, yyyy, h:mma')
+        return res.render('orderDetails',{orderData,formatdate})
     } catch (error) {
         console.log(error.message);
         return res.status(500).send('order details page loaded error')
