@@ -1,30 +1,20 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const { google } = require('googleapis');
+const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "http://localhost:3000/auth/google/callback",
-    scope: ['profile', 'email', 'https://www.googleapis.com/auth/user.phonenumbers.read']
+    scope: ['profile', 'email']  // Removed contacts.readonly scope
 },
 async function (accessToken, refreshToken, profile, done) {
     try {
-        const oauth2Client = new google.auth.OAuth2();
-        oauth2Client.setCredentials({ access_token: accessToken });
-
-        const people = google.people({ version: 'v1', auth: oauth2Client });
-        const res = await people.people.get({
-            resourceName: 'people/me',
-            personFields: 'phoneNumbers',
-        });
-
-        profile.phoneNumbers = res.data.phoneNumbers || [];
-
+        // You can still fetch additional user details here if needed
         return done(null, profile);
     } catch (error) {
-        console.error('Error fetching user info:', error);
+        console.error('Error in Google strategy:', error);
         return done(error);
     }
 }));

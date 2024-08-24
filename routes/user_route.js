@@ -29,8 +29,8 @@ userRoute.get('/delete-address/:id',userAuth.isLoggedin,userController.deleteAdr
 
 
 // forgot
-userRoute.post('/forgot/send-otp',userAuth.isLoggedin,userController.forgotSendOtp)
-userRoute.patch('/forgot/verifyOtpAndChangePassword',userAuth.isLoggedin,userController.fogotPassAndChangePassword)
+userRoute.post('/forgot/send-otp',userAuth.notLoggedin,userController.forgotSendOtp)
+userRoute.patch('/forgot/verifyOtpAndChangePassword',userAuth.notLoggedin,userController.fogotPassAndChangePassword)
 
 
 // POST requests
@@ -64,7 +64,7 @@ userRoute.post('/userDashboard/verifyOtpAndChangePassword',userAuth.isLoggedin,u
 userRoute.post('/userDashboard/verifyOtpAndChangeEmail',userAuth.isLoggedin,userController.verifyOtpAndChangeEmail)
 
 // google authentication
-userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/user.phonenumbers.read'] }))
+userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
 userRoute.get('/auth/google/callback',passport.authenticate('google',{successRedirect:"/auth/protected",failureRedirect:"/"}))  
 userRoute.get('/auth/protected',userController.googleAuth)
 

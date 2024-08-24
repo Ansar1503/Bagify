@@ -201,25 +201,28 @@ const verifyUser = async function(req,res){
 
 const googleAuth = async function(req, res) {
     try {
-        const { sub, name, email, phoneNumbers } = req.user;
-        const mobile = (phoneNumbers && phoneNumbers.length > 0) ? phoneNumbers[0].value : null;
-        console.log(req.user);
+        const { sub, name, email} = req.user._json;
+        // const mobile = (phoneNumbers && phoneNumbers.length > 0) ? phoneNumbers[0].value : null;
+        // console.log(req.user);
         
-        const existUser = await User.findOne({ googleId: sub });
-
+        
+        const existUser = await User.findOne({ googleId:sub });
+        // console.log(existUser);
+        
         if (!existUser) {
             const userdata = new User({
                 name,
                 email,
-                mobile,
                 googleId: sub,
                 isVerified: true
             });
             const googleUser = await userdata.save();
+            
             req.session.user_id = googleUser._id;
             return res.redirect('/');
+            
         }
-
+       
         req.session.user_id = existUser._id;
         return res.redirect('/');
     } catch (error) {
@@ -267,54 +270,89 @@ const resendOtp = async(req,res)=>{
 }
 const loadShop = async (req, res) => {
     try {
-        const { catId, minPrice, maxPrice, sort, page = 1, limit = 5 } = req.query; 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 6; 
+        const skip = (page - 1) * limit;
 
-        let query = {isActive:true,};
-        if (catId) {
-            query.product_category = catId;
-        }
-        if (minPrice && maxPrice) {
-            query.product_sale_price = { $gte: Number(minPrice), $lte: Number(maxPrice) };
+        // Build query based on filters
+        let query = {};
+
+        // Price range filter
+        if (req.query.min_price && req.query.max_price) {
+            query.product_sale_price = {
+                $gte: parseFloat(req.query.min_price),
+                $lte: parseFloat(req.query.max_price)
+            };
         }
 
-        let sortOption = {};
-        switch (sort) {
+        // Category filter
+        if (req.query.categories) {
+            const categories = Array.isArray(req.query.categories) ? req.query.categories : [req.query.categories];
+            query.product_category = { $in: categories };
+        }
+
+        // Availability filter
+        if (req.query.inStock === 'true' && req.query.outOfStock !== 'true') {
+            query.product_quantity = { $gt: 0 };
+        } else if (req.query.outOfStock === 'true' && req.query.inStock !== 'true') {
+            query.product_quantity = 0;
+        }
+
+        // Sorting
+        let sort = {};
+        switch (req.query.sort) {
             case 'price-asc':
-                sortOption = { product_sale_price: 1 };
+                sort = { product_sale_price: 1 };
                 break;
             case 'price-desc':
-                sortOption = { product_sale_price: -1 };
-                break;
-            case 'new-arrivals':
-                sortOption = { created_at: -1 };
+                sort = { product_sale_price: -1 };
                 break;
             case 'name-asc':
-                sortOption = { product_name: 1 };
+                sort = { product_name: 1 };
                 break;
             case 'name-desc':
-                sortOption = { product_name: -1 };
+                sort = { product_name: -1 };
+                break;
+            case 'newest':
+                sort = { createdAt: -1 };
+                break;
+            case 'popularity':
+                sort = { sales_count: -1 };
+                break;
+            case 'rating':
+                sort = { rating: -1 };
+                break;
+            case 'discount':
+                sort = { discount_percentage: -1 };
                 break;
             default:
-                sortOption = {}; 
+                sort = { createdAt: -1 };
         }
 
+        // Fetch filtered and sorted products
+        const products = await Products.find(query)
+            .sort(sort)
+            .skip(skip)
+            .limit(limit)
+            .populate('product_category');
+
         const totalProducts = await Products.countDocuments(query);
-        const products = await Products.find(query).populate('product_category')
-            .sort(sortOption)
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
-
-        const categories = await Category.find({isListed:true});
-
         const totalPages = Math.ceil(totalProducts / limit);
 
-        res.render('shop', { products, categories, sort, minPrice, maxPrice, page, totalPages });
+        const categories = await Category.find();
+
+        res.render('shop', {
+            products,
+            page,
+            totalPages,
+            categories,
+            currentFilters: req.query
+        });
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).send("Shop loading error");
+        console.error(error);
+        res.status(500).send('Server Error');
     }
 };
-
 
 
 const checkoutaddAddress  =  async(req,res)=>{
@@ -965,10 +1003,9 @@ const verifyOtpAndChangePassword = async(req,res)=>{
         return res.status(500).json({success:false,message:'Internal server error'})
     }
 }
-
 const forgotSendOtp = async (req, res) => {
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const { email, newpass, currentpass, confirmPass } = req.body;
         
         // Check if all required fields are provided
@@ -1007,28 +1044,56 @@ const forgotSendOtp = async (req, res) => {
         `;
         
         const sendmail = await nodemailer(user.email, mailContent, otp);
+        console.log('mail send');
+        
         if (!sendmail) {
-            return res.status(400).json({ success: false, message: 'Failed to send email. Please try again.' });
+            return res.status(500).json({ success: false, message: 'Failed to send email. Please try again.' });
         }
 
         // Save OTP and expiration
         user.otp = otp;
         user.otpexp = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-        user.password = await bcrypt.hash(newpass, 10); // Update password hash
+        const hashpass = await bcrypt.hash(newpass,10)
         await user.save();
 
-        return res.status(200).json({ success: true, message: 'OTP sent. Please check your email.', user });
+        return res.status(200).json({ success: true, message: 'OTP sent. Please check your email.', hashpass });
 
     } catch (error) {
         console.error('Error in forgotSendOtp:', error);
         return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 };
+const  fogotPassAndChangePassword =async(req,res)=>{
+    try {
+        const {email,otp,newpass} = req.body
+        // console.log(req.body)
+        const user =await User.findOne({email})
+        if(!user){
+            return res.status(400).json({success:false,message:'no user found with this email'})
+        }
 
+        
+        if(user.otp == otp && user.otpexp>Date.now()){
+     
+            
+            user.otp = null;
+            user.otpexp = null;
+            user.password = newpass;
+            await user.save()
+            return res.status(200).json({success:true,message:'otp verified successfully! password changed'})
+        }else if (user.otp !== otp) {
+        
+            
+            
+            return res.status(400).json({ success: false, message: 'Invalid OTP.' });
+        } else if (user.otpexp < Date.now()) {            
+            return res.status(400).json({ success: false, message: 'OTP expired.' });
+        }
 
-const fogotPassAndChangePassword = async (req,res)=>{
-
-
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error.'})        
+    }
 }
 
 module.exports = {

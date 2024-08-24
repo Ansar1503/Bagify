@@ -2,7 +2,7 @@
 <section class="content-main">
     <div class="content-header">
         <div>
-            <h2 class="content-title card-title">Order detail</h2>
+            <h2 class="content-title card-title">Order Detail</h2>
             <p>Details for Order ID: #<%= orderData._id %></p>
         </div>
     </div>
@@ -11,25 +11,15 @@
             <div class="row align-items-center">
                 <div class="col-lg-6 col-md-6 mb-lg-0 mb-15">
                     <span>
-                        <i class="material-icons md-calendar_today"></i> <b><%= formatdate %></b>
+                        <i class="material-icons md-calendar_today"></i> <b><%= formattedDate %></b>
                     </span> <br>
                     <small class="text-muted">Order ID: #<%= orderData._id %></small>
-                </div>
-                <div class="col-lg-6 col-md-6 ms-auto text-md-end">
-                    <select class="form-select d-inline-block mb-lg-0 mb-15 mw-200">
-                        <option>Change status</option>
-                        <option>Awaiting payment</option>
-                        <option>Confirmed</option>
-                        <option>Shipped</option>
-                        <option>Delivered</option>
-                    </select>
-                    <a class="btn btn-primary" href="#">Save</a>
-                    <a class="btn btn-secondary print ms-2" href="#"><i class="icon material-icons md-print"></i></a>
                 </div>
             </div>
         </header> <!-- card-header end// -->
         <div class="card-body">
             <div class="row mb-50 mt-20 order-info-wrap">
+                <!-- Customer Information -->
                 <div class="col-md-4">
                     <article class="icontext align-items-start">
                         <span class="icon icon-sm rounded-circle bg-primary-light">
@@ -38,26 +28,12 @@
                         <div class="text">
                             <h6 class="mb-1">Customer</h6>
                             <p class="mb-1">
-                                John Alexander <br> alex@example.com <br> +998 99 22123456
+                                <%= orderData.user.name %> <br> <%= orderData.user.email %> <br> <%= orderData.user.mobile %>
                             </p>
-                            <a href="#">View profile</a>
                         </div>
                     </article>
-                </div> <!-- col// -->
-                <div class="col-md-4">
-                    <article class="icontext align-items-start">
-                        <span class="icon icon-sm rounded-circle bg-primary-light">
-                            <i class="text-primary material-icons md-local_shipping"></i>
-                        </span>
-                        <div class="text">
-                            <h6 class="mb-1">Order info</h6>
-                            <p class="mb-1">
-                                Shipping: Fargo express <br> Pay method: card <br> Status: new
-                            </p>
-                            <a href="#">Download info</a>
-                        </div>
-                    </article>
-                </div> <!-- col// -->
+                </div>
+                <!-- Delivery Information -->
                 <div class="col-md-4">
                     <article class="icontext align-items-start">
                         <span class="icon icon-sm rounded-circle bg-primary-light">
@@ -66,28 +42,30 @@
                         <div class="text">
                             <h6 class="mb-1">Deliver to</h6>
                             <p class="mb-1">
-                                City: Tashkent, Uzbekistan <br>Block A, House 123, Floor 2 <br> Po Box 10000
+                                Name: <%= orderData.shippingAddress.fullname %> <br>
+                                City: <%= orderData.shippingAddress.city %>, <%= orderData.shippingAddress.state %> <br><%= orderData.shippingAddress.Address %> <br> pincode: <%= orderData.shippingAddress.pincode %> <br> phone: <%= orderData.shippingAddress.mobile %>
                             </p>
-                            <a href="#">View profile</a>
                         </div>
                     </article>
-                </div> <!-- col// -->
-            </div> <!-- row // -->
+                </div>
+            </div> 
             <div class="row">
                 <div class="col-lg-10">
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th width="40%">Product</th>
-                                    <th width="20%">Unit Price</th>
-                                    <th width="20%">Quantity</th>
+                                    <th width="30%">Product</th>
+                                    <th width="15%">Unit Price</th>
+                                    <th width="15%">Quantity</th>
+                                    <th width="10%">Status</th>
+                                    <th width="20%">Change Status</th>
                                     <th width="20%" class="text-end">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                <% if(orderData.items.length > 0) {%>
-                                <% orderData.items.forEach(item=>{ %>
+                                <% orderData.items.forEach(item => { %>
                                 <tr>
                                     <td>
                                         <a class="itemside" href="#">
@@ -97,13 +75,67 @@
                                             <div class="info"> <%= item.productName %> </div>
                                         </a>
                                     </td>
-                                    <td> <%= item.price %> </td>
-                                    <td> <%= item.quantity %> </td>
-                                    <td class="text-end"> <%= item.regularPrice %> </td>
+                                    <td>₹ <%= item.price %></td>
+                                    <td><%= item.quantity %></td>
+                                    <td>
+                                        <span class="badge rounded-pill 
+                                            <% if (item.itemOrderStatus === 'pending') { %>
+                                                alert-warning
+                                            <% }else if (item.itemOrderStatus === 'confirmed') { %>
+                                                alert-info
+                                            <% } else if (item.itemOrderStatus === 'shipped') { %>
+                                                alert-info
+                                            <% } else if (item.itemOrderStatus === 'delivered') { %>
+                                                alert-success
+                                            <% } else if (item.itemOrderStatus === 'cancelled') { %>
+                                                alert-danger
+                                            <% } else { %>
+                                                alert-secondary
+                                            <% } %>
+                                        ">
+                                        <%= item.itemOrderStatus.replace(/([a-z])([A-Z])/g, '$1 $2')
+                                        .split(' ')
+                                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                        .join(' ') %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <select aria-label="Change order status"
+                                                data-item-id="<%= item._id %>"
+                                                <% if (item.itemOrderStatus === 'cancelled' || item.itemOrderStatus === 'delivered') { %>
+                                                    disabled
+                                                <% } %>
+                                            >
+                                                <option value="pending" <% if (item.itemOrderStatus === 'pending') { %> selected <% } %>
+                                                    <% if (item.itemOrderStatus === 'confirmed' || item.itemOrderStatus === 'shipped') { %> disabled <% } %>
+                                                >Pending</option>
+                                                <option value="confirmed" <% if (item.itemOrderStatus === 'confirmed') { %> selected  <% } %>
+                                                    <% if (item.itemOrderStatus === 'shipped') { %> disabled <% } %>
+                                                >Order Confirmed</option>
+                                                <option value="shipped" <% if (item.itemOrderStatus === 'shipped') { %> selected <% } %>
+                                                    <% if (item.itemOrderStatus === 'shipped') { %> disabled <% } %>
+                                                >Shipped</option>
+                                                <option value="delivered" <% if (item.itemOrderStatus === 'delivered') { %> selected <% } %> >Delivered</option>
+                                                <option value="cancelled" <% if (item.itemOrderStatus === 'cancelled') { %> selected <% } %>
+                                                    <% if (item.itemOrderStatus === 'shipped') { %> disabled <% } %>
+                                                >Cancelled</option>
+                                            </select>
+                                            <button type="button" onclick="saveStatus(this)"
+                                                <% if (item.itemOrderStatus === 'cancelled' || item.itemOrderStatus === 'delivered') { %>
+                                                    disabled
+                                                <% } %>
+                                                data-item-id="<%= item._id %>"
+                                            >Save</button>
+                                        </div>
+                                    </td>
+                                    
+                                    
+                                    <td class="text-end">₹ <%= item.regularPrice %></td>
                                 </tr>
                                 <% }) %>
                                 <tr>
-                                    <td colspan="4">
+                                    <td colspan="6">
                                         <article class="float-end">
                                             <dl class="dlist">
                                                 <dt>Subtotal:</dt>
@@ -117,44 +149,95 @@
                                                 <dt>Grand total:</dt>
                                                 <dd> <b class="h5">₹ <%= orderData.totalAmount %></b> </dd>
                                             </dl>
-                                            <dl class="dlist">
-                                                <dt class="text-muted">Status:</dt>
-                                                <dd>
-                                                    <span class="badge rounded-pill alert-success text-success">Payment done</span>
-                                                </dd>
-                                            </dl>
                                         </article>
                                     </td>
                                 </tr>
-                                <% }else {%>
-                                    <h1>No Items found</h1>
-                                    <h4>return to <a href="/admin/orders">Order Lists</a></h4>
-                                <% } %>
+                               <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">
+                                            <h4>No Items found</h4>
+                                            <a href="/admin/orders" class="btn btn-secondary">Return to Order Lists</a>
+                                        </td>
+                                    </tr>
+                               <% } %>
                             </tbody>
                         </table>
-                    </div> <!-- table-responsive// -->
-                    <a class="btn btn-primary" href="page-orders-tracking.html">View Order Tracking</a>
-                </div> <!-- col// -->
-                <div class="col-lg-"></div>
-                <div class="col-lg-">
-                    <!-- <div class="box shadow-sm bg-light">
-                        <h6 class="mb-15">Payment info</h6>
-                        <p>
-                            <img src="assets/imgs/card-brands/2.png" class="border" height="20"> Master Card **** **** 4768 <br>
-                            Business name: Grand Market LLC <br>
-                            Phone: +1 (800) 555-154-52
-                        </p>
-                    </div> -->
-                    <!-- <div class="h-25 pt-4">
-                        <div class="mb-3">
-                            <label>Notes</label>
-                            <textarea class="form-control" name="notes" id="notes" placeholder="Type some note"></textarea>
-                        </div>
-                        <button class="btn btn-primary">Save note</button>
-                    </div> -->
-                </div> <!-- col// -->
+                    </div> 
+                </div> 
             </div>
-        </div> <!-- card-body end// -->
-    </div> <!-- card end// -->
+        </div> 
+    </div> 
 </section>
+<script>
+    async function saveStatus(buttonElement) {
+        const selectElement = buttonElement.previousElementSibling;
+        const status = selectElement.value;
+        const itemId = buttonElement.getAttribute('data-item-id');
+    
+        try {
+            const response = await fetch('/admin/orders/update-status', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ itemId, status })
+            });
+    
+            if (!response.ok) {
+                throw new Error('Server responded with an error, try again later');
+            }
+    
+            const data = await response.json();
+    
+            // Check if the response indicates success
+            if (data.success) {
+                // Find the row in the table that contains the updated item
+                const row = buttonElement.closest('tr');
+                const statusCell = row.querySelector('td:nth-child(4)'); // Assuming status is in the 4th column
+    
+                // Update the status badge
+                statusCell.innerHTML = `<span class="badge rounded-pill 
+                    ${status === 'pending' ? 'alert-warning' :
+                     status === 'confirmed' ? 'alert-info' :
+                     status === 'shipped' ? 'alert-info' :
+                     status === 'delivered' ? 'alert-success' :
+                     status === 'cancelled' ? 'alert-danger' : 'alert-secondary'}">
+                    ${status.replace(/([a-z])([A-Z])/g, '$1 $2')
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ')}
+                </span>`;
+    
+                // Update the status dropdown options
+                const options = {
+                    pending: ['confirmed', 'shipped'],
+                    confirmed: ['shipped'],
+                    shipped: ['pending', 'confirmed', 'cancelled'],
+                    delivered: ['pending', 'confirmed', 'shipped', 'cancelled'],
+                    cancelled: ['pending', 'confirmed', 'shipped']
+                };
+    
+                const disabledOptions = options[status] || [];
+                selectElement.querySelectorAll('option').forEach(option => {
+                    option.disabled = disabledOptions.includes(option.value) && option.value !== status;
+                });
+    
+                // Update the selected value
+                selectElement.value = status;
+    
+                // Enable/disable the save button
+                buttonElement.disabled = disabledOptions.length > 0;
+            } else {
+                throw new Error('Failed to update status');
+            }
+    
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while updating the status. Please try again.');
+        }
+    }
+    
+    
+</script>
+
 <%- include('../layout/admin_footer.ejs') %>

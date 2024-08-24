@@ -106,22 +106,23 @@
                                                             <div>
                                                                
                                                               <!-- Disable Cancel Button for returnInitiated, returnApproved, returnRejected statuses -->
-                                                            <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
-                                                               
+                                                              <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
+                                                                <!-- Button for items in return process -->
                                                                 <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" disabled>
-                                                                   return
+                                                                    Return
                                                                 </button>
-                                                            <% } else if (item.itemOrderStatus !== 'delivered') { %>
-                                                       
+                                                            <% } else if (item.itemOrderStatus !== 'delivered' && item.itemOrderStatus !== 'shipped') { %>
+                                                                <!-- Button for items that are not delivered or shipped -->
                                                                 <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" 
                                                                     onclick="cancelOrderItem('<%= item._id %>', '<%= order._id %>', '<%= item.itemOrderStatus %>')"
                                                                     <%= item.itemOrderStatus === 'cancelled' ? 'disabled' : '' %> >
                                                                     <%= item.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel' %>
                                                                 </button>
                                                             <% } %>
+                                                            
 
                                                             <!-- Return Button -->
-                                                            <% if (item.itemOrderStatus === 'delivered') { %>
+                                                            <% if (item.itemOrderStatus === 'delivered'  || item.itemOrderStatus === 'shipped') { %>
                                                               
                                                                 <button id="returnProductButton<%= item._id %>" class="btn btn-primary btn-sm" 
                                                                     onclick="returnProduct('<%= item._id %>','<%= item.product %>', '<%= order._id %>','<%= item.itemOrderStatus %>')"
@@ -387,7 +388,7 @@
                                             </form>
                                         </div>
                                     </div>
-                                    
+                                  <% if(!user.googleId) {%>  
                                     <!-- Section 2: Change Email -->
                                     <div class="card mt-4">
                                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -478,6 +479,7 @@
                                             </form>
                                         </div>
                                     </div>
+                                    <% } %>
                                 </div>
               
                             </div>

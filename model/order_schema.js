@@ -45,13 +45,14 @@ const orderItemsModel = new Schema({
     itemOrderStatus:{
         type:String,
         required:true,
-        enum:['pending','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejectd'],
+        enum:['pending','confirmed','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejectd'],
         default:'pending'
     },
     paymentStatus:{
         type:String,
-        required:true,
-        default:'pending'
+        required:false,
+        default:'pending',
+        enum: ['pending', 'completed', 'failed', 'refunded']
     }
 },{timestamps:true})
 
@@ -93,7 +94,7 @@ const orderModel = Schema({
     orderStatus:{
         type:String,
         required:false,
-        enum:['pending','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejectd'],
+        enum:['pending','confirmed','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejectd'],
         default:'pending'
     },
     paymentMethod:{

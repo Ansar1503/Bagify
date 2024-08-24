@@ -57,7 +57,7 @@ adminRoute.post('/category/update-category/:id',admin_session.isLoggedin,multer.
 // order managment
 adminRoute.get('/orders',admin_session.isLoggedin,order_controller.orderList)
 adminRoute.get('/orders/orderDetails/:id',admin_session.isLoggedin,order_controller.orderDetails)
-adminRoute.post('/orders/orderDetails',admin_session.isLoggedin,order_controller.updateOrderStatus)
+adminRoute.patch('/orders/update-status',admin_session.isLoggedin,order_controller.updateOrderStatus)
 
 
 module.exports = adminRoute;
