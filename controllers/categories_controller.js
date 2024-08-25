@@ -10,7 +10,7 @@ const loadCategory = async function (req,res){
         return    res.status(404).send('categories not found')
           }
     try { 
-          //   render category page
+        
         return res.render('categories',{categories})
           
     } catch (error) {
@@ -34,7 +34,7 @@ const addCategory = async function (req,res){
             }) 
         await add_category.save()  
 
-        // delete existing files
+        
         try {
             if(req.files.length>0){
             existingProduct.product_images.forEach((image)=>{

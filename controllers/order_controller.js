@@ -23,12 +23,12 @@ const orderDetails = async (req, res) => {
             return res.status(404).send('Order not found');
         }
 
-        // Parse and format the date
+   
       
         const date = parseISO(orderData.orderDate.toISOString());
         const formattedDate = format(date, 'EEE, MMM d, yyyy, h:mma');
 
-        // Render the template with the formatted date
+       
         return res.render('orderDetails', { orderData, formattedDate });
     } catch (error) {
         console.log(error.message);

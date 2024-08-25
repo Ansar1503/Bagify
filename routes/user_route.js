@@ -54,7 +54,8 @@ userRoute.get('/checkoutpage/:user_id',userAuth.isLoggedin,userController.loadCh
 userRoute.post('/placeOrder',userAuth.isLoggedin,userController.placeOrder)
 userRoute.post('/checkout/add-address/:user_id',userAuth.isLoggedin,userController.checkoutaddAddress)
 userRoute.post('/checkout/update-address/:address_id',userAuth.isLoggedin,userController.checkoutupdateAddress)
-userRoute.patch('/orders',userAuth.isLoggedin,userController.cancelOrderItem)
+userRoute.patch('/orders/cancelItem',userAuth.isLoggedin,userController.cancelOrderItem)
+userRoute.patch('/orders/returnOrder',userAuth.isLoggedin)
 
 //dashbord profile
 userRoute.patch('/userDashboard/updatePersonal',upload.none(),userAuth.isLoggedin,userController.edituserPersonal) 

@@ -17,7 +17,7 @@ const loadProducts = async function (req,res){
 const loadAddproduct=async function(req,res){
     try {
         const categories = await Category.find()
-        // console.log(categories);
+        
         res.render('add_product',{categories})
     } catch (error) {
         console.log(error);
@@ -80,7 +80,6 @@ const  editProduct = async function(req,res){
         // console.log(req.files);
         
     
-        // updated products
         const updatedProduct = await Products.findByIdAndUpdate(req.body.id, {
             $set: {
                 product_name: req.body.pro_name || existingProduct.product_name,
@@ -100,7 +99,6 @@ const  editProduct = async function(req,res){
     }
     
 
-    // delete old path 
     try {
         if(req.files.length>0){
         existingProduct.product_images.forEach((image)=>{
@@ -114,7 +112,6 @@ const  editProduct = async function(req,res){
         return res.status(404).send('file unlink error')
     }
 
-    // redirect to products page
     return res.redirect('/admin/products');
 
 
@@ -127,7 +124,7 @@ const  editProduct = async function(req,res){
 const deactivateProduct = async function(req,res){
     try { 
         await Products.findByIdAndUpdate(req.params.id,{$set:{isActive:false}})
-        // redirect to products page 
+        
         return res.redirect('/admin/products')
 
     } catch (error) {
@@ -138,7 +135,7 @@ const deactivateProduct = async function(req,res){
 const activateProduct = async function(req,res){
     try {       
         await Products.findByIdAndUpdate(req.params.id,{$set:{isActive:true}})
-        // redirect to products page 
+        
         return res.redirect('/admin/products')
 
     } catch (error) {

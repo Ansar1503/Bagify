@@ -50,7 +50,7 @@
                 </div>
             </div> 
             <div class="row">
-                <div class="col-lg-10">
+                <div class="col-lg-12">
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -58,6 +58,7 @@
                                     <th width="30%">Product</th>
                                     <th width="15%">Unit Price</th>
                                     <th width="15%">Quantity</th>
+                                    
                                     <th width="10%">Status</th>
                                     <th width="20%">Change Status</th>
                                     <th width="20%" class="text-end">Total</th>
@@ -75,8 +76,10 @@
                                             <div class="info"> <%= item.productName %> </div>
                                         </a>
                                     </td>
-                                    <td>₹ <%= item.price %></td>
-                                    <td><%= item.quantity %></td>
+                                    <td>₹ <%= item.price  %></td>
+                                    <td><%= item.quantity  %></td>
+                                    
+
                                     <td>
                                         <span class="badge rounded-pill 
                                             <% if (item.itemOrderStatus === 'pending') { %>
@@ -189,13 +192,13 @@
     
             const data = await response.json();
     
-            // Check if the response indicates success
+            
             if (data.success) {
-                // Find the row in the table that contains the updated item
+                
                 const row = buttonElement.closest('tr');
-                const statusCell = row.querySelector('td:nth-child(4)'); // Assuming status is in the 4th column
+                const statusCell = row.querySelector('td:nth-child(4)'); 
     
-                // Update the status badge
+                
                 statusCell.innerHTML = `<span class="badge rounded-pill 
                     ${status === 'pending' ? 'alert-warning' :
                      status === 'confirmed' ? 'alert-info' :
@@ -208,7 +211,7 @@
                     .join(' ')}
                 </span>`;
     
-                // Update the status dropdown options
+                
                 const options = {
                     pending: ['confirmed', 'shipped'],
                     confirmed: ['shipped'],
@@ -222,10 +225,10 @@
                     option.disabled = disabledOptions.includes(option.value) && option.value !== status;
                 });
     
-                // Update the selected value
+                
                 selectElement.value = status;
     
-                // Enable/disable the save button
+                
                 buttonElement.disabled = disabledOptions.length > 0;
             } else {
                 throw new Error('Failed to update status');

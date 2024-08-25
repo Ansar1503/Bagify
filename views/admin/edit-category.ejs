@@ -40,12 +40,12 @@
 
 <script>
     document.getElementById('editCategoryForm').addEventListener('submit', function(event) {
-        // Check if form is valid
+        
         if (!this.checkValidity()) {
-            event.preventDefault(); // Prevent form from submitting
-            event.stopPropagation(); // Stop form from submitting
+            event.preventDefault(); 
+            event.stopPropagation(); 
         }
-        this.classList.add('was-validated'); // Add Bootstrap validation class
+        this.classList.add('was-validated'); 
     });
 
     function previewImage(event) {

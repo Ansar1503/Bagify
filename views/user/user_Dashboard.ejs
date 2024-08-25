@@ -105,14 +105,14 @@
                                                             
                                                             <div>
                                                                
-                                                              <!-- Disable Cancel Button for returnInitiated, returnApproved, returnRejected statuses -->
+
                                                               <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
-                                                                <!-- Button for items in return process -->
+
                                                                 <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" disabled>
                                                                     Return
                                                                 </button>
                                                             <% } else if (item.itemOrderStatus !== 'delivered' && item.itemOrderStatus !== 'shipped') { %>
-                                                                <!-- Button for items that are not delivered or shipped -->
+
                                                                 <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" 
                                                                     onclick="cancelOrderItem('<%= item._id %>', '<%= order._id %>', '<%= item.itemOrderStatus %>')"
                                                                     <%= item.itemOrderStatus === 'cancelled' ? 'disabled' : '' %> >
@@ -121,7 +121,6 @@
                                                             <% } %>
                                                             
 
-                                                            <!-- Return Button -->
                                                             <% if (item.itemOrderStatus === 'delivered'  || item.itemOrderStatus === 'shipped') { %>
                                                               
                                                                 <button id="returnProductButton<%= item._id %>" class="btn btn-primary btn-sm" 
@@ -241,7 +240,7 @@
                                         </form>
                                     </div>
                                     <div class="list-group mt-3">
-                                        <!-- Loop through addresses and render them -->
+
                                         <% user.address.forEach((address, index) => { %>
                                         <div class="list-group-item">
                                             <div class="d-flex justify-content-between align-items-start">
@@ -253,7 +252,7 @@
                                                     <p><%= address.Address %>, <%= address.city %>, <%= address.state %></p>
                                                 </div>
                                                 <div>
-                                                    <!-- Button for dropdown menu -->
+
                                                     <button class="btn p-0" type="button" style="background-color: rgba(0, 0, 0, 0.126);" data-bs-toggle="dropdown" aria-expanded="false">
                                                         <i class="bi bi-three-dots-vertical"></i>
                                                     </button>
@@ -347,39 +346,39 @@
                                    
                                 </div>
                                 <div class="tab-pane fade" id="account-detail" role="tabpanel" aria-labelledby="account-detail-tab">
-                                    <!-- Section 1: Personal Information -->
+                                    
                                     <div class="card">
                                         <div class="card-header d-flex justify-content-between align-items-center">
                                             <h5>Personal Information</h5>
-                                            <!-- Edit Button -->
+ 
                                             <span class="edit-link text-primary" onclick="toggleEditMode('personal-info')" style="cursor: pointer;">Edit</span>
                                         </div>
                                     
-                                        <!-- View Mode: Personal Information -->
+
                                         <div class="card-body" id="personal-info-view">
                                             <p><strong>User Name:</strong> <%= user.name %></p>
                                             <p><strong>Mobile:</strong> <%= user.mobile %></p>
                                         </div>
                                     
-                                        <!-- Edit Mode: Personal Information Form -->
+
                                         <div class="card-body" id="personal-info-edit" style="display: none;">
                                             <form method="post" id="personal-info-form" onsubmit="editPersonaldetails(event)">
                                                 <div class="row">
-                                                    <!-- User Name -->
+
                                                     <div class="form-group col-md-6">
                                                         <label for="name">User Name</label>
                                                         <input id="name" class="form-control" name="name" type="text" value="<%= user.name %>" required />
                                                         <span id="username-error" class="error-message"></span>
                                                     </div>
                                     
-                                                    <!-- Mobile Number -->
+
                                                     <div class="form-group col-md-6">
                                                         <label for="mobile">Mobile Number</label>
                                                         <input id="mobile" class="form-control" name="mobile" type="text" value="<%= user.mobile %>" pattern="^(?:(?:\+91|91)?[6789]\d{9})$" required  />
                                                         <span id="mobile-error" class="error-message"></span>
                                                     </div>
                                     
-                                                    <!-- Save and Cancel Buttons -->
+
                                                     <div class="form-group col-md-12 d-flex justify-content-end">
                                                         <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('personal-info')">Cancel</button>
                                                         <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -389,44 +388,44 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Section 2: Change Email -->
+
                                     <div class="card mt-4">
                                         <div class="card-header d-flex justify-content-between align-items-center">
                                             <h5>Change Email</h5>
-                                            <!-- Edit Button -->
+
                                             <span class="edit-link text-primary" onclick="toggleEditMode('change-email')" style="cursor: pointer;">Edit</span>
                                         </div>
                                     
-                                        <!-- View Mode: Display Current Email -->
+
                                         <div class="card-body" id="change-email-view">
                                             <p><strong>Email:</strong> <%= user.email %></p>
                                         </div>
                                     
-                                        <!-- Edit Mode: Change Email Form -->
+
                                         <div class="card-body" id="change-email-edit" style="display: none;">
                                             <form method="post" id="change-email-form" onsubmit="changeEmail(event)">
                                                 <div class="row">
-                                                    <!-- Current Email -->
+ 
                                                     <div class="form-group col-md-6">
                                                         <label for="current-email">Current Email</label>
                                                         <input id="current-email" class="form-control" name="currentEmail" type="email" value="<%= user.email %>" readonly />
                                                     </div>
                                                     <% if(!user.googleId) {%>
-                                                    <!-- New Email -->
+ 
                                                     <div class="form-group col-md-6">
                                                         <label for="new-email">New Email</label>
                                                         <input id="new-email" class="form-control" name="newEmail" type="email" required />
                                                         <span id="new-email-error" class="error-message"></span>
                                                     </div>
                                     
-                                                    <!-- Confirm New Email -->
+
                                                     <div class="form-group col-md-6">
                                                         <label for="confirm-new-email">Confirm New Email</label>
                                                         <input id="confirm-new-email" class="form-control" name="confirmNewEmail" type="email" required />
                                                         <span id="confirm-new-email-error" class="error-message"></span>
                                                     </div>
                                                     <% } %>
-                                                    <!-- Save and Cancel Buttons -->
+
                                                     <div class="form-group col-md-12 d-flex justify-content-end">
                                                         <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('change-email')">Cancel</button>
                                                         <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -437,40 +436,39 @@
                                     </div>            
                                                             
                                     <% if(!user.googleId) {%>
-                                    <!-- Section 3: Change Password -->
                                     <div class="card mt-4">
                                         <div class="card-header d-flex justify-content-between align-items-center">
                                             <h5>Change Password</h5>
-                                            <!-- Edit Button -->
+
                                             <span class="edit-link text-primary" onclick="toggleEditMode('change-password')" style="cursor: pointer;">Edit</span>
                                         </div>
                                 
-                                        <!-- Edit Mode: Change Password Form (Visible when Edit is clicked) -->
+
                                         <div class="card-body" id="change-password-edit" style="display: none;">
                                             <form method="post" id="change-password-form" onsubmit="changePassword(event)">
                                                 <div class="row">
-                                                    <!-- Current Password -->
+
                                                     <div class="form-group col-md-6">
                                                         <label for="current-password">Current Password</label>
                                                         <input id="current-password" class="form-control" name="currentPass" type="password" required />
                                                         <span id="current-password-error" class="error-message"></span>
                                                     </div>
                                 
-                                                    <!-- New Password -->
+
                                                     <div class="form-group col-md-6">
                                                         <label for="new-password">New Password</label>
                                                         <input id="new-password" class="form-control" name="newPass" type="password" required />
                                                         <span id="new-password-error" class="error-message"></span>
                                                     </div>
                                 
-                                                    <!-- Confirm New Password -->
+
                                                     <div class="form-group col-md-6">
                                                         <label for="confirm-new-password">Confirm New Password</label>
                                                         <input id="confirm-new-password" class="form-control" name="confirmNewPass" type="password" required />
                                                         <span id="confirm-new-password-error" class="error-message"></span>
                                                     </div>
                                 
-                                                    <!-- Save and Cancel Buttons -->
+                                                    
                                                     <div class="form-group col-md-12 d-flex justify-content-end">
                                                         <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('change-password')">Cancel</button>
                                                         <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -554,12 +552,12 @@
 <script>
 
     async function editPersonaldetails(event) {
-        event.preventDefault(); // Corrected method name
+        event.preventDefault(); 
     
         const form = document.getElementById('personal-info-form');
         const formData = new FormData(form);
     
-        // Disable buttons to prevent multiple submissions
+        
         form.querySelector('button.btn-secondary').disabled = true;
         form.querySelector('button.btn-primary').disabled = true;
     
@@ -568,7 +566,7 @@
         const usernameError = document.getElementById('username-error');
         const mobileError = document.getElementById('mobile-error');
     
-        // Clear previous error messages
+        
         usernameError.textContent = '';
         mobileError.textContent = '';
         nameInput.classList.remove('error');
@@ -577,22 +575,21 @@
         const usernameValue = nameInput.value.trim();
         const mobileValue = mobileInput.value.trim();
     
-        // Validate username
+        
         if (usernameValue === '' || /\s/.test(usernameValue)) {
             usernameError.textContent = 'Username cannot be empty or contain spaces.';
             nameInput.classList.add('error');
-            form.querySelector('button.btn-secondary').disabled = false; // Re-enable Cancel button
-            form.querySelector('button.btn-primary').disabled = false; // Re-enable Save button
+            form.querySelector('button.btn-secondary').disabled = false; 
+            form.querySelector('button.btn-primary').disabled = false; 
             return;
         }
     
-        // Validate mobile number
         const mobilePattern = /^(?:(?:\+91|91)?[6789]\d{9})$/;
         if (!mobilePattern.test(mobileValue)) {
             mobileError.textContent = 'Please enter a valid mobile number.';
             mobileInput.classList.add('error');
-            form.querySelector('button.btn-secondary').disabled = false; // Re-enable Cancel button
-            form.querySelector('button.btn-primary').disabled = false; // Re-enable Save button
+            form.querySelector('button.btn-secondary').disabled = false; 
+            form.querySelector('button.btn-primary').disabled = false; 
             return;
         }
     
@@ -623,7 +620,7 @@
             console.error('Error:', error);
             Swal.fire('Error', 'An unexpected error occurred. Please try again.', 'error');
         } finally {
-            // Re-enable the buttons
+            
             form.querySelector('button.btn-secondary').disabled = false;
             form.querySelector('button.btn-primary').disabled = false;
         }
@@ -631,12 +628,11 @@
 
     
     async function changeEmail(event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault(); 
     
         const form = document.getElementById('change-email-form');
         const formData = new FormData(form);
     
-        // Disable buttons to prevent multiple submissions
         form.querySelector('button.btn-secondary').disabled = true;
         form.querySelector('button.btn-primary').disabled = true;
     
@@ -649,13 +645,11 @@
         const newEmailError = document.getElementById('new-email-error');
         const confirmEmailError = document.getElementById('confirm-new-email-error');
     
-        // Clear previous error messages
         if (newEmailError) newEmailError.textContent = '';
         if (confirmEmailError) confirmEmailError.textContent = '';
         newEmailInput.classList.remove('error');
         confirmNewEmailInput.classList.remove('error');
     
-        // Validate new email
         if (newEmailValue === '' || !/\S+@\S+\.\S+/.test(newEmailValue)) {
             if (newEmailError) newEmailError.textContent = 'Please enter a valid new email address.';
             newEmailInput.classList.add('error');
@@ -664,7 +658,6 @@
             return;
         }
     
-        // Validate email confirmation
         if (newEmailValue !== confirmNewEmailValue) {
             if (confirmEmailError) confirmEmailError.textContent = 'New email and confirmation do not match.';
             confirmNewEmailInput.classList.add('error');
@@ -674,7 +667,6 @@
         }
     
         try {
-            // Show loading indicator
             Swal.fire({
                 title: 'Processing...',
                 text: 'Please wait while we update your email.',
@@ -697,13 +689,13 @@
                     throw new Error(data.message || 'Server responded with an error');
                 }
     
-                Swal.close(); // Close the loading alert
+                Swal.close(); 
     
                 if (data.success) {
                     const newEmail = data.newEmail;
                     const email = data.user.email;
     
-                    // Show OTP input prompt
+                    
                     const { value: otp } = await Swal.fire({
                         title: 'Verify OTP',
                         input: 'text',
@@ -720,7 +712,6 @@
                     });
     
                     if (otp) {
-                        // Verify OTP
                         const otpResponse = await fetch('/userDashboard/verifyOtpAndChangeEmail', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -735,7 +726,6 @@
                             }
     
                             if (otpData.success) {
-                                // Success: Update the view and show success message
                                 newEmailInput.value = '';
                                 confirmNewEmailInput.value = '';
                                 document.querySelector('#change-email-view p').innerHTML = `<strong>Email:</strong> ${otpData.user.email}`;
@@ -762,7 +752,7 @@
             console.error('Error:', error);
             Swal.fire('Error', error.message || 'An unexpected error occurred. Please try again.', 'error');
         } finally {
-            // Re-enable the buttons
+            
             form.querySelector('button.btn-secondary').disabled = false;
             form.querySelector('button.btn-primary').disabled = false;
         }
@@ -771,12 +761,11 @@
     
 
     async function changePassword(event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault(); 
     
         const form = document.getElementById('change-password-form');
         const formData = new FormData(form);
     
-        // Disable buttons to prevent multiple submissions
         form.querySelector('button.btn-secondary').disabled = true;
         form.querySelector('button.btn-primary').disabled = true;
     
@@ -788,7 +777,6 @@
         const newPasswordError = document.getElementById('new-password-error');
         const confirmNewPasswordError = document.getElementById('confirm-new-password-error');
     
-        // Clear previous error messages
         if (currentPasswordError) currentPasswordError.textContent = '';
         if (newPasswordError) newPasswordError.textContent = '';
         if (confirmNewPasswordError) confirmNewPasswordError.textContent = '';
@@ -800,7 +788,6 @@
         const newPasswordValue = newPasswordInput.value.trim();
         const confirmNewPasswordValue = confirmNewPasswordInput.value.trim();
     
-        // Validate current password
         if (currentPasswordValue === '') {
             if (currentPasswordError) currentPasswordError.textContent = 'Current password is required.';
             currentPasswordInput.classList.add('error');
@@ -809,7 +796,6 @@
             return;
         }
     
-        // Validate new password
         if (newPasswordValue === '' || newPasswordValue.length < 6) {
             if (newPasswordError) newPasswordError.textContent = 'New password must be at least 6 characters long.';
             newPasswordInput.classList.add('error');
@@ -818,7 +804,6 @@
             return;
         }
     
-        // Validate new password confirmation
         if (newPasswordValue !== confirmNewPasswordValue) {
             if (confirmNewPasswordError) confirmNewPasswordError.textContent = 'New password and confirmation do not match.';
             confirmNewPasswordInput.classList.add('error');
@@ -828,7 +813,6 @@
         }
     
         try {
-            // Show loading indicator
             Swal.fire({
                 title: 'Processing...',
                 text: 'Please wait while we send the OTP to your email.',
@@ -838,7 +822,6 @@
                 }
             });
     
-            // Request OTP
             const response = await fetch('/userDashboard/changePassword', {
                 method: 'PATCH',
                 body: formData
@@ -849,13 +832,12 @@
                 throw new Error(errorData.message || 'Failed to request OTP.');
             }
             const data = await response.json()
-            Swal.close(); // Close the loading alert
+            Swal.close(); 
 
             if(data.success){
             const email = data.user.email
             const newpass = data.newpass
 
-            // Show OTP input prompt
             const { value: otp } = await Swal.fire({
                 title: 'Verify OTP',
                 input: 'text',
@@ -872,7 +854,7 @@
             });
     
             if (otp) {
-                // Verify OTP and update password
+                
                 const otpResponse = await fetch('/userDashboard/verifyOtpAndChangePassword', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -887,7 +869,7 @@
                 const otpData = await otpResponse.json();
     
                 if (otpData.success) {
-                    // Clear form inputs
+                    
                     currentPasswordInput.value = '';
                     newPasswordInput.value = '';
                     confirmNewPasswordInput.value = '';
@@ -904,7 +886,7 @@
             console.error('Error:', error);
             Swal.fire('Error', error.message || 'An unexpected error occurred. Please try again.', 'error');
         } finally {
-            // Re-enable the buttons
+            
             form.querySelector('button.btn-secondary').disabled = false;
             form.querySelector('button.btn-primary').disabled = false;
         }
@@ -917,14 +899,14 @@
         const viewMode = document.getElementById(`${section}-view`);
         const editMode = document.getElementById(`${section}-edit`);
     
-        // Ensure the elements exist (change-password section doesn't have a view mode)
+        
         if (editMode && (viewMode || section === 'change-password')) {
             if (editMode.style.display === "none") {
-                // Switch to Edit Mode
+                
                 editMode.style.display = "block";
                 if (viewMode) viewMode.style.display = "none";
             } else {
-                // Switch back to View Mode
+                
                 editMode.style.display = "none";
                 if (viewMode) viewMode.style.display = "block";
             }
@@ -966,12 +948,120 @@
     }
 
  
+    async function returnProduct(itemId, productId, orderId, orderStatus) {
+        if (orderStatus === 'shipped') {
+            Swal.fire('info', 'Product has been shipped. Order cannot be returned', 'info');
+            return;
+        }
+    
+        console.log(`Return product ${itemId} in order ${orderId}, ${orderStatus}`);
+    
+        try {
+            
+            const reasonResult = await Swal.fire({
+                title: 'Select a reason for refund',
+                html: `
+                    <select id="refundReason" class="swal2-input">
+                        <option value="">Select a reason</option>
+                        <option value="Damaged Item">Damaged Item</option>
+                        <option value="Incorrect Item">Incorrect Item</option>
+                        <option value="Item Not as Described">Item Not as Described</option>
+                        <option value="Quality Issue">Quality Issue</option>
+                    </select>
+                `,
+                focusConfirm: false,
+                preConfirm: () => {
+                    const reason = Swal.getPopup().querySelector('#refundReason').value;
+                    if (!reason) {
+                        Swal.showValidationMessage('Please select a reason');
+                    }
+                    return reason;
+                }
+            });
+    
+            if (!reasonResult.isConfirmed) {
+                return;
+            }
+    
+           
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Refund',
+                text: `Are you sure you want to request a refund for the reason: "${reasonResult.value}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, request refund',
+                cancelButtonText: 'Cancel'
+            });
+    
+            if (!confirmResult.isConfirmed) {
+                return;
+            }
+    
+            const response = await fetch('/orders/returnOrder', {
+                method: 'PATCH ',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    itemId,
+                    productId,
+                    orderId,
+                    reason: reasonResult.value
+                })
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Something went wrong');
+            }
+    
+            
+            await Swal.fire({
+                title: 'Refund Requested',
+                text: 'Your refund request has been submitted successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+    
+        } catch (error) {
+            
+            console.error('Error processing refund:', error.message);
+            await Swal.fire({
+                title: 'Error',
+                text: `An error occurred: ${error.message}`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+    
  
 
 
-    const cancelOrderItem = (itemId, orderId,itemOrderStatus) => {
-   
-        console.log(`Cancel product ${itemId} in order ${orderId},${itemOrderStatus}`);
+    const cancelOrderItem = (itemId, orderId, itemOrderStatus) => {
+        console.log(`Cancel product ${itemId} in order ${orderId}, ${itemOrderStatus}`);
+    
+        Swal.fire({
+            title: 'Cancellation Reason',
+            input: 'textarea',
+            inputLabel: 'Please enter the reason for cancellation',
+            inputPlaceholder: 'Enter the reason...',
+            inputAttributes: {
+                'aria-label': 'Enter the reason for cancellation'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Next',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'You need to enter a reason!';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                
     
                 Swal.fire({
                     title: 'Are you sure?',
@@ -980,112 +1070,94 @@
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, cancel it!'
-                }).then((result)=>{
-    
-                    if(result.isConfirmed){
-    
-                        fetch(`http://localhost:3000/orders`,{
-    
-                        method:"PATCH",
-                        headers:{
-    
-                            "Content-Type":"application/json"
-                        },
-    
-                        body:JSON.stringify({itemId, orderId,itemOrderStatus})
-    
-                        }).then((response)=>{
-    
+                    confirmButtonText: 'Yes, cancel it!',
+                    cancelButtonText: 'No, keep it'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        fetch(`http://localhost:3000/orders/cancelItem`, {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                itemId,
+                                orderId,
+                                itemOrderStatus
+                            })
+                        }).then((response) => {
                             if (!response.ok) {
-    
-                            return response.json().then(errorData => {
-    
-                                throw new Error(errorData.error || "Network response was not ok");
-    
-                            });
-                        }
-    
-                            return response.json()
-    
-    
-                        }).then((data)=>{
-    
+                                return response.json().then(errorData => {
+                                    throw new Error(errorData.error || "Network response was not ok");
+                                });
+                            }
+                            return response.json();
+                        }).then((data) => {
                             console.log(data);
     
-                            if(data.success){
-    
+                            if (data.success) {
                                 Swal.fire({
-                                            icon: 'success',
-                                            text: 'The product has been cancelled successfully.',
-                                            toast: true,
-                                            position: 'top-right',
-                                            showConfirmButton: false,
-                                            timerProgressBar: true,
-                                            timer: 3000
-                                        });
+                                    icon: 'success',
+                                    text: 'The product has been cancelled successfully.',
+                                    toast: true,
+                                    position: 'top-right',
+                                    showConfirmButton: false,
+                                    timerProgressBar: true,
+                                    timer: 3000
+                                });
     
-                            const button = document.getElementById(`cancelProductButton${itemId}`);
-                            button.disabled = true;
-                            button.textContent = 'Cancelled';
+                                const button = document.getElementById(`cancelProductButton${itemId}`);
+                                button.disabled = true;
+                                button.textContent = 'Cancelled';
     
-                            const orderProductStatusElement = document.getElementById(`itemOrderStatus${itemId}`);
+                                const orderProductStatusElement = document.getElementById(`itemOrderStatus${itemId}`);
+                                if (orderProductStatusElement) {
+                                    orderProductStatusElement.innerHTML = '<strong>Status: CANCELLED</strong>';
+                                }
     
-                            if (orderProductStatusElement) {
+                                if (data.allOrderCancelled) {
+                                    const cancelOrderButton = document.getElementById(`cancelOrderButton${orderId}`);
+                                    if (cancelOrderButton) {
+                                        cancelOrderButton.disabled = true;
+                                        cancelOrderButton.textContent = "Cancelled";
+                                    }
     
-                                orderProductStatusElement.innerHTML = '<strong>Status: CANCELLED</strong>';
+                                    const orderStatusElement = document.getElementById(`orderStatus${orderId}`);
+                                    if (orderStatusElement) {
+                                        orderStatusElement.innerHTML = '<strong>CANCELLED</strong>';
+                                    }
     
-                            }
-                             // Check if all items are cancelled and update the order status
-                    if (data.allOrderCancelled) {
-                        const cancelOrderButton = document.getElementById(`cancelOrderButton${orderId}`);
-                        if (cancelOrderButton) {
-                            cancelOrderButton.disabled = true;
-                            cancelOrderButton.textContent = "Cancelled";
-                        }
-    
-                        const orderStatusElement = document.getElementById(`orderStatus${orderId}`);
-                        if (orderStatusElement) {
-                            orderStatusElement.innerHTML = '<strong>CANCELLED</strong>';
-                        }
-    
-                        // Update the status of all products in the order
-                        const orderProductStatusElements = document.querySelectorAll('.order-product-status');
-                        orderProductStatusElements.forEach(element => {
-                            element.innerHTML = '<strong>Status: CANCELLED</strong>';
-                        });
-    
-                        const individualCancelButtons = document.querySelectorAll(".individualCancel");
-                        individualCancelButtons.forEach(button => {
-                            button.disabled = true;
-                            button.textContent = "Cancelled";
-                        });
-                    }
-                            
-    
-                            }
-                     }).catch((error)=>{
-    
-                            console.log(`you have already cancelled the product,Error while cancelling product`, error.message);
-    
-                            Swal.fire({
-                                        icon: 'error',
-                                        text: `Error: ${error.message}`,
-                                        toast: true,
-                                        position: 'top-right',
-                                        showConfirmButton: false,
-                                        timerProgressBar: true,
-                                        timer: 3000
+                                    const orderProductStatusElements = document.querySelectorAll('.order-product-status');
+                                    orderProductStatusElements.forEach(element => {
+                                        element.innerHTML = '<strong>Status: CANCELLED</strong>';
                                     });
     
-                            })
-    
-                                                    
-    
-                      }
-                })
-        
+                                    const individualCancelButtons = document.querySelectorAll(".individualCancel");
+                                    individualCancelButtons.forEach(button => {
+                                        button.disabled = true;
+                                        button.textContent = "Cancelled";
+                                    });
+                                }
+                            }
+                        }).catch((error) => {
+                            console.log(`Error while cancelling product`, error.message);
+                            Swal.fire({
+                                icon: 'error',
+                                text: `Error: ${error.message}`,
+                                toast: true,
+                                position: 'top-right',
+                                showConfirmButton: false,
+                                timerProgressBar: true,
+                                timer: 3000
+                            });
+                        });
+                    }
+                });
+            }
+        });
     };
+    
+    
     
 </script>
 
