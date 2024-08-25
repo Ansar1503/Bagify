@@ -45,7 +45,7 @@
                                             </div>
                                             <div class="product-price">
                                                 <span>₹<%= product.product_sale_price %> </span>
-                                                <span class="old-price">₹<%= product.product_regular_price %></span>
+                                                <span class="old-price"><%= product.product_regular_price === product.product_sale_price ? '' : '₹'+ product.product_regular_price %></span>
                                             </div>
                                             <div class="product-action-1 show">
                                                 <a aria-label="Add To Cart" class="action-btn hover-up" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
@@ -87,21 +87,20 @@
                         <div class="col-lg-12 col-mg-6"></div>
                     </div>
                     
-                    <!-- Sort Widget -->
                     <div class="sidebar-widget mb-30">
                         <h5 class="section-title style-1 mb-30">Sort by</h5>
                         <form action="/shop" method="GET" id="sortForm">
+                            <input type="hidden" name="prev" value="<%= query %>">
                             <div class="sort-options">
                                 <select name="sort" onchange="this.form.submit()">
                                     <option value="" disabled selected>Sort by</option>
-                                    <option value="popularity">Popularity</option>
-                                    <option value="price-asc">Price: Low to High</option>
-                                    <option value="price-desc">Price: High to Low</option>
-                                    
-                                    <option value="newest">Newest First</option>
-                                    <option value="name-asc">Name: A to Z</option>
-                                    <option value="name-desc">Name: Z to A</option>
-                                    <option value="discount">Discount</option>
+                                    <option value="popularity" <%= currentFilters.sort === 'popularity' ? 'selected' : '' %>>Popularity</option>
+                                    <option value="price-asc" <%= currentFilters.sort === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+                                    <option value="price-desc" <%= currentFilters.sort === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+                                    <option value="newest" <%= currentFilters.sort === 'newest' ? 'selected' : '' %>>Newest First</option>
+                                    <option value="name-asc" <%= currentFilters.sort === 'name-asc' ? 'selected' : '' %>>Name: A to Z</option>
+                                    <option value="name-desc" <%= currentFilters.sort === 'name-desc' ? 'selected' : '' %>>Name: Z to A</option>
+                                    <option value="discount" <%= currentFilters.sort === 'discount' ? 'selected' : '' %>>Discount</option>
                                 </select>
                             </div>
                         </form>

@@ -375,7 +375,7 @@
                                                     <!-- Mobile Number -->
                                                     <div class="form-group col-md-6">
                                                         <label for="mobile">Mobile Number</label>
-                                                        <input id="mobile" class="form-control" name="mobile" type="text" value="<%= user.mobile %>" pattern="^(?:(?:\+91|91)?[6789]\d{9})$" required />
+                                                        <input id="mobile" class="form-control" name="mobile" type="text" value="<%= user.mobile %>" pattern="^(?:(?:\+91|91)?[6789]\d{9})$" required  />
                                                         <span id="mobile-error" class="error-message"></span>
                                                     </div>
                                     
@@ -388,7 +388,7 @@
                                             </form>
                                         </div>
                                     </div>
-                                  <% if(!user.googleId) {%>  
+                                    
                                     <!-- Section 2: Change Email -->
                                     <div class="card mt-4">
                                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -411,7 +411,7 @@
                                                         <label for="current-email">Current Email</label>
                                                         <input id="current-email" class="form-control" name="currentEmail" type="email" value="<%= user.email %>" readonly />
                                                     </div>
-                                    
+                                                    <% if(!user.googleId) {%>
                                                     <!-- New Email -->
                                                     <div class="form-group col-md-6">
                                                         <label for="new-email">New Email</label>
@@ -425,7 +425,7 @@
                                                         <input id="confirm-new-email" class="form-control" name="confirmNewEmail" type="email" required />
                                                         <span id="confirm-new-email-error" class="error-message"></span>
                                                     </div>
-                                    
+                                                    <% } %>
                                                     <!-- Save and Cancel Buttons -->
                                                     <div class="form-group col-md-12 d-flex justify-content-end">
                                                         <button type="button" class="btn btn-secondary btn-sm me-2" onclick="toggleEditMode('change-email')">Cancel</button>
@@ -436,7 +436,7 @@
                                         </div>
                                     </div>            
                                                             
-                                
+                                    <% if(!user.googleId) {%>
                                     <!-- Section 3: Change Password -->
                                     <div class="card mt-4">
                                         <div class="card-header d-flex justify-content-between align-items-center">

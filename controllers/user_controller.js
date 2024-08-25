@@ -198,38 +198,46 @@ const verifyUser = async function(req,res){
         res.status(500).send("user verification error")
     }
 }
-
 const googleAuth = async function(req, res) {
     try {
-        const { sub, name, email} = req.user._json;
-        // const mobile = (phoneNumbers && phoneNumbers.length > 0) ? phoneNumbers[0].value : null;
-        // console.log(req.user);
+        // console.log('Full req.user object:', JSON.stringify(req.user, null, 2));
+        console.log(req.user);
         
+        const { id, displayName, emails, phoneNumbers } = req.user;
+        const email = emails && emails.length > 0 ? emails[0].value : null;
+        const mobile = phoneNumbers && phoneNumbers.length > 0 ? phoneNumbers[0].value : null;
         
-        const existUser = await User.findOne({ googleId:sub });
-        // console.log(existUser);
-        
-        if (!existUser) {
-            const userdata = new User({
-                name,
-                email,
-                googleId: sub,
-                isVerified: true
-            });
-            const googleUser = await userdata.save();
-            
-            req.session.user_id = googleUser._id;
-            return res.redirect('/');
-            
-        }
+        // console.log('ID:', id);
+        // console.log('Display Name:', displayName);
+        // console.log('Email:', email);
+        // console.log('Phone number:', mobile);
        
-        req.session.user_id = existUser._id;
+        const existingUser = await User.findOne({ googleId: id });
+
+        if (!existingUser) {
+          
+            const newUser = new User({
+                name: displayName,
+                email,
+                googleId: id,
+                isVerified: true 
+            });
+            const savedUser = await newUser.save();
+            
+            req.session.user_id = savedUser._id;
+        } else {
+           
+            req.session.user_id = existingUser._id;
+        }
+
+        
         return res.redirect('/');
     } catch (error) {
         console.error('Google authentication failure:', error);
         return res.status(500).send('Google authentication failure');
     }
 };
+
 
 const loadproducts = async (req, res) => {
     try {
@@ -271,34 +279,27 @@ const resendOtp = async(req,res)=>{
 const loadShop = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = 6; 
+        const limit = 6;
         const skip = (page - 1) * limit;
-
-        // Build query based on filters
+        
         let query = {};
-
-        // Price range filter
-        if (req.query.min_price && req.query.max_price) {
-            query.product_sale_price = {
-                $gte: parseFloat(req.query.min_price),
-                $lte: parseFloat(req.query.max_price)
-            };
+        
+        if (req.query.prev) {
+            
+            query = JSON.parse(req.query.prev);
         }
-
-        // Category filter
+        
         if (req.query.categories) {
             const categories = Array.isArray(req.query.categories) ? req.query.categories : [req.query.categories];
             query.product_category = { $in: categories };
         }
-
-        // Availability filter
+        
         if (req.query.inStock === 'true' && req.query.outOfStock !== 'true') {
             query.product_quantity = { $gt: 0 };
         } else if (req.query.outOfStock === 'true' && req.query.inStock !== 'true') {
             query.product_quantity = 0;
         }
-
-        // Sorting
+        
         let sort = {};
         switch (req.query.sort) {
             case 'price-asc':
@@ -328,31 +329,32 @@ const loadShop = async (req, res) => {
             default:
                 sort = { createdAt: -1 };
         }
-
-        // Fetch filtered and sorted products
+        
         const products = await Products.find(query)
             .sort(sort)
             .skip(skip)
             .limit(limit)
             .populate('product_category');
-
+        
         const totalProducts = await Products.countDocuments(query);
         const totalPages = Math.ceil(totalProducts / limit);
-
+        
         const categories = await Category.find();
-
+        
         res.render('shop', {
             products,
             page,
             totalPages,
             categories,
-            currentFilters: req.query
+            currentFilters: req.query,
+            query: JSON.stringify(query) 
         });
     } catch (error) {
         console.error(error);
         res.status(500).send('Server Error');
     }
 };
+
 
 
 const checkoutaddAddress  =  async(req,res)=>{
