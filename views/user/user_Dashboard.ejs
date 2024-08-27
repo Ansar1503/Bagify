@@ -947,17 +947,13 @@
         
     }
 
- 
     async function returnProduct(itemId, productId, orderId, orderStatus) {
         if (orderStatus === 'shipped') {
             Swal.fire('info', 'Product has been shipped. Order cannot be returned', 'info');
             return;
         }
     
-        console.log(`Return product ${itemId} in order ${orderId}, ${orderStatus}`);
-    
         try {
-            
             const reasonResult = await Swal.fire({
                 title: 'Select a reason for refund',
                 html: `
@@ -983,10 +979,9 @@
                 return;
             }
     
-           
             const confirmResult = await Swal.fire({
                 title: 'Confirm Refund',
-                text: `Are you sure you want to request a refund for the reason: "${reasonResult.value}"?`,
+                text: `Are you sure you want to request a refund?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -1000,14 +995,13 @@
             }
     
             const response = await fetch('/orders/returnOrder', {
-                method: 'PATCH ',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     itemId,
-                    productId,
-                    orderId,
+                    orderStatus,
                     reason: reasonResult.value
                 })
             });
@@ -1017,7 +1011,6 @@
                 throw new Error(errorData.message || 'Something went wrong');
             }
     
-            
             await Swal.fire({
                 title: 'Refund Requested',
                 text: 'Your refund request has been submitted successfully.',
@@ -1025,8 +1018,24 @@
                 confirmButtonText: 'OK'
             });
     
-        } catch (error) {
+            // Check and debug element selection
+            const row = document.querySelector(`div[data-order-id="${orderId}"]`);
+            console.log('Row:', row);  // Debugging statement
+    
+            if (!row) {
+                throw new Error('Order row not found');
+            }
+    
+            const statusCell = row.querySelector(`#itemOrderStatus${itemId}`);
+            const returnButton = row.querySelector(`#returnProductButton${itemId}`);
+            const cancelButton = row.querySelector(`#cancelProductButton${itemId}`);
+    
+    
+            statusCell.innerHTML = `<strong>Status: RETURN INITIATED</strong>`;
+            returnButton.disabled = true;
             
+    
+        } catch (error) {
             console.error('Error processing refund:', error.message);
             await Swal.fire({
                 title: 'Error',
@@ -1036,6 +1045,7 @@
             });
         }
     }
+    
     
  
 

@@ -7,6 +7,7 @@ const Cart = require('../model/cart_schema')
 const AddressModel = require('../model/address_schema')
 const orderModel = require('../model/order_schema')
 const nodemailer = require('../config/nodemailer');
+const Return = require('../model/order_return_Schema')
 
 
 
@@ -1097,6 +1098,60 @@ const  fogotPassAndChangePassword =async(req,res)=>{
     }
 }
 
+const returnOrder  = async(req,res)=>{
+    try {
+        
+        const {itemId,orderStatus,reason} = req.body
+        if(!itemId || !orderStatus || !reason){
+            return res.status(400).json({success:false,message:'Please fill all fields'})
+        }
+        const itemObjectId = new mongoose.Types.ObjectId(itemId)
+        const returnExists = await  Return.findOne({itemId:itemObjectId})
+        if(returnExists){
+            return res.status(400).json({success:false,message:'return request already exists.'})
+        }
+
+        const  order = await orderModel.findOne({"items._id":itemObjectId})
+        // console.log(order);        
+        if(!order){
+        return res.status(404).json({success:false,message:'order not found'})
+        }           
+     
+        
+        if(Date.now() > order.items[0].deliverdDate){
+            return res.status(400).json({success:false,message:'Return time over'})
+        }
+        
+         
+        if(!orderStatus=='delivered'){
+            return res.status(400).json({success:false,message:'Item is not delivered'})
+        }
+        if(orderStatus=='cancelled'){
+            return res.status(400).json({status:false,message:'item is cancelled'})
+        }
+        
+        const returnOrder = new Return({
+            order:order._id,
+            orderItemId:order.items[0]._id,
+            product:order.items[0].product,
+            productRefundAmount:order.items[0].price,
+            productReturnDate:Date.now(),
+            productReturnReason:reason,
+        })
+        const  savedReturnOrder = await returnOrder.save()
+        order.items[0].itemOrderStatus = savedReturnOrder.returnProductStatus
+        await  order.save()
+        return res.status(200).json({success:true,message:'return has been Initiated'})
+        
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'})  
+    }
+}
+
+
+
+
 module.exports = {
     loadlogin,
     loadRegister,
@@ -1131,5 +1186,6 @@ module.exports = {
     changepassword,
     verifyOtpAndChangePassword,
     forgotSendOtp,
-    fogotPassAndChangePassword
+    fogotPassAndChangePassword,
+    returnOrder
 }

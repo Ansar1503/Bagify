@@ -45,8 +45,11 @@ const orderItemsModel = new Schema({
     itemOrderStatus:{
         type:String,
         required:true,
-        enum:['pending','confirmed','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejectd'],
+        enum:['pending','confirmed','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejected'],
         default:'pending'
+    },
+    deliveredDate:{
+        type:Date
     },
     paymentStatus:{
         type:String,
