@@ -64,6 +64,13 @@ userRoute.patch('/userDashboard/changePassword',upload.none(),userAuth.isLoggedi
 userRoute.post('/userDashboard/verifyOtpAndChangePassword',userAuth.isLoggedin,userController.verifyOtpAndChangePassword)
 userRoute.post('/userDashboard/verifyOtpAndChangeEmail',userAuth.isLoggedin,userController.verifyOtpAndChangeEmail)
 
+// Razorpay
+userRoute.post('/razorpay/createOrder',userAuth.isLoggedin,userController.createOrder)
+userRoute.post('/razorpay/verify-payment',userAuth.isLoggedin,userController.verifyOrder)
+
+// wallet
+userRoute.post('/wallet/handledPayment',userAuth.isLoggedin,userController.handledPayment)
+
 // google authentication
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email','https://www.googleapis.com/auth/user.phonenumbers.read'] }))
 userRoute.get('/auth/google/callback',passport.authenticate('google',{successRedirect:"/auth/protected",failureRedirect:"/"}))  

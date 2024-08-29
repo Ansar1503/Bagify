@@ -132,8 +132,6 @@
                                             >Save</button>
                                         </div>
                                     </td>
-                                    
-                                    
                                     <td class="text-end">₹ <%= item.regularPrice %></td>
                                 </tr>
                                 <% }) %>
@@ -196,7 +194,7 @@
                 const row = buttonElement.closest('tr');
                 const statusCell = row.querySelector('td:nth-child(4)');
     
-                // Update the status cell with the new status
+                // Update the status badge
                 statusCell.innerHTML = `<span class="badge rounded-pill 
                     ${status === 'pending' ? 'alert-warning' :
                      status === 'confirmed' ? 'alert-info' :
@@ -209,28 +207,24 @@
                     .join(' ')}
                 </span>`;
     
-                // Define the options that should be disabled based on the new status
                 const options = {
-                    pending: ['confirmed', 'shipped'],
-                    confirmed: ['pending', 'shipped', 'cancelled'],
+                    confirmed: ['pending'],
                     shipped: ['pending', 'confirmed', 'cancelled'],
                     delivered: ['pending', 'confirmed', 'shipped', 'cancelled'],
                     cancelled: ['pending', 'confirmed', 'shipped', 'delivered']
                 };
     
-                // Get the disabled options for the current status
                 const disabledOptions = options[status] || [];
     
-                // Disable the appropriate options in the dropdown
+                
                 selectElement.querySelectorAll('option').forEach(option => {
                     option.disabled = disabledOptions.includes(option.value);
                 });
     
-                // Set the dropdown to the selected status
                 selectElement.value = status;
     
-                // Disable the Save button if necessary
-                buttonElement.disabled = disabledOptions.length > 0;
+                buttonElement.disabled = (status === 'cancelled' || status === 'delivered');
+
             } else {
                 throw new Error('Failed to update status');
             }
@@ -240,9 +234,6 @@
             alert('An error occurred while updating the status. Please try again.');
         }
     }
-    
-    
-    
 </script>
 
 <%- include('../layout/admin_footer.ejs') %>

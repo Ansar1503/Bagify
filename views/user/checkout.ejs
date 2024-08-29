@@ -212,12 +212,12 @@
                 <div class="card-body">
                     <h3 class="card-title h5 mb-3">Payment Method</h3>
                     <div class="form-check mb-2">
-                        <input class="form-check-input"  type="radio" name="payment_method" id="razorPay" value="razorPay">
+                        <input class="form-check-input"  type="radio" onclick="paymentSelect('razorpay')" name="payment_method" id="razorPay" value="razorPay">
                         <label class="form-check-label" for="razorPay">Razor Pay</label>
                     </div>
                     <div class="form-check mb-2">
-                        <input class="form-check-input" onclick="paymentSelect('Cash on Delivery')" type="radio" name="payment_method" id="cashOnDelivery" value="cashOnDelivery">
-                        <label class="form-check-label" for="cashOnDelivery">Cash on Delivery</label>
+                        <input class="form-check-input" onclick="paymentSelect('COD')" type="radio" name="payment_method" id="cashOnDelivery" value="cashOnDelivery" <%= cartdata.summary.total>1500 ? 'disabled':'' %>>
+                        <label class="form-check-label" for="cashOnDelivery">Cash on Delivery<%= cartdata.summary.total>1500?'(upto 1500 purchase only)':''%></label>
                     </div>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
@@ -276,6 +276,12 @@
    }
    function paymentSelect(method){
     document.getElementById('selectedPaymentMethod').value = method
+    if(method === 'razorpay'){
+        document.getElementById('placeOrder').onclick(function(event){
+            event.preventDefault();
+            fetch('/')
+        })
+    }
    }
    function checkInputs(event){
     event.preventDefault()

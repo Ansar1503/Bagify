@@ -8,7 +8,9 @@ const AddressModel = require('../model/address_schema')
 const orderModel = require('../model/order_schema')
 const nodemailer = require('../config/nodemailer');
 const Return = require('../model/order_return_Schema')
-
+const Wallet = require('../model/wallet_schema')
+const Razorpay = require('../config/Razorpay')
+require('dotenv').config()
 
 
 function generateOtp() {
@@ -712,15 +714,18 @@ const loadCheckout = async(req,res)=>{
 const placeOrder = async (req,res)=>{
     try {
         const {addressId,paymentMethod,cartId} = req.body
-    console.log(req.body);
-    
+   
     const address = await AddressModel.findOne({_id:addressId})
     const cart = await Cart.findOne({_id:cartId}).populate([{path:'items.product',populate:{path:'product_category'}}])
 
     if(!address || !cart){
         console.log('cart or address not found'); 
     }
-
+    const summary = await  calculateCartSummary(cart);
+    if(summary.total>1500 &&  paymentMethod === 'COD'){
+        return res.status(400).json({success:false,message:'cash on delivery is only available upto 1500'})
+    }
+ 
     const orderItems = cart.items.map(item =>({
         product:item.product?._id,
         productName:item.product?.product_name,
@@ -1150,6 +1155,100 @@ const returnOrder  = async(req,res)=>{
 }
 
 
+const createOrder = async (req, res) => {
+    try {
+      const { userId, amount } = req.body;
+      if (!userId || !amount) {
+        return res.status(400).json({ success: false, message: 'Please provide userId and amount.' });
+      }
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      const key =  process.env.RZP_key_ID
+      
+      const order = await Razorpay.createOrder(amount, `receipt_${userObjectId}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Wallet money added successfully.',
+        order,
+        key 
+      });
+    } catch (error) {
+      console.error('Error:', error.message);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  };
+  
+  const verifyOrder = async (req, res) => {
+    try {
+        const{order_id,payment_id,signature}=req.body
+        if(!order_id ||  !payment_id || !signature){
+            return res.status(400).json({success:false,message:'Invalid request'})
+        }
+        const verifiedPaymentSignature = await  Razorpay.verifyPaymentSignature(order_id, payment_id, signature);
+        if(!verifiedPaymentSignature){
+            return res.status(400).json({success:false,message:'verification  failed'})
+        }
+        return res.status(200).json({success:true,message:'payment verification success',sign:verifiedPaymentSignature})
+
+    } catch (error) {
+        console.error('Error',error.message)
+        return res.status(500).json({success:false,message:'internal server error'})
+    }
+  }
+
+  const  handledPayment = async (req, res) => {
+    try {
+        const {amount,userId,razorpayOrderId,razorpaymentId,success} = req.body
+        
+        const userObjectId = new mongoose.Types.ObjectId(userId)
+        const wallet = await Wallet.findOne({user:userObjectId})
+        if(success != 'true'){
+         const transaction = {
+            amount,
+            type:'credit',
+            status:'failed',
+            razorpayOrderId,
+            razorpaymentId,
+        }
+         if(!wallet){
+            const newWallet = new Wallet({
+                user:userObjectId,
+                balance:balance+amount,
+                transactions:[transaction]
+            })
+            await newWallet.save()
+            return res.status(200).json({success:true,message:'Wallet created successfully'})
+         }
+         wallet.balance += amount
+         wallet.transactions.push(transaction)
+         await wallet.save()
+         return res.status(200).json({success:true,message:'wallet updated successfully'})
+        }
+        const transaction ={
+            amount,
+            type:'credit',
+            status:'success',
+            razorpaymentId,
+            razorpayOrderId
+        }
+        if(!wallet){
+           const newWallet = new Wallet({
+            user:userObjectId,
+            balance:balance+amount,
+            transactions:[transaction]
+           }) 
+           await newWallet.save()
+           return res.json({success:true,message:'new wallet created  successfully'})
+        }
+        wallet.balance+=amount
+        wallet.transactions.push(transaction)
+        await wallet.save()
+        return res.json({success:true,message:'wallet updated successfully'})
+
+    } catch (error) {
+        return res.status(500).json({success:false,message:error.message||'Internal server Error'})
+    }
+  }
 
 
 module.exports = {
@@ -1187,5 +1286,8 @@ module.exports = {
     verifyOtpAndChangePassword,
     forgotSendOtp,
     fogotPassAndChangePassword,
-    returnOrder
+    returnOrder,
+    createOrder,
+    verifyOrder,
+    handledPayment
 }
