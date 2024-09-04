@@ -496,16 +496,14 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Wallet Balance</h5>
-                                                <h2 class="card-text text-primary">₹  </h2> <a onclick="walletAddMoney(event,'<%= user._id %>')" class="btn btn-primary">Add Money</a>
-
-
+                                                <h2 class="card-text text-primary">₹ <%= wallet.balance || '0' %> </h2> <a onclick="walletAddMoney(event,'<%= user._id %>')" class="btn btn-primary btn-sm">Add Money</a>
                                             </div>
                                         </div>
                         
                                         <table class="table table-striped mt-4">
                                             <thead>
                                                 <tr>
-                                                    <th scope="col">Transaction ID</th>
+                                                    <th scope="col">Payment ID</th>
                                                     <th scope="col">Amount</th>
                                                     <th scope="col">Date</th>
                                                     <th scope="col">Type</th>
@@ -513,63 +511,34 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                              
+                                              <% if(wallet.transactions.length>0 && wallet) {%>
+                                                <% wallet.transactions.forEach(transaction => { %>
                                                         <tr>
-                                                            <td></td>
-                                                            <td>₹</td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
+                                                            <td><%= transaction.razorpaymentId %></td>
+                                                            <td>₹<%= transaction.amount %></td>
+                                                            <td><%= transaction.createdAt.toISOString().split('T')[0] %></td>
+                                                            <td><span style="color:<%= transaction.type=='credit'?'green':'red' %> ;"><%= transaction.type %></span></td>
+                                                            <td><span style="color:<%= transaction.status=='success'?'green':'red' %> ;"><%= transaction.status %></span></td>
                                                         </tr>
-                                                   
+                                                        <% }) %>
+                                                  <% }else {%> 
                                                     <tr>
                                                         <td colspan="5" class="text-center">No transactions available</td>
                                                     </tr>
-                                                
+                                                  <% } %>
                                             </tbody>
                                         </table>
-                                        <div class="pagination-area mt-30 mb-50">
-                                            <nav aria-label="Page navigation example">
-                                                <ul class="pagination justify-content-start">
-                                                   
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="/wallet?page=">
-                                                                <strong>&lt;</strong>
-                                                            </a>
-                                                        </li>
-                                                   
-                                                    
-                                                   
-                                                    
-                                                        <li class="page-item ">
-                                                            <a class="page-link" href="/wallet?page="><strong></strong></a>
-                                                        </li>
-                                             
-                                                   
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="/wallet?page=">
-                                                                <strong>&gt;</strong>
-                                                            </a>
-                                                        </li>
-                                                
-                                                </ul>
-                                            </nav>
-                                        </div>
-                                       
-                                    
-                                
-                            </div>
-                                        </div>
                                     </div>
                                 </div>
-              
                             </div>
-                        </div> 
+                        </div>
                     </div>
-                </div>
+                 </div> 
+              </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 </main>
 
 <style>
@@ -637,140 +606,180 @@
 
     async function walletAddMoney(event, userId) {
         event.preventDefault();
-      
+    
         const { value: amount } = await Swal.fire({
-          title: 'Add Money to Wallet',
-          input: 'number',
-          inputLabel: 'Enter amount',
-          inputPlaceholder: 'Enter amount to be added',
-          inputAttributes: {
-            min: 1,
-            step: 1
-          },
-          confirmButtonText: 'Add',
-          showCancelButton: true,
-          cancelButtonText: 'Cancel',
-          inputValidator: (value) => {
-            if (!value || isNaN(value) || value <= 0) {
-              return 'Please enter a valid positive amount!';
-            }else if(value <100){
-                return 'Minimum amount to be added is 100'
+            title: 'Add Money to Wallet',
+            input: 'number',
+            inputLabel: 'Enter amount',
+            inputPlaceholder: 'Enter amount to be added',
+            inputAttributes: {
+                min: 1,
+                step: 1
+            },
+            confirmButtonText: 'Add',
+            showCancelButton: true,
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value || isNaN(value) || value <= 0) {
+                    return 'Please enter a valid positive amount!';
+                } else if (value < 100) {
+                    return 'Minimum amount to be added is 100';
+                }
             }
-          }
         });
-      
+    
         if (amount === undefined) {
-          return;
+            return;
         }
-      
+    
         try {
-          
             Swal.fire({
                 title: 'Processing Payment...',
                 text: 'Please wait while we process your payment.',
                 didOpen: () => {
-                  Swal.showLoading();
+                    Swal.showLoading();
                 },
                 allowOutsideClick: false,
                 showConfirmButton: false
-              });
-          
-
-          const response = await fetch('/razorpay/createOrder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, amount })
-          });
-      
-          if (!response.ok) throw new Error(response.statusText);
-          const data = await response.json();
-      
-          if (!data.success) throw new Error(data.message);
-      
-        
-          const options = {
-            key: data.key,
-            amount: data.order.amount, 
-            currency: 'INR',
-            name: 'BAGIFY',
-            description: 'Add Money to Wallet',
-            order_id: data.order.id, 
-            handler: async function (response) {
-              try {
-                const verificationResponse = await fetch('/razorpay/verify-payment', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    order_id: response.razorpay_order_id,
-                    payment_id: response.razorpay_payment_id,
-                    signature: response.razorpay_signature
-                  })
-                });
-      
-                const verificationData = await verificationResponse.json();
-      
-                if (verificationData.success) {
-                    let success = verificationData.success
-                   const handledResponse = await handlePayment(data.order.amount,userId,response.razorpay_order_id,response.razorpay_payment_id,success)
-                    if(!handledResponse.success){
-                       return Swal.fire('Error!', handledResponse.message || 'Money added to wallet successfully!', 'error');
-                    }
-                 return Swal.fire('Success!', handledResponse.message || 'Money added to wallet successfully!', 'success');
-                } else {
-                    const handledResponse = await  handlePayment(data.order.amount,userId,response.razorpay_order_id,response.razorpay_payment,verificationData.success)
-                    if(!handledResponse.success){
-                        return Swal.fire('Error!', handledResponse.message || 'Money added to wallet successfully!', 'error')
-                    }
-                  Swal.fire('Error!', handledResponse.message || 'Payment verification failed.', 'error');
-                }
-              } catch (error) {
-                Swal.fire('Error!', error.message || 'An error occurred while verifying payment.', 'error');
-              }
-            },
-            prefill: {
-              name: '<%= user.name %>',
-              email: '<%= user.email %>',
-              contact: '<%= user.mobile %>'
-            },
-            theme: {
-              color: '#674188'
-            }
-          };
-      
-          const rzp1 = new Razorpay(options);
-          rzp1.on('payment.failed',handlePayment(data.order.amount,userId,response.razorpay_order_id,response.razorpay_payment,success=false))
-          rzp1.open();
-          Swal.close();
-          
-        } catch (error) {
-          console.error('Error:', error);
-          Swal.fire('Error!', error.message || 'An error occurred while adding money.', 'error');
-        }
-      }
+            });
     
-      async function handlePayment(amount,userId,razorpay_order_id,razorpay_payment_id,success){
-        try{
-            const response = await fetch('/wallet/handledPayment',{
+            const response = await fetch('/razorpay/createOrder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
+                body: JSON.stringify({ userId, amount })
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Server Error: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+    
+            if (!data || !data.success) {
+                throw new Error(data?.message || 'Failed to create order');
+            }
+    
+            const options = {
+                key: data.key,
+                amount: data.order.amount,
+                currency: 'INR',
+                name: 'BAGIFY',
+                description: 'Add Money to Wallet',
+                order_id: data.order.id,
+                handler: async function (response) {
+                    try {
+                        const verificationResponse = await fetch('/razorpay/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                order_id: response.razorpay_order_id,
+                                payment_id: response.razorpay_payment_id,
+                                signature: response.razorpay_signature
+                            })
+                        });
+    
+                        if (!verificationResponse.ok) {
+                            throw new Error(`Server Error: ${verificationResponse.statusText}`);
+                        }
+    
+                        const verificationData = await verificationResponse.json();
+    
+                        if (!verificationData || !verificationData.success) {
+                            throw new Error(verificationData?.message || 'Payment verification failed');
+                        }
+    
+                        const handledResponse = await handlePayment(data.order.amount, userId, response.razorpay_order_id, response.razorpay_payment_id, verificationData.success);
+                        
+                        if (!handledResponse.success) {
+                            return Swal.fire('Error!', handledResponse.message || 'An error occurred', 'error');
+                        }
+    
+                        return Swal.fire('Success!', handledResponse.message || 'Money added to wallet successfully!', 'success');
+    
+                    } catch (error) {
+                        Swal.fire('Error!', error.message || 'An error occurred while verifying payment.', 'error');
+                    }
+                },
+                prefill: {
+                    name: '<%= user.name %>',
+                    email: '<%= user.email %>',
+                    contact: '<%= user.mobile %>'
+                },
+                theme: {
+                    color: '#674188'
+                }
+            };
+    
+            const rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', async function (res) {
+                try {
+                    const { payment_id, order_id } = res.error.metadata;
+
+                    if (!payment_id || !order_id) {
+                        throw new Error('Missing payment ID or order ID in the failure response.');
+                    }
+                    
+                    const handledResponse = await handlePayment(
+                        data.order.amount, 
+                        userId, 
+                        order_id, 
+                        payment_id, 
+                        false
+                    );
+    
+                    if (handledResponse.success) {
+                        return Swal.fire('Error!', handledResponse.message || 'An error occurred', 'error');
+                    }
+    
+                    Swal.fire('Error!', 'Payment failed', 'error');
+    
+                } catch (error) {
+                    Swal.fire('Error!', error.message || 'An error occurred while handling payment failure.', 'error');
+                }
+            });
+            rzp1.open();
+            Swal.close();
+    
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error!', error.message || 'An error occurred while adding money.', 'error');
+        }
+    }
+    
+    
+    async function handlePayment(amount, userId, razorpay_order_id, razorpay_payment_id, success) {
+        try {
+            console.log('parameters',amount,userId,razorpay_order_id,razorpay_payment_id,success );
+            const response = await fetch('/wallet/handledPayment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     userId,
                     amount,
-                    razorpayOrderId:razorpay_order_id,
-                    razorpaymentId:razorpay_payment_id,
+                    razorpayOrderId: razorpay_order_id,
+                    razorpaymentId: razorpay_payment_id,
                     success
-                  })
-            })
-            if(!response.ok) throw new Error(response.statusText)
-            const data = await response.json()
-            if(!data.success)throw new Error(data.message)
-            return {message:data.message,success}
-        }catch(err){
+                })
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Server Error: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+    
+            if (!data || !data.success) {
+                throw new Error(data?.message || 'Failed to handle payment');
+            }
+    
+            return { message: data.message, success };
+        } catch (err) {
             console.error('Error:', err);
-            Swal.fire('Error!', err.message || 'An error occurred while verifying payment.', 'error');
+            Swal.fire('Error!', err.message || 'An error occurred while handling payment.', 'error');
+            return { message: err.message, success: false };
         }
-      }
-
+    }
+    
 
     async function editPersonaldetails(event) {
         event.preventDefault(); 

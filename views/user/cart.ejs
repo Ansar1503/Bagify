@@ -42,6 +42,12 @@
     <div class="col-md-4" style="position: sticky; top: 0; height: 100vh;">
       <div class="card mb-3"> 
         <div class="card-body">
+          <!-- Apply Coupon Button -->
+          <div class="d-flex mt-3 float-end">
+            <button type="button" id="openCouponModalButton" class="btn btn-primary btn-sm">Apply Coupon</button>
+          </div>
+        </div>
+        <div class="card-body">
           <h5 class="card-title">ORDER SUMMARY</h5>
           <p class="card-text d-flex justify-content-between">
             <span id="selection">Price (<%= cart.items.length %> items)</span>
@@ -61,25 +67,12 @@
             <strong><span id="totalPrice">₹<%= summary.total %></span></strong>
           </p>
         </div>
-        <div class="card-body">
-          <h5 class="card-title">Apply Coupon Code</h5>
-          <div class="d-flex">
-            <input type="text" id="couponCode" class="form-control me-2" placeholder="Enter Coupon Code">
-            <button type="button" id="applyCouponButton" class="btn btn-primary btn-sm">Apply</button>
-          </div>
-          <div id="couponButtons" style="display: none; margin-top: 10px;">
-            <div class="row">
-              <div class="col">
-                <button type="button" class="btn btn-primary btn-md w-100">Remove</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        
         <div class="row">
           <div class="col" id="checkout">
             <a href="/checkoutpage/<%= cart.user._id %>">
               <button type="submit" id="checkoutButton" class="btn custom-button btn-lg w-100" <%= parseFloat(summary.total) === 0 ? 'disabled' : '' %>>Proceed to Check Out</button>
-          </a>
+            </a>
           </div>
         </div>
       </div>
@@ -88,7 +81,33 @@
   </div>
 </div>
 
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="couponModalLabel">Available Coupons</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="card mb-3">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title">coupon.code %></h6>
+              <p class="card-text">Discount:  coupon.discount %>%</p>
+            </div>
+            <button class="btn btn-success btn-sm apply-coupon-btn" data-coupon-code=" coupon.code %>">Apply</button>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  // Function to remove item from cart
   async function removeItem(itemId) {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -100,42 +119,39 @@
       confirmButtonText: 'Yes, remove it!',
       cancelButtonText: 'No, cancel!'
     });
-  
+
     if (result.isConfirmed) {
       try {
         const response = await fetch(`/removeItem?itemId=${itemId}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Server responded with an error');
-  
+
         const data = await response.json();
         if (data.success) {
- 
-           if (!data.isEmpty) {
+          if (!data.isEmpty) {
             const itemElement = document.querySelector(`[data-product-item-id="${itemId}"]`).closest('.card.mb-3');
-            if(itemElement){
+            if (itemElement) {
               itemElement.remove();
               updateOrderSummaryFromServer(data.summary);
-               return
+              return;
             }
-         }
+          }
 
+          if (data.isEmpty) {
+            const mainContainer = document.getElementById('mainContainer');
+            if (mainContainer) {
+              mainContainer.innerHTML = '';
 
-         if(data.isEmpty){
-          const mainContainer = document.getElementById(`mainContainer`)
-          if (mainContainer) {
-            mainContainer.innerHTML = ''; 
-
-            const emptyCartMessage = document.createElement('div');
-            emptyCartMessage.className = 'col-12 text-center';
-            emptyCartMessage.innerHTML = `
+              const emptyCartMessage = document.createElement('div');
+              emptyCartMessage.className = 'col-12 text-center';
+              emptyCartMessage.innerHTML = `
                 <h2>Your cart is empty!</h2>
                 <p>Add items to it now.</p>
-                <a href="/shop" class="btn btn-primary">Shop now</a>`;
-            
-            mainContainer.appendChild(emptyCartMessage); 
-        }
-         }
-
-         
+                <a href="/shop" class="btn btn-primary">Shop now</a>
+              `;
+              
+              mainContainer.appendChild(emptyCartMessage); 
+            }
+          }
         } else {
           Swal.fire('Error!', `There was a problem removing the item: ${data.message}`, 'error');
         }
@@ -146,12 +162,13 @@
     }
   }
 
-  async function addQuantity(itemId,itemquantity) {
+  // Function to increase quantity of an item
+  async function addQuantity(itemId, itemQuantity) {
     try {
       const quantityDisplay = document.querySelector(`[data-product-item-id="${itemId}"]`).closest('.card.mb-3').querySelector('.quantity-display');
       const currentQuantity = parseInt(quantityDisplay.textContent, 10);
-      console.log(currentQuantity)
-      if (currentQuantity >= parseInt(itemquantity) || currentQuantity >= 5) {
+      
+      if (currentQuantity >= parseInt(itemQuantity) || currentQuantity >= 5) {
         Swal.fire('Limit Reached', 'You can’t add any more of this product.', 'info');
         return;
       }
@@ -169,17 +186,18 @@
       }
     } catch (error) {
       console.error('Failed to update quantity:', error);
-      Swal.fire('Error!', 'An unexpected error occurred.', 'error');
+      Swal.fire('Error!', `An unexpected error occurred: ${error.message}`, 'error');
     }
   }
 
+  // Function to decrease quantity of an item
   async function decreaseQuantity(itemId) {
     try {
       const quantityDisplay = document.querySelector(`[data-product-item-id="${itemId}"]`).closest('.card.mb-3').querySelector('.quantity-display');
       const currentQuantity = parseInt(quantityDisplay.textContent, 10);
-
+      
       if (currentQuantity <= 1) {
-        document.querySelector(`[data-product-item-id="${itemId}"]`).closest('.card.mb-3').querySelector('.decrease-quantity').disabled = true;
+        Swal.fire('Minimum Quantity', 'You cannot reduce the quantity below 1.', 'info');
         return;
       }
 
@@ -189,47 +207,78 @@
       const data = await response.json();
       if (data.success) {
         quantityDisplay.textContent = data.updatedQuantity;
+        if (data.updatedQuantity == 1) {
+          document.querySelector(`[data-product-item-id="${itemId}"]`).closest('.card.mb-3').querySelector('.decrease-quantity').disabled = true;
+        }
         updateOrderSummaryFromServer(data.summary);
       } else {
         Swal.fire('Error!', 'There was a problem updating the quantity.', 'error');
       }
     } catch (error) {
       console.error('Failed to update quantity:', error);
-      Swal.fire('Error!', 'An unexpected error occurred.', 'error');
+      Swal.fire('Error!', `An unexpected error occurred: ${error.message}`, 'error');
     }
   }
 
+  // Function to update the order summary from the server response
   function updateOrderSummaryFromServer(summary) {
     const subTotalPrice = document.getElementById('subTotalPrice');
     const totalPrice = document.getElementById('totalPrice');
     const deliveryCharge = document.getElementById('deliveryCharge');
     const checkoutButton = document.getElementById('checkoutButton');
-  
+    const couponDiscount = document.getElementById('couponDiscount');
+
     if (subTotalPrice) {
-      subTotalPrice.textContent = `₹ ${summary.subtotal}`;
-    } else {
-      console.warn('Element with ID "subTotalPrice" not found');
+      subTotalPrice.textContent = `₹${summary.subtotal}`;
     }
-  
+
     if (totalPrice) {
-      totalPrice.textContent = `₹ ${summary.total}`;
-    } else {
-      console.warn('Element with ID "totalPrice" not found');
+      totalPrice.textContent = `₹${summary.total}`;
     }
-  
+
     if (deliveryCharge) {
-      deliveryCharge.textContent = summary.deliveryCharges > 0 ? `₹ ${summary.deliveryCharges}` : 'Free';
-    } else {
-      console.warn('Element with ID "deliveryCharge" not found');
+      deliveryCharge.textContent = summary.deliveryCharges > 0 ? `₹${summary.deliveryCharges}` : 'Free';
     }
-  
+
+    if (couponDiscount) {
+      couponDiscount.textContent = `₹${summary.couponDiscount}`;
+    }
+
     if (checkoutButton) {
       checkoutButton.disabled = parseFloat(summary.total) === 0;
-    } else {
-      console.warn('Element with ID "checkoutButton" not found');
     }
   }
-  
+
+  // Event listener to open the coupon modal
+  document.getElementById('openCouponModalButton').addEventListener('click', function() {
+    const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
+    couponModal.show();
+  });
+
+  // Event listeners to apply the coupon when a coupon's "Apply" button is clicked
+  document.querySelectorAll('.apply-coupon-btn').forEach(button => {
+    button.addEventListener('click', async function() {
+      const couponCode = this.getAttribute('data-coupon-code');
+
+      try {
+        const response = await fetch(`/apply-coupon?code=${couponCode}`, { method: 'POST' });
+        if (!response.ok) throw new Error('Server responded with an error');
+
+        const data = await response.json();
+        if (data.success) {
+          updateOrderSummaryFromServer(data.summary);
+          const couponModal = bootstrap.Modal.getInstance(document.getElementById('couponModal'));
+          couponModal.hide();
+          Swal.fire('Success!', 'Coupon applied successfully!', 'success');
+        } else {
+          Swal.fire('Error!', `Failed to apply coupon: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        console.error('Failed to apply coupon:', error);
+        Swal.fire('Error!', `An unexpected error occurred: ${error.message}`, 'error');
+      }
+    });
+  });
 </script>
 
 <%- include('../layout/user_footer.ejs') %>

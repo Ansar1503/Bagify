@@ -63,11 +63,13 @@ const loadDashboard = async function(req,res){
             query.googleId = req.session.user_id;
         }
 
+        const wallet = await Wallet.findOne({user:req.session.user_id})
+        
 
         const user = await User.findOne(query).populate('address')
         const orderData = await orderModel.find({user:req.session.user_id})
         
-        return res.render('user_Dashboard',{user,orderData})
+        return res.render('user_Dashboard',{user,orderData,wallet})
     } catch (error) {
         console.log(error);
         res.status(500).send("couldnot load dashboard")
@@ -1199,53 +1201,57 @@ const createOrder = async (req, res) => {
   const  handledPayment = async (req, res) => {
     try {
         const {amount,userId,razorpayOrderId,razorpaymentId,success} = req.body
+        console.log(req.body)
+        if (!amount || !userId || !razorpayOrderId || !razorpaymentId) {
+            return res.status(400).json({ success: false, message: 'Invalid request data' });
+        }
+       
         
         const userObjectId = new mongoose.Types.ObjectId(userId)
         const wallet = await Wallet.findOne({user:userObjectId})
-        if(success != 'true'){
+        if(!success){
          const transaction = {
-            amount,
+            amount:amount/100,
             type:'credit',
             status:'failed',
-            razorpayOrderId,
+            razorOrderId:razorpayOrderId,
             razorpaymentId,
         }
          if(!wallet){
             const newWallet = new Wallet({
                 user:userObjectId,
-                balance:balance+amount,
                 transactions:[transaction]
             })
             await newWallet.save()
             return res.status(200).json({success:true,message:'Wallet created successfully'})
          }
-         wallet.balance += amount
          wallet.transactions.push(transaction)
          await wallet.save()
          return res.status(200).json({success:true,message:'wallet updated successfully'})
         }
         const transaction ={
-            amount,
+            amount:amount/100,
             type:'credit',
             status:'success',
             razorpaymentId,
-            razorpayOrderId
+            razorOrderId:razorpayOrderId
         }
         if(!wallet){
            const newWallet = new Wallet({
             user:userObjectId,
-            balance:balance+amount,
+            balance:amount/100,
             transactions:[transaction]
            }) 
            await newWallet.save()
            return res.json({success:true,message:'new wallet created  successfully'})
         }
-        wallet.balance+=amount
+        wallet.balance+=(amount/100)
         wallet.transactions.push(transaction)
         await wallet.save()
         return res.json({success:true,message:'wallet updated successfully'})
 
     } catch (error) {
+        console.log(error.message);
         return res.status(500).json({success:false,message:error.message||'Internal server Error'})
     }
   }

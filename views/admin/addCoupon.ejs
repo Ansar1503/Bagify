@@ -1,0 +1,71 @@
+<%- include('../layout/admin_header') %>
+<section class="content-main">
+    <div class="row">
+      <!-- Content Header -->
+      <div class="col-12 mb-3">
+        <div class="content-header">
+          <h2 class="content-title">ADD A NEW COUPON</h2>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h4>Coupon Details</h4>
+          </div>
+          <div class="card-body">
+            <form method="post" action="/admin/addCoupon" id="couponForm">
+              <!-- Coupon Name -->
+              <div class="mb-4">
+                <label for="couponName" class="form-label">Coupon Name</label>
+                <input type="text" name="couponName" placeholder="Type here" class="form-control" id="couponName" />
+                <span id="couponNameError" class="error"></span>
+              </div>
+              <!-- Description -->
+              <div class="mb-4">
+                <label class="form-label">Description</label>
+                <textarea name="couponDescription" id="couponDescription" placeholder="Type here" class="form-control" rows="4"></textarea>
+                <span id="couponDescriptionError" class="error"></span>
+              </div>
+              <!-- Coupon Code -->
+              <div class="mb-4">
+                <label for="couponCode" class="form-label">Coupon Code</label>
+                <input type="text" name="couponCode" placeholder="Type here" class="form-control" id="couponCode" />
+                <span id="couponCodeError" class="error"></span>
+              </div>
+              <!-- Discount Amount -->
+            <!-- Discount Amount -->
+            <div class="mb-4">
+              <label for="couponDiscount" class="form-label">Discount Percentage</label>
+              <input type="number" name="couponDiscount" placeholder="Percentage (0-100)" class="form-control" id="couponDiscount" min="0" max="100" />
+              <span id="couponDiscountError" class="error"></span>
+            </div>
+
+              <!-- Max Amount -->
+              <div class="mb-4">
+                <label for="maxAmount" class="form-label">Maximum Discount Amount</label>
+                <input type="number" name="maxAmount" placeholder="Amount" class="form-control" id="maxAmount" />
+                <span id="maxAmountError" class="error"></span>
+              </div>
+              <!-- Min Amount -->
+              <div class="mb-4">
+                <label for="minAmount" class="form-label">Minimum Purchase Amount</label>
+                <input type="number" name="minAmount" placeholder="Amount" class="form-control" id="minAmount" />
+                <span id="minAmountError" class="error"></span>
+              </div>
+              <!-- Coupon Status -->
+              
+              <div style="display: flex; justify-content: center; padding-top: 15px;">
+                <button class="btn btn-md rounded font-sm hover-up" id="submitForm" type="submit">
+                  Add Coupon
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('../layout/admin_footer.ejs') %>

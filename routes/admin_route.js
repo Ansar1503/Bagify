@@ -12,6 +12,7 @@ const admin_customer_controller = require('../controllers/admin_customer_control
 const categories_controller = require('../controllers/categories_controller')
 const product_controller = require('../controllers/product_controller')
 const order_controller = require('../controllers/order_controller')
+const coupon_controller = require('../controllers/coupon_controller')
 
 
 // set view engine
@@ -60,6 +61,10 @@ adminRoute.get('/orders/orderDetails/:id',admin_session.isLoggedin,order_control
 adminRoute.patch('/orders/update-status',admin_session.isLoggedin,order_controller.updateOrderStatus)
 adminRoute.get('/orders/returns',admin_session.isLoggedin,order_controller.returnList)
 adminRoute.get('/orders/return-status-change',admin_session.isLoggedin,order_controller.returnStatusChange)
+
+// coupon managment
+adminRoute.get('/coupons',admin_session.isLoggedin,coupon_controller.loadCoupon)
+adminRoute.get('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.loadAddCouponpage)
 
 
 module.exports = adminRoute;
