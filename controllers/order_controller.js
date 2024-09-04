@@ -1,6 +1,7 @@
 const orderModel = require('../model/order_schema')
 const Products = require('../model/product_schema')
 const Return  = require('../model//order_return_Schema')
+const Wallet = require('../model/wallet_schema')
 const { format, parseISO, formatDate } = require('date-fns');
 const mongoose = require('mongoose')
 const { ObjectId } = mongoose.Types;
@@ -68,7 +69,8 @@ const updateOrderStatus = async (req, res) => {
         if(status  === 'cancelled'){
             await Products.findOneAndUpdate({_id:item.product},{$inc:{product_quantity:item.quantity}})
         }
-        if(status   === 'delivered'){
+        if(status  === 'delivered'){
+            order.paymentStatus = 'completed'
             const sevenDaysFromNow = new Date();
             sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
             item.deliveredDate  = sevenDaysFromNow
@@ -110,9 +112,9 @@ const returnList = async (req,res)=> {
 const returnStatusChange= async(req,res)=>{
     try {
         const accept = req.query.accept ==='true' ? true :false
-        console.log(req.query);
+        // console.log(req.query);
         
-        console.log(accept);
+        // console.log(accept);
         
         if(accept == 'null' ||  accept == 'undefined'){
             return res.status(400).send('please choose  accept or reject')
@@ -121,21 +123,45 @@ const returnStatusChange= async(req,res)=>{
         const  returnId = new ObjectId(req.query.return)
         const returnData = await  Return.findById(returnId)
         if(!returnData){
-            return res.status(400).send('return not found')
+            return res.status(400).send('return request not found')
         }
         const orderData = await  orderModel.findOne({"items._id":returnData.orderItemId})
-        if(!orderData){
-            return res.status(400).send('order not found')
+        const item = orderData.items.find(item=>item._id.toString() === returnData.orderItemId.toString())
+        
+        if(!orderData || !item){
+            return res.status(400).send('item not found')
         }
+        const wallet = await Wallet.findOne({user:orderData.user})
+        
         if(!accept){
             returnData.returnProductStatus = 'returnRejected'
-            orderData.items[0].itemOrderStatus = 'returnRejected'
+            item.itemOrderStatus = 'returnRejected'
             await orderData.save()
             await returnData.save()
-            return res.status(200).redirect('/admin/orders')
+            return res.status(200).redirect('/admin/orders/returns')
         }
         returnData.returnProductStatus =  'returnApproved'
-        orderData.items[0].itemOrderStatus = 'returnApproved'
+        item.itemOrderStatus = 'returnApproved'
+        const transaction = {
+            orderId:orderData._id,
+            amount:item.price,
+            status:'success',
+            type:'credit',
+            razorpaymentId:orderData.onlinePaymentId || orderData._id
+        }
+        if(wallet){
+            wallet.transactions.push(transaction);
+            wallet.balance+=transaction.amount
+            await wallet.save()
+        }
+        if(!wallet){
+            await new Wallet({
+                balance:transaction.amount,
+                user:orderData.user,
+                transactions:[transaction]
+            }).save()
+        }
+        await Products.findByIdAndUpdate(item.product,{$inc:{product_quantity:orderData.items[0].quantity}})
         await  orderData.save()
         await  returnData.save()
         return res.status(200).redirect('/admin/orders/returns')

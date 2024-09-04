@@ -26,11 +26,11 @@
                                                 </a>
                                             </div>
                                             <div class="product-action-1">
-                                                <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
+                                                <!-- <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" data-bs-target="#quickViewModal">
                                                     <i class="fi-rs-search"></i>
-                                                </a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/home"><i class="fi-rs-heart"></i></a>
-                                                <a aria-label="Compare" class="action-btn hover-up" href="/home"><i class="fi-rs-shuffle"></i></a>
+                                                </a> -->
+                                                <!-- <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/home"><i class="fi-rs-heart"></i></a> -->
+                                                <!-- <a aria-label="Compare" class="action-btn hover-up" href="/home"><i class="fi-rs-shuffle"></i></a> -->
                                             </div>
                                         </div>
                                         <div class="product-content-wrap">
@@ -49,6 +49,7 @@
                                             </div>
                                             <div class="product-action-1 show">
                                                 <a aria-label="Add To Cart" class="action-btn hover-up" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
+                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" onclick="wishlist(this,event,'<%= product._id %>')"><i <% if(product.inWishList) {%>class="bi bi-heart-fill"<%} else {%> class="bi bi-heart"<% } %> ></i></a>
                                             </div>
                                         </div>
                                     </div>
@@ -185,7 +186,37 @@
             $('input[name="outOfStock"]').prop('checked', true);
         <% } %>
 
-        // Set selected sort option
+        
         $('select[name="sort"]').val('<%= currentFilters.sort %>');
     });
+
+    async function wishlist(wish, event, productId) {
+        event.preventDefault();
+        const icon = wish.querySelector('i');
+        const change = icon.classList.contains('bi-heart') ? 'add' : 'remove';
+        const method = change === 'add' ? 'POST' : 'DELETE';
+        
+        try {
+            const response = await fetch(`/wishlist/${change}`, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId })
+            });
+            
+            const data = await response.json();
+            if (!data.success) throw new Error(data.message || 'Response error');
+    
+            if (change === 'add') {
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill');
+            } else {
+                icon.classList.remove('bi-heart-fill');
+                icon.classList.add('bi-heart');
+            }
+        } catch (err) {
+            swal.fire('Error', err.message || 'Error processing wishlist', 'error');
+        }
+    }
+    
+    
 </script>

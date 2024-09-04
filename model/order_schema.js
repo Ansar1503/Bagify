@@ -50,12 +50,6 @@ const orderItemsModel = new Schema({
     },
     deliveredDate:{
         type:Date
-    },
-    paymentStatus:{
-        type:String,
-        required:false,
-        default:'pending',
-        enum: ['pending', 'completed', 'failed', 'refunded']
     }
 },{timestamps:true})
 
@@ -102,7 +96,15 @@ const orderModel = Schema({
     },
     paymentMethod:{
         type:String,
-        required:true
+        required:true,
+        enum:['COD','razorpay','wallet'],
+        default:'COD'
+    },
+    paymentStatus:{
+        type:String,
+        required:false,
+        default:'pending',
+        enum: ['pending', 'completed', 'failed', 'refunded']
     },
     shippingAddress:{
         fullname:{

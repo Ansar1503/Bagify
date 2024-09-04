@@ -3,16 +3,12 @@ const Schema = mongoose.Schema
 const ObjectId  = Schema.Types.ObjectId
 
 const coupon =  new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    couponCode: {
+    code: {
         type: String,
         required: true,
         unique: true
     },
-    couponDiscount: {
+    amount: {
         type: Number,
         required: true
     },
@@ -21,7 +17,7 @@ const coupon =  new Schema({
         enum: ['fixed', 'percentage'],
         required: true
     },
-    couponStatus: {
+    status: {
         type: Boolean,
         required: true
     },
@@ -31,7 +27,8 @@ const coupon =  new Schema({
     },
     minAmount: {
         type: Number,
-        required: true
+        required: true,
+        default:0
     },
     expirationDate: {
         type: Date,
@@ -47,7 +44,8 @@ const coupon =  new Schema({
         default: 0
     },
     applicableCategories: [{
-        type: String,
+        type: ObjectId,
+        ref: 'Categories',
         required: false
     }],
     applicableProducts: [{
@@ -61,3 +59,4 @@ const coupon =  new Schema({
     }],
 },{timestamps:true})
 
+module.exports = mongoose.model('coupons',coupon)

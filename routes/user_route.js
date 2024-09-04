@@ -71,6 +71,10 @@ userRoute.post('/razorpay/verify-payment',userAuth.isLoggedin,userController.ver
 // wallet
 userRoute.post('/wallet/handledPayment',userAuth.isLoggedin,userController.handledPayment)
 
+userRoute.get('/wishlist',userAuth.isLoggedin,userController.loadWishlist)
+userRoute.post('/wishlist/:change',userController.addOrRemoveWishlist)
+userRoute.delete('/wishlist/:change',userController.addOrRemoveWishlist)
+
 // google authentication
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email','https://www.googleapis.com/auth/user.phonenumbers.read'] }))
 userRoute.get('/auth/google/callback',passport.authenticate('google',{successRedirect:"/auth/protected",failureRedirect:"/"}))  

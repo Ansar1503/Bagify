@@ -40,11 +40,10 @@ const product_schema = new mongoose.Schema({
         required:false,
         default:true
     },
-    // Review:{
-    //     type:mongoose.Schema.Types.ObjectId,
-    //     ref:'reviews',
-    //     required:true
-    // }
+    inWishList:{
+        type:Boolean,
+        required:false,
+    }
 
 },{timestamps:true})
 

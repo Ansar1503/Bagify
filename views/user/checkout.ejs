@@ -184,7 +184,15 @@
 
         <!-- Order Summary and Payment Method -->
         <div class="col-lg-4">
-            <div class="card mb-3">
+             <div class="card">
+                <div class="card-body">
+                    <!-- Apply Coupon Button -->
+                    <div class="d-flex mt-3">
+                      <button type="button" id="openCouponModalButton" class="btn btn-primary btn-sm">Apply Coupon</button>
+                    </div>
+                  </div>
+             </div>
+            <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">ORDER SUMMARY</h5>
                     <p class="card-text d-flex justify-content-between">
@@ -212,16 +220,16 @@
                 <div class="card-body">
                     <h3 class="card-title h5 mb-3">Payment Method</h3>
                     <div class="form-check mb-2">
-                        <input class="form-check-input"  type="radio" onclick="paymentSelect('razorpay')" name="payment_method" id="razorPay" value="razorPay">
+                        <input class="form-check-input"  type="radio"  name="payment_method" id="razorPay" value="razorPay" onclick="selectpayment('razorpay')">
                         <label class="form-check-label" for="razorPay">Razor Pay</label>
                     </div>
                     <div class="form-check mb-2">
-                        <input class="form-check-input" onclick="paymentSelect('COD')" type="radio" name="payment_method" id="cashOnDelivery" value="cashOnDelivery" <%= cartdata.summary.total>1500 ? 'disabled':'' %>>
+                        <input class="form-check-input"  type="radio" name="payment_method" id="cashOnDelivery" value="cashOnDelivery" <%= cartdata.summary.total>1500 ? 'disabled':'' %> onclick="selectpayment('COD')">
                         <label class="form-check-label" for="cashOnDelivery">Cash on Delivery<%= cartdata.summary.total>1500?'(upto 1500 purchase only)':''%></label>
                     </div>
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
-                        <label class="form-check-label" for="wallet">Wallet</label>
+                        <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet" <% if(wallet && wallet.balance > cartdata.summary.total ) {%><% }else{ %>disabled<% } %> onclick="selectpayment('wallet')" >
+                        <label class="form-check-label"z for="wallet">Wallet<% if(wallet && wallet.balance > cartdata.summary.total ) {%><% }else{ %>  (Insufficient balance in wallet)<% } %> </label>
                     </div>
                 </div>
             </div>
@@ -229,6 +237,7 @@
                 <input type="hidden" name="cartId" value="<%= cartdata._id %>">
                 <input type="hidden" id="selectedPaymentMethod" name="paymentMethod" value="">
                 <input type="hidden" id="selectedAddressId" name="addressId" value="">
+                <input type="hidden" name="paymentId" id="razorpayId" value="">
                 <button type="submit" onclick="checkInputs(event)" class="btn btn-primary btn-lg w-100" id="placeOrder">Place Order</button>
             </form>
         </div>
@@ -250,7 +259,125 @@
     </div>
 </div>
 
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="couponModalLabel">Available Coupons</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+          <div class="card mb-3">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title">coupon.code %></h6>
+                <p class="card-text">Discount:  coupon.discount %>%</p>
+              </div>
+              <button class="btn btn-success btn-sm apply-coupon-btn" onclick="" data-coupon-code=" coupon.code %>">Apply</button>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>  
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+    
+    async function razorPaycheck() {
+        const userId = '<%= cartdata.user._id %>'
+        const amount = parseInt('<%= cartdata.summary.total %>')
+        try {
+            Swal.fire({
+                title: 'Processing Payment...',
+                text: 'Please wait while we process your payment.',
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                allowOutsideClick: false,
+                showConfirmButton: false
+            });
+    
+            const response = await fetch('/razorpay/createOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, amount })
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Server Error: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+    
+            if (!data || !data.success) {
+                throw new Error(data?.message || 'Failed to create order');
+            }
+    
+            const options = {
+                key: data.key,
+                amount: data.order.amount,
+                currency: 'INR',
+                name: 'BAGIFY',
+                description: 'Payment  for order',
+
+                order_id: data.order.id,
+                handler: async function (response) {
+                    try {
+                        const verificationResponse = await fetch('/razorpay/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                order_id: response.razorpay_order_id,
+                                payment_id: response.razorpay_payment_id,
+                                signature: response.razorpay_signature
+                            })
+                        });
+    
+                        if (!verificationResponse.ok) {
+                            throw new Error(`Server Error: ${verificationResponse.statusText}`);
+                        }
+    
+                        const verificationData = await verificationResponse.json();
+    
+                        if (!verificationData || !verificationData.success) {
+                            throw new Error(verificationData?.message || 'Payment verification failed');
+                        }
+                        document.getElementById('razorpayId').value = response.razorpay_payment_id
+                        Swal.fire('Success!','payment success!', 'success');
+                        document.querySelector('form[action="/placeOrder"]').submit()
+                    } catch (error) {
+                        Swal.fire('Error!', error.message || 'An error occurred while verifying payment.', 'error');
+                    }
+                },
+                prefill: {
+                    name: '<%= cartdata.user.name %>',
+                    email: '<%= cartdata.user.email %>',
+                    contact: '<%= cartdata.user.mobile %>'
+                },
+                theme: {
+                    color: '#674188'
+                }
+            };
+    
+            const rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', async function () {
+                Swal.fire('Error!', 'Payment failed', 'error');
+            });
+            rzp1.open();
+            Swal.close();
+    
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error!', error.message || 'An error occurred while adding money.', 'error');
+        }
+    }
+    
+    
+
     document.addEventListener('DOMContentLoaded', function () {
         var accordions = document.querySelectorAll('.accordion-button');
         accordions.forEach(function (accordion) {
@@ -272,17 +399,11 @@
 
    function selectAddress(addressId) {
        document.getElementById('selectedAddressId').value = addressId;
-       
    }
-   function paymentSelect(method){
+   function selectpayment(method){
     document.getElementById('selectedPaymentMethod').value = method
-    if(method === 'razorpay'){
-        document.getElementById('placeOrder').onclick(function(event){
-            event.preventDefault();
-            fetch('/')
-        })
-    }
    }
+   
    function checkInputs(event){
     event.preventDefault()
     addressId = document.getElementById('selectedAddressId').value
@@ -291,11 +412,45 @@
         swal.fire('info','please select an Address','info')
     }else if(paymentMethod == ''){
         swal.fire('info','please choose A payment method','info')
-    }else{
+    }else if(paymentMethod == 'razorpay'){
+    razorPaycheck();
+    }
+    else{
         document.querySelector('form[action="/placeOrder"]').submit()
     }
 
    }
+
+  // Event listener to open the coupon modal
+  document.getElementById('openCouponModalButton').addEventListener('click', function() {
+    const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
+    couponModal.show();
+  });
+
+  // Event listeners to apply the coupon when a coupon's "Apply" button is clicked
+  document.querySelectorAll('.apply-coupon-btn').forEach(button => {
+    button.addEventListener('click', async function() {
+      const couponCode = this.getAttribute('data-coupon-code');
+
+      try {
+        const response = await fetch(`/apply-coupon?code=${couponCode}`, { method: 'POST' });
+        if (!response.ok) throw new Error('Server responded with an error');
+
+        const data = await response.json();
+        if (data.success) {
+          updateOrderSummaryFromServer(data.summary);
+          const couponModal = bootstrap.Modal.getInstance(document.getElementById('couponModal'));
+          couponModal.hide();
+          Swal.fire('Success!', 'Coupon applied successfully!', 'success');
+        } else {
+          Swal.fire('Error!', `Failed to apply coupon: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        console.error('Failed to apply coupon:', error);
+        Swal.fire('Error!', `An unexpected error occurred: ${error.message}`, 'error');
+      }
+    });
+  });
 </script>
 
 <%- include('../layout/user_footer.ejs') %>

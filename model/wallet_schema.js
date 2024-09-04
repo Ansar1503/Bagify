@@ -22,9 +22,6 @@ const walletTransactions = new Schema({
     razorpaymentId:{
         type:String,
     },
-    razorOrderId:{
-        type:String,
-    }
 }, { timestamps: true });
 
 const wallet = new Schema({

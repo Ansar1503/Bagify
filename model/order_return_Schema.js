@@ -1,5 +1,5 @@
-const {Schema,ObjectId,model} = require('mongoose');
-
+const {Schema,model} = require('mongoose');
+const ObjectId = Schema.Types.ObjectId
 
 const returnProductSchema = new Schema({
     order:{
@@ -19,7 +19,7 @@ const returnProductSchema = new Schema({
     returnProductStatus: {
         type: String,
         enum: ["returnInitiated","returnApproved","returnRejected"],
-        default: "returnInitiated",
+        default:"returnInitiated",
         required:true
       },
     productRefundAmount:{
@@ -30,7 +30,7 @@ const returnProductSchema = new Schema({
     },
     productReturnDate:{
         type:Date,
-        default: Date.now,
+        default: Date.now(),
         required:true
     },
     productReturnReason:{
