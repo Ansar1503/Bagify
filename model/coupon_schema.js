@@ -8,18 +8,9 @@ const coupon =  new Schema({
         required: true,
         unique: true
     },
-    amount: {
-        type: Number,
-        required: true
-    },
-    discountType: {
-        type: String,
-        enum: ['fixed', 'percentage'],
-        required: true
-    },
-    status: {
-        type: Boolean,
-        required: true
+    discountPercentage:{
+        type:Number,
+        required:true
     },
     maxAmount: {
         type: Number,
@@ -39,14 +30,15 @@ const coupon =  new Schema({
         required: false,
         default: Infinity
     },
-    usageCount: {
-        type: Number,
-        default: 0
-    },
     usedBy: [{
         type: ObjectId,
         ref: 'User'
     }],
+    isActive:{
+        type:Boolean,
+        required:true,
+        default:true
+    }
 },{timestamps:true})
 
 module.exports = mongoose.model('coupons',coupon)

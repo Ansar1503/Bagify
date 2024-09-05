@@ -32,43 +32,45 @@
             <thead>
               <tr>
                 <th scope="col">No</th>
-                <th scope="col">Coupon Name</th>
+                
                 <th scope="col">Code</th>
                 <th scope="col">Discount</th>
                 <th scope="col">Min Amount</th>
                 <th scope="col">Max Amount</th>
                 <th scope="col">Expiry Date</th>
+                <th scope="col">Usage Limit</th>
                 <th scope="col" class="text-end">Action</th>
               </tr>
             </thead>
 
             <tbody id="couponTableBody">
-              <%if (couponsData.length === 0 || !couponsData) { %>
+              <%if (coupon.length === 0 || !coupon) { %>
                 <tr>
                   <td colspan="8" class="text-center">No Coupons Available</td>
 
                 </tr>
                 <%} else { %>
-              <% couponsData.forEach((coupon, index) => { %>
+              <% coupon.forEach((coupon, index) => { %>
                 <tr>
                   <td><%= index + 1 %></td>
-                  <td><%= coupon.couponName %></td>
-                  <td><%= coupon.couponCode %></td>
-                  <td><%= coupon.couponDiscount %></td>
+                  
+                  <td><%= coupon.code %></td>
+                  <td><%= coupon.discountPercentage %>%</td>
                   <td><%= coupon.minAmount %></td>
                   <td><%= coupon.maxAmount %></td>
                   <td>
-                  1234
+                    <%= coupon.expirationDate || 'N/A' %>
                   </td>
+                  <td><%= coupon.usageLimit %></td>
 
                   <td class="text-end">
-                    <% if (coupon.couponStatus) { %>
+                    <% if (coupon.isActive) { %>
                     
-                    <button  style="width: 120px; height: 40px; font-size: 14px; padding: 0.5rem;" onclick="softDeleteCoupon('<%= coupon._id %>')" id="softDeleteButton<%= coupon._id %>" class="btn btn-danger rounded btn-sm font-sm flex-fill mx-1">Deactivate</button>
+                    <button  style="width: 120px; height: 40px; font-size: 14px; padding: 0.5rem;" onclick="softDeleteCoupon('<%= coupon._id %>','block')" id="softDeleteButton<%= coupon._id %>" class="btn btn-danger rounded btn-sm font-sm flex-fill mx-1">Deactivate</button>
 
                     <% } else { %>
 
-                      <button onclick="softDeleteCoupon('<%= coupon._id %>')" id="softDeleteButton<%= coupon._id %>" class="btn btn-success  rounded btn-sm font-sm flex-fill mx-1">Activate</button>
+                      <button onclick="softDeleteCoupon('<%= coupon._id %>','unblock')" id="softDeleteButton<%= coupon._id %>" class="btn btn-success  rounded btn-sm font-sm flex-fill mx-1">Activate</button>
 
                       <% } %>
                   </td>
@@ -99,7 +101,7 @@
 </main>
 <script>
 
-  const softDeleteCoupon = (couponId) =>{
+  const softDeleteCoupon = (couponId,change) =>{
 
     const deleteButton = document.getElementById(`softDeleteButton${couponId}`)
 
@@ -116,21 +118,20 @@
                     confirmButtonText: `Yes, ${isBlocking ? 'Activate' : 'Deactivate'}`
                   }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`http://localhost:7000/admin/couponManagement/?couponId=${couponId}`, {
+                        fetch(`http://localhost:3000/admin/coupons/${couponId}`, {
                             method: 'PATCH',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
+                            body: JSON.stringify({change})
                         }).then(response => {
-                            if (response.status != 200) {
+                            if (!response.ok) {
                                 throw new Error('Network response was not ok')
                             }
                             return response.json()
                         }).then(data => {
 
-                            console.log(data);
-                            console.log(couponId);
-                            if (data.couponId.couponStatus) {
+                            if (data.coupon.isActive  ) {
                                 deleteButton.classList.remove('btn-success');
                                 deleteButton.classList.add('btn-danger');
                                 deleteButton.textContent = 'Deactivate'

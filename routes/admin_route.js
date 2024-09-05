@@ -66,6 +66,7 @@ adminRoute.get('/orders/return-status-change',admin_session.isLoggedin,order_con
 adminRoute.get('/coupons',admin_session.isLoggedin,coupon_controller.loadCoupon)
 adminRoute.get('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.loadAddCouponpage)
 adminRoute.post('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.addCoupon)
+adminRoute.patch('/coupons/:id',admin_session.isLoggedin,coupon_controller.changeCouponStats)
 
 
 module.exports = adminRoute;
