@@ -65,6 +65,8 @@ adminRoute.get('/orders/return-status-change',admin_session.isLoggedin,order_con
 // coupon managment
 adminRoute.get('/coupons',admin_session.isLoggedin,coupon_controller.loadCoupon)
 adminRoute.get('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.loadAddCouponpage)
+adminRoute.get('/coupons/edit-coupon/:id',admin_session.isLoggedin,coupon_controller.loadEditCouponpage)
+adminRoute.post('/coupons/edit-coupon/:id',admin_session.isLoggedin,coupon_controller.editCoupon)
 adminRoute.post('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.addCoupon)
 adminRoute.patch('/coupons/:id',admin_session.isLoggedin,coupon_controller.changeCouponStats)
 

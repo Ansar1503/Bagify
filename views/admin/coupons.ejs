@@ -39,6 +39,7 @@
                 <th scope="col">Max Amount</th>
                 <th scope="col">Expiry Date</th>
                 <th scope="col">Usage Limit</th>
+                <th scope="col">edit</th>
                 <th scope="col" class="text-end">Action</th>
               </tr>
             </thead>
@@ -62,7 +63,9 @@
                     <%= coupon.expirationDate || 'N/A' %>
                   </td>
                   <td><%= coupon.usageLimit %></td>
-
+                  <td> <a href="/admin/coupons/edit-coupon/<%= coupon._id %>" class="btn btn-sm btn-outline-primary py0">
+                    <i class="bi bi-pencil-square" ></i>
+                </a></td>
                   <td class="text-end">
                     <% if (coupon.isActive) { %>
                     
@@ -107,7 +110,7 @@
 
     const isBlocking = deleteButton.classList.contains('btn-success')
 
-    console.log(deleteButton);
+   
 
                   Swal.fire({
                     title: `Are you sure you want to ${isBlocking ? 'Activate' : 'Deactivate'} this coupon ?`,

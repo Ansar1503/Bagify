@@ -22,8 +22,11 @@ const loadAddCouponpage = async (req,res)=>{
 
 const addCoupon = async (req,res)=>{
     try {
-        const {couponCode,discountPercentage,maxAmount,minAmount,usageLimit} = req.body
-
+        const {couponCode,discountPercentage,maxAmount,minAmount,
+            expirationDate,usageLimit} = req.body
+            if(!couponCode || !discountPercentage || !maxAmount || !minAmount){
+            return res.render('addCoupon',{error:"Please fill required fields"})                
+            }
         const existCoupon = await Coupons.findOne({code:couponCode})
 
         if(existCoupon){
@@ -35,6 +38,7 @@ const addCoupon = async (req,res)=>{
             discountPercentage,
             maxAmount,
             minAmount,
+            expirationDate:expirationDate||null,
             usageLimit:usageLimit||Infinity
         })
         await coupon.save()
@@ -60,9 +64,40 @@ const changeCouponStats = async(req,res)=>{
     }
 }
 
+const  loadEditCouponpage = async (req,res)=>{
+    try {
+        const couponId = req.params.id
+        const coupon = await Coupons.findById(couponId)
+        return res.render('edit-coupon',{coupon})
+    } catch (error) {
+      console.log(error.message);
+      return res.status(500).send('Internal serveer Error')  
+    }
+}
+const editCoupon = async (req,res)=>{
+    try {
+        const couponId = req.params.id
+        const {couponCode,discountPercentage,maxAmount,minAmount,
+            expirationDate,usageLimit,} = req.body
+            if(!couponCode || !discountPercentage || !maxAmount || !minAmount){
+                return res.status(400).send('Please fill necessary fields')
+            }
+        const coupon = await Coupons.findByIdAndUpdate(couponId,{$set:{code:couponCode,discountPercentage,maxAmount,minAmount,usageLimit:usageLimit||Infinity,expirationDate:expirationDate||null}},{new:true,upsert:true})
+        if(!coupon){
+            return res.status(404).send('coupon not found')
+        }
+        return res.redirect('/admin/coupons')
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error')
+    }
+}
+
 module.exports = {
     loadCoupon,
     loadAddCouponpage,
     addCoupon,
-    changeCouponStats
+    changeCouponStats,
+    loadEditCouponpage,
+    editCoupon
 };

@@ -72,6 +72,7 @@ userRoute.post('/razorpay/verify-payment',userAuth.isLoggedin,userController.ver
 // wallet
 userRoute.post('/wallet/handledPayment',userAuth.isLoggedin,userController.handledPayment)
 
+// wishlist
 userRoute.get('/wishlist',userAuth.isLoggedin,userController.loadWishlist)
 userRoute.post('/wishlist/:change',userController.addOrRemoveWishlist)
 userRoute.delete('/wishlist/:change',userController.addOrRemoveWishlist)

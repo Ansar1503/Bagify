@@ -9,6 +9,7 @@ const orderModel = require('../model/order_schema')
 const nodemailer = require('../config/nodemailer');
 const Return = require('../model/order_return_Schema')
 const Wallet = require('../model/wallet_schema')
+const Coupon = require('../model/coupon_schema')
 const Wishlist = require('../model/wishlist_schema')
 const Razorpay = require('../config/Razorpay')
 require('dotenv').config()
@@ -492,13 +493,14 @@ const loadCart = async (req, res) => {
             { path: 'user', populate: { path: 'address' } },
             { path: 'items.product' }
         ]);
+        const coupons = await Coupon.find({isActive:true});
         if(cart){
             const summary = calculateCartSummary(cart);
             cart.summary=summary
             await cart.save()
-            return res.render('cart', { cart, summary });
+            return res.render('cart', { cart, summary,coupons });
         }
-        return res.render('cart',{cart})
+        return res.render('cart',{cart,coupons})
          
         
     } catch (error) {
@@ -708,7 +710,7 @@ const loadCheckout = async(req,res)=>{
         // console.log(cartdata);
         // console.log(cartdata.items[0].product);
         
-        
+          
           return  res.render('checkout',{cartdata,statesArray,wallet})
         
     } catch (error) {
