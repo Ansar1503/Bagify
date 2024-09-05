@@ -31,8 +31,8 @@ adminRoute.post('/',admin_controller.verifyLogin)
 // customer page request
 adminRoute.get('/customers',admin_session.isLoggedin,admin_customer_controller.loadCustomer)
 
-adminRoute.post('/customers/block/:id',admin_session.isLoggedin,admin_customer_controller.blockCustomer) //block user
-adminRoute.post('/customers/unblock/:id',admin_session.isLoggedin,admin_customer_controller.unblockCustomer)//unblock user
+adminRoute.post('/customers/block/:id',admin_session.isLoggedin,admin_customer_controller.blockCustomer) 
+adminRoute.post('/customers/unblock/:id',admin_session.isLoggedin,admin_customer_controller.unblockCustomer)
 
 
 
@@ -65,6 +65,7 @@ adminRoute.get('/orders/return-status-change',admin_session.isLoggedin,order_con
 // coupon managment
 adminRoute.get('/coupons',admin_session.isLoggedin,coupon_controller.loadCoupon)
 adminRoute.get('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.loadAddCouponpage)
+adminRoute.post('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.addCoupon)
 
 
 module.exports = adminRoute;

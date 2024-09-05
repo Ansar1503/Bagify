@@ -51,7 +51,6 @@
                 <input type="number" name="minAmount" placeholder="Amount" class="form-control" id="minAmount" />
                 <span id="minAmountError" class="error"></span>
               </div>
-              <!-- Coupon Status -->
               
               <div style="display: flex; justify-content: center; padding-top: 15px;">
                 <button class="btn btn-md rounded font-sm hover-up" id="submitForm" type="submit">
@@ -89,45 +88,45 @@
     form.addEventListener('submit', function(event) {
       let isValid = true;
       
-      // Clear all error messages
+      
       document.querySelectorAll('.error').forEach(error => error.textContent = '');
       
-      // Validate Coupon Code
+      
       const couponCode = document.getElementById('couponCode').value.trim();
       if (!couponCode) {
         document.getElementById('couponCodeError').textContent = 'Coupon Code is required.';
         isValid = false;
       }
       
-      // Validate Coupon Description
+      
       const couponDescription = document.getElementById('couponDescription').value.trim();
       if (!couponDescription) {
         document.getElementById('couponDescriptionError').textContent = 'Description is required.';
         isValid = false;
       }
       
-      // Validate Discount Percentage
+      
       const couponDiscount = document.getElementById('couponDiscount').value;
       if (couponDiscount === '' || couponDiscount < 0 || couponDiscount > 100) {
         document.getElementById('couponDiscountError').textContent = 'Discount Percentage must be between 0 and 100.';
         isValid = false;
       }
       
-      // Validate Maximum Discount Amount
+      
       const maxAmount = document.getElementById('maxAmount').value;
       if (maxAmount && maxAmount < 0) {
         document.getElementById('maxAmountError').textContent = 'Maximum Discount Amount cannot be negative.';
         isValid = false;
       }
       
-      // Validate Minimum Purchase Amount
+    
       const minAmount = document.getElementById('minAmount').value;
       if (minAmount && minAmount < 0) {
         document.getElementById('minAmountError').textContent = 'Minimum Purchase Amount cannot be negative.';
         isValid = false;
       }
       
-      // Prevent form submission if validation fails
+      
       if (!isValid) {
         event.preventDefault(); 
       }

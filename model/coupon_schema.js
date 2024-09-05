@@ -43,16 +43,6 @@ const coupon =  new Schema({
         type: Number,
         default: 0
     },
-    applicableCategories: [{
-        type: ObjectId,
-        ref: 'Categories',
-        required: false
-    }],
-    applicableProducts: [{
-        type: ObjectId,
-        ref: 'Product',
-        required: false
-    }],
     usedBy: [{
         type: ObjectId,
         ref: 'User'

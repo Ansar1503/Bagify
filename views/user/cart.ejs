@@ -41,7 +41,14 @@
     <!-- Order Summary -->
     <div class="col-md-4" style="position: sticky; top: 0; height: 100vh;">
       <div class="card mb-3"> 
-      
+        <div class="card">
+          <div class="card-body">
+              <!-- Apply Coupon Button -->
+              <div class="d-flex mt-3">
+                <button type="button" id="openCouponModalButton" class="btn btn-primary btn-sm" onclick="openCouponModal()">Apply Coupon</button>
+              </div>
+            </div>
+       </div>
         <div class="card-body">
           <h5 class="card-title">ORDER SUMMARY</h5>
           <p class="card-text d-flex justify-content-between">
@@ -77,8 +84,134 @@
 </div>
 
 
+
+<div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="couponModalLabel">Available Coupons</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <% availableCoupons.forEach(coupon => { %>
+            <div class="col-md-6 mb-3">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column justify-content-between">
+                  <div>
+                    <h6 class="card-title text-dark">
+                      <i class="bi bi-ticket-fill me-2"></i> 
+                      <%= coupon.couponName %>
+                    </h6>                    
+                    <p class="card-text">
+                      <strong>Discount:</strong> <%= coupon.couponDiscount %>% 
+                    </p>
+                    <p class="card-text">
+                      <strong>Min Amount:</strong> <%= coupon.minAmount %> Rs
+                    </p>
+                    <p class="card-text">
+                      <strong>Max Discount Amount:</strong> <%= coupon.maxAmount %> Rs
+                    </p>
+                    <p class="card-text">
+                      <strong>Code:</strong> <span class="badge bg-secondary"><%= coupon.couponCode %></span>
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm mt-2" onclick="selectCoupon('<%= coupon.couponCode %>','<%= coupon.couponDiscount %>')">
+                    <i class="bi bi-check-circle me-1"></i> Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script>
-  // Function to remove item from cart
+
+  
+  const openCouponModal = () => {
+       const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
+       couponModal.show();
+     };
+   
+     
+     const selectCoupon = async(couponCode) => {
+     
+       document.getElementById('couponCode').value = couponCode ;
+       document.getElementById('selectCouponButton').style.display = 'none';
+       document.getElementById('couponButtons').style.display = 'block';
+   
+       
+       const couponModal = bootstrap.Modal.getInstance(document.getElementById('couponModal'));
+       couponModal.hide();
+       await applyCoupon();
+     };
+
+     const applyCoupon= async () =>{
+
+      const couponCodeElement = document.getElementById('couponCode');
+    
+      const couponCode = couponCodeElement ? couponCodeElement.value : '';
+    
+        try {
+            const response = await fetch(`/cart/applyCoupon`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ couponCode })
+            });
+    
+            const data = await response.json();
+    
+            if (data.success) {
+                document.getElementById('subTotalPrice').innerText = `Rs ${data.subTotal.toFixed(2)}`;
+                document.getElementById('totalPrice').innerText = `Rs ${data.finalPrice.toFixed(2)}`;
+                document.getElementById('couponDiscount').innerText = `Rs ${data.discount.toFixed(2)}`
+    
+                document.getElementById('couponButtons').style.display = 'block';
+    
+                Swal.fire({
+                  icon: 'success',
+                  text: 'Coupon applied successfully.',
+                  toast: true,
+                  position: 'top-right',
+                  showConfirmButton: false,
+                  timerProgressBar: true,
+                  timer: 3000
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    text: data.message,
+                    toast: true,
+                    position: 'top-right',
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    timer: 3000
+                });
+            }
+        } catch (error) {
+    
+            console.error('Error applying coupon:', error);
+    
+            Swal.fire({
+              icon: 'error',
+              text: 'An error occurred while applying the coupon.',
+              toast: true,
+              position: 'top-right',
+              showConfirmButton: false,
+              timerProgressBar: true,
+              timer: 3000
+            });
+    
+        }
+    }    
+  
   async function removeItem(itemId) {
     const result = await Swal.fire({
       title: 'Are you sure?',

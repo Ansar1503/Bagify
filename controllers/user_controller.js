@@ -1369,6 +1369,15 @@ const createOrder = async (req, res) => {
     }
 };
 
+const applyCoupon = async(req,res)=>{
+    try {
+        
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({success:false,message:'internal server error'})
+    }
+}
+
 
 module.exports = {
     loadlogin,
@@ -1410,5 +1419,6 @@ module.exports = {
     verifyOrder,
     handledPayment,
     loadWishlist,
-    addOrRemoveWishlist
+    addOrRemoveWishlist,
+    applyCoupon
 }

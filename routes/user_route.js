@@ -48,6 +48,7 @@ userRoute.post('/addtoCart',userAuth.isLoggedin,userController.addtoCart)
 userRoute.patch('/increase-quantity',userAuth.isLoggedin,userController.increaseItem)
 userRoute.patch('/decrease-quantity',userAuth.isLoggedin,userController.decreaseQuantity)
 userRoute.delete('/removeItem',userAuth.isLoggedin,userController.removeCartItem)
+userRoute.post('/cart/applyCoupon',userAuth.isLoggedin,userController.applyCoupon)
 
 // order
 userRoute.get('/checkoutpage/:user_id',userAuth.isLoggedin,userController.loadCheckout)
