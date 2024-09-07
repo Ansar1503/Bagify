@@ -49,9 +49,10 @@ const CartItemSchema = new mongoose.Schema({
       },
       couponDiscount:{
         type:Number,
-        required:true
+        required:false, 
+        default:0
       }
-    }
+    },
     
   }, {
     timestamps: true

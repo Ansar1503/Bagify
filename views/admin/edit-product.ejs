@@ -71,7 +71,7 @@
 
                 <div class="mb-3">
                     <label for="productImages" class="form-label">Add New Images (Max 3 total)</label>
-                    <input type="file" id="productImages" class="form-control" name="pro_images" multiple onchange="handleFileInput()">
+                    <input type="file" id="productImages" class="form-control" name="pro_images" multiple accept="image/*" onchange="handleFileInput()">
                     <div class="invalid-feedback">You can only add up to 3 total images.</div>
                 </div>
 
@@ -89,14 +89,13 @@
 </section>
 
 <script>
-let addedFiles = []; 
+let addedFiles = [];
 
 function handleFileInput() {
     const fileInput = document.getElementById('productImages');
     const preview = document.getElementById('imagePreview');
     const files = fileInput.files;
 
-    
     if (files.length > 0 && addedFiles.length + files.length > 3) {
         alert('You can only add up to 3 total images.');
         fileInput.value = ''; 
@@ -104,7 +103,6 @@ function handleFileInput() {
     }
 
     preview.innerHTML = ''; 
-
 
     addedFiles = Array.from(files);
 
@@ -144,7 +142,6 @@ function handleFileInput() {
 }
 
 function removeFileFromInput(file) {
-    
     const dataTransfer = new DataTransfer();
     addedFiles.forEach(f => {
         if (f !== file) {
@@ -158,14 +155,9 @@ function removeFileFromInput(file) {
 function updateFileInputValidation() {
     const totalImages = document.getElementById('imagePreview').children.length;
     const fileInput = document.getElementById('productImages');
-    
-    if (totalImages >= 3) {
-        fileInput.disabled = true;
-    } else {
-        fileInput.disabled = false;
-    }
-}
 
+    fileInput.disabled = totalImages >= 3;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     updateFileInputValidation();
@@ -173,8 +165,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.getElementById('productForm').addEventListener('submit', function(event) {
     const form = event.target;
+    const regPrice = parseFloat(document.getElementById('productPrice').value);
+    const salePrice = parseFloat(document.getElementById('offerPrice').value);
 
-   
+    if (salePrice > regPrice) {
+        event.preventDefault();
+        event.stopPropagation();
+        Swal.fire({
+            icon: 'error',
+            text: 'Offer price cannot be greater than the regular price.',
+            toast: true,
+            position: 'top-right',
+            showConfirmButton: false,
+            timerProgressBar: true,
+            timer: 3000
+        });
+    }
+
     if (!form.checkValidity()) {
         event.preventDefault();
         event.stopPropagation();

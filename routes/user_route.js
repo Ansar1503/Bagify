@@ -49,6 +49,7 @@ userRoute.patch('/increase-quantity',userAuth.isLoggedin,userController.increase
 userRoute.patch('/decrease-quantity',userAuth.isLoggedin,userController.decreaseQuantity)
 userRoute.delete('/removeItem',userAuth.isLoggedin,userController.removeCartItem)
 userRoute.post('/cart/applyCoupon',userAuth.isLoggedin,userController.applyCoupon)
+userRoute.patch('/cart/removeCoupon',userAuth.isLoggedin,userController.removeCoupon)
 
 // order
 userRoute.get('/checkoutpage/:user_id',userAuth.isLoggedin,userController.loadCheckout)
@@ -76,6 +77,8 @@ userRoute.post('/wallet/handledPayment',userAuth.isLoggedin,userController.handl
 userRoute.get('/wishlist',userAuth.isLoggedin,userController.loadWishlist)
 userRoute.post('/wishlist/:change',userController.addOrRemoveWishlist)
 userRoute.delete('/wishlist/:change',userController.addOrRemoveWishlist)
+
+
 
 // google authentication
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email','https://www.googleapis.com/auth/user.phonenumbers.read'] }))

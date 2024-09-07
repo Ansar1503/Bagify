@@ -141,6 +141,24 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.addEventListener('change', handleFileInput);
 
     form.addEventListener('submit', function(event) {
+        const regPrice = parseFloat(document.getElementById('productPrice').value);
+        const salePrice = parseFloat(document.getElementById('offerPrice').value);
+
+        // Check if sale price is greater than regular price
+        if (salePrice > regPrice) {
+            event.preventDefault();
+            event.stopPropagation();
+            Swal.fire({
+                icon: 'error',
+                text: 'Offer price cannot be greater than the regular price.',
+                toast: true,
+                position: 'top-right',
+                showConfirmButton: false,
+                timerProgressBar: true,
+                timer: 3000
+            });
+        }
+
         if (!form.checkValidity()) {
             event.preventDefault();
             event.stopPropagation();
@@ -149,7 +167,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-
 
 <%- include('../layout/admin_footer.ejs') %>

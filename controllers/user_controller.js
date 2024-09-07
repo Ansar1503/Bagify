@@ -493,14 +493,15 @@ const loadCart = async (req, res) => {
             { path: 'user', populate: { path: 'address' } },
             { path: 'items.product' }
         ]);
+        let summary
+        
         const coupons = await Coupon.find({isActive:true});
         if(cart){
-            const summary = calculateCartSummary(cart);
-            cart.summary=summary
-            await cart.save()
-            return res.render('cart', { cart, summary,coupons });
+            summary = cart.summary
         }
-        return res.render('cart',{cart,coupons})
+
+        
+        return res.render('cart',{cart,coupons,summary})
          
         
     } catch (error) {
@@ -565,7 +566,8 @@ const removeCartItem = async (req,res)=>{
         return res.status(200).json({success:true,message:'cart removed successfully',isEmpty:true})
       }
       const summary = calculateCartSummary(cart) 
-     
+      cart.summary = summary
+      await cart.save()
       return res.status(200).json({ success: true, message: 'Item removed successfully', cart , summary});
        
     } catch (error) {
@@ -577,7 +579,8 @@ const increaseItem = async (req, res) => {
     try {
         const itemId = req.query.itemId;
         const maxQuantity = 5; 
-
+        console.log(req.body);
+        const couponCode = req.body.coupon;
         
         const cart = await Cart.findOne({ 'items._id': itemId }).populate('items.product');
         if (!cart) {
@@ -605,9 +608,12 @@ const increaseItem = async (req, res) => {
         if (!updatedCart) {
             return res.status(404).json({ success: false, message: 'Failed to update cart' });
         }
-
+        const coupon = await Coupon.findOne({ code:couponCode });
+        const discountPercentage = coupon?.discountPercentage || 0;
+        let  summary = calculateCartSummary(updatedCart);
+        const discountAmount = (discountPercentage / 100) * summary.total;
         const updatedItem = updatedCart.items.find(item => item._id.toString() === itemId);
-        const summary = calculateCartSummary(updatedCart);
+        summary = calculateCartSummary(updatedCart,discountAmount);
         updatedCart.summary = summary;
         await updatedCart.save();
         
@@ -640,39 +646,44 @@ const getCartSummary = async (req, res) => {
 };
 
 
-function calculateCartSummary(cart) {
+function calculateCartSummary(cart,couponamount=0) {
     let subtotal = 0;
     cart.items.forEach(item => {
         subtotal += item.price * item.quantity;
     });
 
-    const deliveryCharges = 0; 
-    const couponAmount = 0
-    const total = subtotal + deliveryCharges - couponAmount;
-    
 
+    const deliveryCharges = 0; 
+    const couponAmount = couponamount;
+    const total = subtotal + deliveryCharges - couponamount;
+    
     return {
-        subtotal: subtotal.toFixed(2),
-        deliveryCharges: deliveryCharges.toFixed(2),
-        total: total.toFixed(2),
-        couponDiscount:couponAmount.toFixed(2)
+        subtotal: Math.ceil(subtotal),
+        deliveryCharges: Math.ceil(deliveryCharges),
+        total: Math.ceil(total),
+        couponDiscount:Math.ceil(couponAmount)
     };
 }
 
 const decreaseQuantity = async (req,res)=>{
     try {
         const itemId = req.query.itemId 
+        console.log(req.body);
+        
+        
         const cart =  await Cart.findOneAndUpdate({'items._id':itemId},{$inc:{'items.$.quantity':-1}},{new:true})
         if(!cart){
             return res.status(404).json({ success: false, message: 'Item not found in the cart' })
            }
+           const coupon = await Coupon.findOne({ code:req.body.coupon });
+           const discountPercentage = coupon?.discountPercentage || 0
+           
+           let  summary = calculateCartSummary(cart);
+           const discountAmount = (discountPercentage / 100) * summary.total;
 
-           const summary = calculateCartSummary(cart)
+           summary = calculateCartSummary(cart,discountAmount)
            cart.summary = summary
            await cart.save()
-
-          
-                      
 
            return res.json({ 
             success: true, 
@@ -1373,13 +1384,71 @@ const createOrder = async (req, res) => {
 
 const applyCoupon = async(req,res)=>{
     try {
+        const {coupon} = req.body
+        // console.log(req.body);
         
+        const user = new mongoose.Types.ObjectId(req.body.userId)
+        // console.log(user);
+        // console.log(req.session.user_id);
+        
+        
+        const couponData = await Coupon.findOne({code:coupon})
+        if(!couponData){
+            return res.status(400).json({success:false,message:'couldnot find the coupon'})
+        }
+        if(!couponData.isActive){
+            return res.status(400).json({success:false,message:'coupon is not active'})
+        }
+        if(couponData.usedBy.includes(user)){
+            return res.status(400).json({success:false,message:'coupon already used'})
+        }
+        if(couponData.expirationDate && couponData.expirationDate < Date.now()){
+            return res.status(400).json({success:false,message:'coupon expired'})
+        }
+        if(couponData.usageLimit < couponData.usedBy.length){
+            return res.status(400).json({success:false,message:'coupon limit reached'})
+        }
+        
+        const cart = await Cart.findOne({user:user})
+        // console.log(cart.summary);
+        
+        const discountedAmount = cart.summary.total * (couponData.discountPercentage/100)
+        // console.log(discountedAmount);
+        
+        if(discountedAmount>couponData.maxAmount){
+            return res.status(400).json({success:false,message:'coupon amount is greater than max amount'})
+        }
+        const summary = await calculateCartSummary(cart,discountedAmount)
+        // console.log(summary);
+        
+        cart.summary = summary
+        await cart.save()
+        // console.log('cart saved');
+
+        return res.status(200).json({success:true,message:'coupon applied successfully',summary,coupon:couponData})
     } catch (error) {
         console.log(error.message)
         return res.status(500).json({success:false,message:'internal server error'})
     }
 }
 
+const removeCoupon = async(req,res)=>{
+    try {
+        const userId = new mongoose.Types.ObjectId(req.body.userId)
+        console.log(userId);
+        const coupon = await Coupon.findOneAndUpdate({usedBy:userId},{$pull:{usedBy:userId}})
+        console.log(coupon);
+        const cart = await Cart.findOne({user:userId})
+        const summary = await calculateCartSummary(cart)
+        cart.summary = summary        
+        await cart.save()
+        return res.status(200).json({success:true,message:'coupon removed successfully',summary})
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server error'})
+    }
+}
 
 module.exports = {
     loadlogin,
@@ -1422,5 +1491,6 @@ module.exports = {
     handledPayment,
     loadWishlist,
     addOrRemoveWishlist,
-    applyCoupon
+    applyCoupon,
+    removeCoupon
 }
