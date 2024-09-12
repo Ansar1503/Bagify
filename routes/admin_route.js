@@ -15,6 +15,7 @@ const order_controller = require('../controllers/order_controller')
 const coupon_controller = require('../controllers/coupon_controller')
 
 
+
 // set view engine
 adminRoute.set('view engine','ejs');
 adminRoute.set('views','./views/admin');
@@ -40,11 +41,19 @@ adminRoute.post('/customers/unblock/:id',admin_session.isLoggedin,admin_customer
 adminRoute.get('/products',admin_session.isLoggedin,product_controller.loadProducts);
 adminRoute.get('/products/addproduct',admin_session.isLoggedin,product_controller.loadAddproduct);
 adminRoute.get('/products/edit-product/:id',admin_session.isLoggedin,product_controller.loadEditProduct)
-adminRoute.get('/productdetail/:id',admin_session.isLoggedin,product_controller.productdetail)
+adminRoute.get('/products/productdetail/:id',admin_session.isLoggedin,product_controller.productdetail)
 adminRoute.post('/products/edit-product',admin_session.isLoggedin,multer.product_upload.array("pro_images",3),imageResizer.multimageCrop,product_controller.editProduct)
 adminRoute.post('/products/addproduct',admin_session.isLoggedin,multer.product_upload.array("pro_images",3),imageResizer.multimageCrop,product_controller.addProduct)
 adminRoute.post('/products/deactivate-product/:id',admin_session.isLoggedin,product_controller.deactivateProduct)
 adminRoute.post('/products/activate-product/:id',admin_session.isLoggedin,product_controller.activateProduct)
+adminRoute.get('/products/addProductOfferPage/:id',admin_session.isLoggedin,product_controller.addProductOfferPage)
+adminRoute.get('/products/editProductOfferPage/:id',admin_session.isLoggedin,product_controller.editProductOfferPage)
+adminRoute.post('/products/addProductOffer/:id',admin_session.isLoggedin,product_controller.addProductOffer)
+adminRoute.delete('/products/removeProductOffer/:id',admin_session.isLoggedin,product_controller.removeProductOffer)
+adminRoute.put('/products/changeOfferStatus/:id',admin_session.isLoggedin,product_controller.changeOfferStatus)
+adminRoute.patch('/products/updateOfferPrice/:id',admin_session.isLoggedin,product_controller.updateOfferPrice)
+
+
 
 // categories
 adminRoute.get('/category/',admin_session.isLoggedin,categories_controller.loadCategory);
@@ -54,6 +63,12 @@ adminRoute.post('/category/unlist-category/:id',admin_session.isLoggedin,categor
 adminRoute.post('/category/relist-categroy/:id',admin_session.isLoggedin,categories_controller.relistCategory)
 adminRoute.post('/category/add-category',admin_session.isLoggedin,multer.category_upload.single('image'),imageResizer.singleimageCrop,categories_controller.addCategory)
 adminRoute.post('/category/update-category/:id',admin_session.isLoggedin,multer.category_upload.single('image'),imageResizer.singleimageCrop,categories_controller.updateCategory)
+adminRoute.get('/category/details/:id',admin_session.isLoggedin,categories_controller.loadCategoryDetails)
+adminRoute.get('/category/addOffer/:id',admin_session.isLoggedin,categories_controller.loadAddCategoryPage)
+adminRoute.post('/category/addOffer/:id',admin_session.isLoggedin,categories_controller.addCategoryOffer)
+adminRoute.get('/category/editOffer/:id',admin_session.isLoggedin,categories_controller.loadEditCategoryOfferPage)
+adminRoute.delete('/categories/removeCategoryOffer/:id',admin_session.isLoggedin,categories_controller.removeCategoryOffer)
+adminRoute.put('/categories/changeCategoryOfferStatus/:id',admin_session.isLoggedin,categories_controller.changeOfferStatus)
 
 // order managment
 adminRoute.get('/orders',admin_session.isLoggedin,order_controller.orderList)

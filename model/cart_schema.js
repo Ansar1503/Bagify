@@ -41,7 +41,13 @@ const CartItemSchema = new mongoose.Schema({
       },
       deliveryCharges:{
         type:Number,
-        required:false
+        required:true,
+        default:0
+      },
+      offerDiscount:{
+        type:Number,
+        required:true,
+        default:0
       },
       total:{
         type:Number,

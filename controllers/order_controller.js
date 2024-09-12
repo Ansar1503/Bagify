@@ -112,9 +112,7 @@ const returnList = async (req,res)=> {
 const returnStatusChange= async(req,res)=>{
     try {
         const accept = req.query.accept ==='true' ? true :false
-        // console.log(req.query);
         
-        // console.log(accept);
         
         if(accept == 'null' ||  accept == 'undefined'){
             return res.status(400).send('please choose  accept or reject')

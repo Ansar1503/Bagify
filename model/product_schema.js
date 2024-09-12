@@ -1,5 +1,34 @@
 const mongoose = require('mongoose');
 
+
+const offerSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    discountPercentage: {
+        type: Number,
+        required: true,
+        min: 0,
+        max: 90
+    },
+    startDate: {
+        type: Date,
+        required: true
+    },
+    expiryDate: {
+        type: Date,
+        required: true
+    },
+    description: {
+        type: String
+    },  
+     status: {
+        type: Boolean,
+        default:true
+    }
+},{ timestamps: true })
+
 const product_schema = new mongoose.Schema({
     product_name:{
         type:String,
@@ -43,7 +72,12 @@ const product_schema = new mongoose.Schema({
     inWishList:{
         type:Boolean,
         required:false,
-    }
+    },
+    offerPrice:{
+        type:Number,
+        default:0
+     },
+    offer:offerSchema
 
 },{timestamps:true})
 

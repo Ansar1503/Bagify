@@ -153,6 +153,117 @@ const productdetail = async(req,res)=>{
     }
 }
 
+const addProductOfferPage = async(req,res)=>{
+    try {
+        return res.render('addProductOfferpage',{productId:req.params.id})
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error')        
+    }
+}
+
+const addProductOffer = async(req,res)=>{
+    try {
+        const { name,discountPercentage,startDate,expiryDate,description } = req.body
+        const product = await Products.findById(req.params.id)
+       
+        if(product.offer){
+            return res.status(400).render('addOfferPage',{error:'offer already exists for this product check product page'})
+        }
+        const discountAmount = Math.ceil( product.product_sale_price * discountPercentage/100 ) 
+        
+        const offer = {
+            name,
+            discountPercentage,
+            startDate,
+            expiryDate,
+            description,
+            discountAmount
+        }
+
+        product.offer = offer
+        product.offerPrice = product.product_sale_price - discountAmount
+        await product.save()
+        return res.redirect(`/admin/products/productdetail/${product._id}`)        
+        
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error')
+    }
+}
+
+const editProductOfferPage = async(req,res)=>{
+    try {
+        const product = await Products.findById(req.params.id)
+        return res.render('editProductOfferPage',{offer:product.offer,productId:product._id})
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error')        
+    }
+} 
+
+const removeProductOffer  = async(req,res)=>{
+    try {
+        const product = await Products.findById(req.params.id)
+        if(!product || !product.offer){
+          return res.satus(400).json({success:false,message:'product/offer not found'})  
+        }
+        product.offer = null,
+        product.offerPrice = null
+        await product.save()
+        return res.status(200).json({success:true,message:'prodcut offer removed successfully'})
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server Error'})        
+    }
+}
+
+const changeOfferStatus = async(req,res)=>{
+    try {
+        
+        const product = await Products.findById(req.params.id)
+        const status = req.body.status
+        
+        if(!product || !product.offer){
+            return res.status(400).json({success:false,message:'product/offer not found'})
+        }
+        if(product.offer.status == status){
+            return res.status(400).json({success:false,message:'same status'})
+        }
+        product.offer.status = status
+        await product.save()
+        const update = status == 'true' ? 'Activated' : 'Deactivated'
+        return res.status(200).json({success:true,message:`offer ${update} successfully`})
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal Server Error'})
+    }
+}
+
+const updateOfferPrice = async(req,res)=>{
+    try {
+        
+        const offerType = req.body.offerType
+        const product = await Products.findById(req.params.id).populate('product_category')
+        if(!product || !product.offer || !product.product_category.offer){
+            return res.status(400).json({success:false,message:'product/offer not found'})
+        }
+        if(offerType == 'category'){
+            product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.product_category.offer.discountPercentage/100)
+        }
+        if(offerType == 'product'){
+            product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.offer.discountPercentage/100)
+        }
+        await product.save()
+        return res.status(200).json({success:true,message:'offer price updated successfully'})
+       
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal Server Error'})        
+    }
+}
+
 module.exports = {
     loadProducts,
     loadAddproduct,
@@ -161,5 +272,11 @@ module.exports = {
     editProduct,
     deactivateProduct,
     activateProduct,
-    productdetail
+    productdetail,
+    addProductOfferPage,
+    addProductOffer,
+    editProductOfferPage,
+    removeProductOffer,
+    changeOfferStatus,
+    updateOfferPrice
 }

@@ -12,14 +12,6 @@
                 <div class="col-lg-4 col-md-6 me-auto">
                     <input type="text" placeholder="Search..." class="form-control">
                 </div>
-                <div class="col-lg-2 col-md-3 col-6">
-                    <select class="form-select">
-                        <option>All Categories</option>
-                        
-                        <option></option>
-                        
-                    </select>
-                </div>
             </div>
         </header> 
         <div class="card-body">
@@ -32,6 +24,7 @@
                             <th>Category</th>
                             <th>Status</th>
                             <th>Price</th>
+                            <th>Offer price</th>
                             <th>Details</th>
                             <th class="text-end">Actions</th>
                         </tr>
@@ -46,7 +39,7 @@
                                     <span><%= product.product_name %></span>
                                 </div>
                             </td>
-                            <td><%= product.product_category.name %></td>
+                            <td><%= product.product_category?.name %></td>
                             <td>
                                 <% if(product.isActive) {%>
                                 <span class="badge bg-success">Active</span>
@@ -56,8 +49,9 @@
                                 <% } %>
                             </td>
                             <td>₹<%= product.product_sale_price %></td>
+                            <td>₹<%= product.offerPrice || 0.0 %></td>
                             <td>
-                                <a href="/admin/productdetail/<%= product._id %>" class="btn btn-sm btn-outline-primary">Details</a>
+                                <a href="/admin/products/productdetail/<%= product._id %>" class="btn btn-sm btn-outline-primary">Details</a>
                             </td>
                             <td class="text-end">
                                 <a href="/admin/products/edit-product/<%= product._id %>" class="btn btn-sm btn-outline-primary">
@@ -82,7 +76,7 @@
     <div class="pagination-area mt-15 mb-50">
         <nav aria-label="Page navigation example">
             <ul class="pagination justify-content-start">
-                <!-- Pagination elements -->
+                
             </ul>
         </nav>
     </div>

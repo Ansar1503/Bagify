@@ -40,7 +40,8 @@ const loadRegister = async function (req,res){
 const loadHome = async function(req,res){
     try {
         const categories = await Category.find({isListed:true})
-        const products = await Products.find({isActive:true}).populate('product_category').limit(6)
+        const products = await Products.find({isActive:true}).populate({path:'product_category',populate:{path:'offer'}}).populate('offer').limit(6)
+    
         res.render('home',{products,categories})
     } catch (error) {
         console.log(error);
@@ -65,7 +66,7 @@ const loadDashboard = async function(req,res){
             query.googleId = req.session.user_id;
         }
 
-        const wallet = await Wallet.findOne({user:req.session.user_id})
+        const wallet = await Wallet.findOne({user:req.session.user_id}).sort({createdAt:-1})
         
 
         const user = await User.findOne(query).populate('address')
@@ -533,6 +534,7 @@ const addtoCart = async(req,res)=>{
             })
             
             
+            
             const summary = calculateCartSummary(cart)
             cart.summary = summary
             // console.log(summary);
@@ -553,21 +555,26 @@ const addtoCart = async(req,res)=>{
 const removeCartItem = async (req,res)=>{
     try {
         const itemId = new mongoose.Types.ObjectId(req.query.itemId)
-         
+        
        const cart = await Cart.findOneAndUpdate({'items._id':itemId},{$pull:{items:{_id:itemId}}},{new:true})
-
+        
        if (!cart) {
         return res.status(404).json({ success: false, message: 'Item not found in cart' });
       }
-
+      const updatedcoupon = await Coupon.findOneAndUpdate({usedBy:cart.user},{$pull:{usedBy:cart.user}}) 
+        // console.log(updatedcoupon);
       if(cart.items.length==0){
         await Cart.deleteOne({ _id: cart._id });
         console.log('cart deleted');
         return res.status(200).json({success:true,message:'cart removed successfully',isEmpty:true})
       }
-      const summary = calculateCartSummary(cart) 
+      
+      const summary = calculateCartSummary(cart,0,) 
       cart.summary = summary
       await cart.save()
+      
+     
+      
       return res.status(200).json({ success: true, message: 'Item removed successfully', cart , summary});
        
     } catch (error) {
@@ -611,7 +618,8 @@ const increaseItem = async (req, res) => {
         const coupon = await Coupon.findOne({ code:couponCode });
         const discountPercentage = coupon?.discountPercentage || 0;
         let  summary = calculateCartSummary(updatedCart);
-        const discountAmount = (discountPercentage / 100) * summary.total;
+        let discountAmount = (discountPercentage / 100) * summary.total;
+        discountAmount = discountAmount > coupon?.maxAmount ? coupon?.maxAmount : discountAmount
         const updatedItem = updatedCart.items.find(item => item._id.toString() === itemId);
         summary = calculateCartSummary(updatedCart,discountAmount);
         updatedCart.summary = summary;
@@ -646,7 +654,7 @@ const getCartSummary = async (req, res) => {
 };
 
 
-function calculateCartSummary(cart,couponamount=0) {
+function calculateCartSummary(cart,couponamount=0,offerDiscount = 0) {
     let subtotal = 0;
     cart.items.forEach(item => {
         subtotal += item.price * item.quantity;
@@ -654,14 +662,15 @@ function calculateCartSummary(cart,couponamount=0) {
 
 
     const deliveryCharges = 0; 
-    const couponAmount = couponamount;
-    const total = subtotal + deliveryCharges - couponamount;
-    
+    const couponAmount = Math.ceil(couponamount);
+    const total = subtotal + deliveryCharges - couponAmount;
+    const offer = Math.ceil(offerDiscount);
     return {
-        subtotal: Math.ceil(subtotal),
-        deliveryCharges: Math.ceil(deliveryCharges),
-        total: Math.ceil(total),
-        couponDiscount:Math.ceil(couponAmount)
+        subtotal: subtotal,
+        deliveryCharges: deliveryCharges,
+        total: total,
+        offerDiscount:offer,
+        couponDiscount:couponAmount
     };
 }
 
@@ -679,8 +688,8 @@ const decreaseQuantity = async (req,res)=>{
            const discountPercentage = coupon?.discountPercentage || 0
            
            let  summary = calculateCartSummary(cart);
-           const discountAmount = (discountPercentage / 100) * summary.total;
-
+           let discountAmount = (discountPercentage / 100) * summary.total;
+           discountAmount = discountAmount > coupon?.maxAmount ? coupon?.maxAmount : discountAmount
            summary = calculateCartSummary(cart,discountAmount)
            cart.summary = summary
            await cart.save()
@@ -717,12 +726,9 @@ const loadCheckout = async(req,res)=>{
             "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
         ];
         // console.log('cartsummary',cartdata.summary);
-      
-        // console.log(cartdata);
-        // console.log(cartdata.items[0].product);
         
-          
-          return  res.render('checkout',{cartdata,statesArray,wallet})
+          console.log('couponId',req.body.couponId)
+          return  res.render('checkout',{cartdata,statesArray,wallet,coupon:req.body.couponId})
         
     } catch (error) {
         console.error(error.message)
@@ -734,6 +740,8 @@ const placeOrder = async (req,res)=>{
     try {
         const {addressId,paymentMethod,cartId} = req.body
         const paymentId = req.body.paymentId || null
+        
+        const couponId = new mongoose.Types.ObjectId(req.body.couponId)
         
     const address = await AddressModel.findOne({_id:addressId})
     const cart = await Cart.findOne({_id:cartId}).populate([{path:'items.product',populate:{path:'product_category'}}])
@@ -802,7 +810,6 @@ const placeOrder = async (req,res)=>{
     }
     } 
    
-   
     if(!orderdata){
        return res.status(404).send('Item not found!. please check the cart')
     }
@@ -818,7 +825,9 @@ const placeOrder = async (req,res)=>{
         console.log('cart is not deleted');
         
     }
-    
+    const coupon = await Coupon.findById(couponId)
+    coupon.usedBy.push(cart.user._id)
+    await coupon.save()
     return res.render('ordercomplete',{orderdata})
     
     } catch (error) {
@@ -1420,11 +1429,12 @@ const applyCoupon = async(req,res)=>{
         }
         const summary = await calculateCartSummary(cart,discountedAmount)
         // console.log(summary);
-        
+        couponData.usedBy.push(user)
         cart.summary = summary
         await cart.save()
+        await couponData.save()
         // console.log('cart saved');
-
+        
         return res.status(200).json({success:true,message:'coupon applied successfully',summary,coupon:couponData})
     } catch (error) {
         console.log(error.message)
@@ -1437,7 +1447,7 @@ const removeCoupon = async(req,res)=>{
         const userId = new mongoose.Types.ObjectId(req.body.userId)
         console.log(userId);
         const coupon = await Coupon.findOneAndUpdate({usedBy:userId},{$pull:{usedBy:userId}})
-        console.log(coupon);
+        // console.log(coupon);
         const cart = await Cart.findOne({user:userId})
         const summary = await calculateCartSummary(cart)
         cart.summary = summary        

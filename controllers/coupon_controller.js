@@ -24,6 +24,7 @@ const addCoupon = async (req,res)=>{
     try {
         const {couponCode,discountPercentage,maxAmount,minAmount,
             expirationDate,usageLimit} = req.body
+           
             if(!couponCode || !discountPercentage || !maxAmount || !minAmount){
             return res.render('addCoupon',{error:"Please fill required fields"})                
             }

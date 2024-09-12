@@ -94,7 +94,7 @@
                                             </div>
                                             <div class="clearfix product-price-cover">
                                                 <div class="product-price primary-color float-left">
-                                                    <ins><span class="text-brand">₹ <%= product.product_sale_price %>
+                                                    <ins><span class="text-brand">₹ <%= product.offerPrice?product.offerPrice:product.product_sale_price%>
                                                         </span></ins>
                                                     <% if(product.product_regular_price!==product.product_sale_price) {%>
                                                         <ins><span class="old-price font-md ml-15">
@@ -130,6 +130,7 @@
                                                             </form>
                                                         <% } else { %>
                                                             <form action="/addtoCart" method="post">
+                                                                
                                                                 <input type="hidden" name="product" value="<%= product._id %>">
                                                                 <input type="hidden" name="ogprice" value="<%= product.product_regular_price %>">
                                                                 <input type="hidden" name="price" value="<%= product.product_sale_price %>">

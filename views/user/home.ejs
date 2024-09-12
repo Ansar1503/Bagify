@@ -109,7 +109,7 @@
                                     </span>
                                 </div>
                                 <div class="product-price">
-                                    <span>₹ <%= product.product_sale_price%> </span>
+                                    <span>₹ <%= product.offerPrice?product.offerPrice:product.product_sale_price%> </span>
                                     <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹'+ product.product_regular_price   %>   </span>
                                 </div>
                                 <div class="product-action-1 show">

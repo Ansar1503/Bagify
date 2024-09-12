@@ -1,6 +1,5 @@
 const Category = require('../model/category_schema')
-const { loadAddproduct } = require('./product_controller')
-
+const Products = require('../model/product_schema')
 
 
 const loadCategory = async function (req,res){
@@ -34,20 +33,6 @@ const addCategory = async function (req,res){
             }) 
         await add_category.save()  
 
-        
-        try {
-            if(req.files.length>0){
-            existingProduct.product_images.forEach((image)=>{
-                const oldImagePath = path.join(__dirname, '../public/imgs/categories/', image)
-                fs.unlinkSync(oldImagePath)
-                console.log('successfully deleted file');
-                
-            })
-        }
-        } catch (error) {
-            return res.status(404).send('file unlink error')
-        }
-   
         return res.redirect('/admin/category')
 
     } catch (error) {
@@ -105,7 +90,103 @@ const updateCategory = async function (req,res){
         return res.status(500).send('updating category error')
     }
 }
+const loadCategoryDetails = async(req,res)=>{
+    try{
+        const category = await Category.findOne({_id:req.params.id})
+        console.log(category);
+        return res.render('categoryDetails',{category})
+    }catch(error){
+        console.log(error.message);
+        return res.status(500).send('Internal Server')
+    }
+}
 
+const loadAddCategoryPage = async(req,res)=>{
+    try{
+        return res.render('addCategoryOffer',{categoryId:req.params.id})
+    }catch(error){
+        console.log(error.message)
+        return res.status(500).send('Internal Server Error')  
+    }
+}
+
+const addCategoryOffer = async(req,res)=>{
+    try{
+        const { name,discountPercentage,startDate,expiryDate,description } = req.body
+        const category = await Category.findById(req.params.id)
+        if(!category || !category.isListed ){
+            return res.status(400).send('category not found')
+        }
+        if(category.offer || category.offer?.name == name){
+            return res.status(400).send('offer already added')
+        }
+        const offer = {
+            name,
+            discountPercentage,
+            startDate,
+            expiryDate,
+            description
+        }
+        
+        category.offer = offer
+        await category.save()
+        return res.status(200).redirect(`/admin/category/details/${req.params.id}`)
+
+    }catch(error){
+        console.log(error.message)
+        return res.status(500).send('Internal Server Error')
+    }
+}
+
+const loadEditCategoryOfferPage  = async(req,res)=>{
+    try {
+        const category = await Category.findById(req.params.id)
+        return res.render('editCategoryOfferPage',{category})
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send('Internal Server Error')        
+    }
+}
+
+const removeCategoryOffer = async(req,res)=>{
+    try {
+        const category  = await Category.findById(req.params.id)
+        if(!category || !category.offer){
+            return res.status(400).json({success:false,message:'category/offer not found'})
+        }
+        
+        category.offer = null
+        await category.save()
+
+        return res.status(200).json({success:true,message:'offer removed successfully'})
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server Error'})
+    }
+}
+
+const changeOfferStatus = async(req,res)=>{
+    try {
+        const category = await Category.findById(req.params.id)
+        const status = req.body.status
+
+        if(!category || !category.offer){
+            return res.status(400).json({success:false,message:'category/offer not found'})
+        }
+
+        if(category.offer.status == status){
+            return res.status(400).json({success:false,message:'same status'})
+        }
+        category.offer.status = status
+        await category.save()
+        const change = status ? 'Activated' : 'Deactivated'
+        return res.status(200).json({success:true,message:`offer ${change} changed successfully`})
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({success:false,message:'Internal server Error'})
+    }
+}
 
 module.exports={
     loadCategory,
@@ -114,5 +195,11 @@ module.exports={
     unlistCategory,
     updateCategory,
     relistCategory,
-    LoadAddCategory
+    LoadAddCategory,
+    loadCategoryDetails,
+    loadAddCategoryPage,
+    addCategoryOffer,
+    loadEditCategoryOfferPage,
+    removeCategoryOffer,
+    changeOfferStatus
 }

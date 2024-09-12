@@ -66,6 +66,10 @@
             <span id="deliveryCharge" class="text-success"><%= summary.deliveryCharges || 'Free' %></span>
           </p>
           <p class="card-text d-flex justify-content-between">
+            <span>Offer Discount</span>
+            <span id="couponDiscount" class="text-success">₹<%= summary.offerDiscount || '0.00'%></span>
+          </p>
+          <p class="card-text d-flex justify-content-between">
             <span>Coupon Discount</span>
             <span id="couponDiscount" class="text-success">₹<%= summary.couponDiscount || '0.00'%></span>
           </p>
@@ -78,7 +82,7 @@
         
         <div class="row">
           <div class="col" id="checkout">
-            <a href="/checkoutpage/<%= cart.user._id %>">
+            <a href="/checkoutpage/<%= cart.user._id %>" >
               <button type="submit" id="checkoutButton" class="btn custom-button btn-lg w-100" <%= parseFloat(summary.total) === 0 ? 'disabled' : '' %>>Proceed to Check Out</button>
             </a>
           </div>
@@ -104,7 +108,7 @@
         <% }else {%>
           <div class="row">
             <% coupons.forEach(coupon => { %>
-              <%if(!coupons && coupons.length === 0 && coupon.usedBy.includes(cart.user._id)  ){%>
+              <%if(coupon?.usedBy?.includes(cart?.user?._id)  ){%>
                 <p>No coupons available</p>
                 <% }else {%>
                 <div class="col-md-6 mb-3">
@@ -146,7 +150,7 @@
 
 <script>
   let couponSelected
-  let couponApplied = false
+
   const openCouponModal = () => {
        const couponModal = new bootstrap.Modal(document.getElementById('couponModal'));
        couponModal.show();
@@ -155,6 +159,7 @@
      
      const selectCoupon = async(couponCode,userId) => {
       couponSelected = couponCode
+
       await applyCoupon(couponCode,userId);
       const couponModal = bootstrap.Modal.getInstance(document.getElementById('couponModal'));
       couponModal.hide();
@@ -175,8 +180,9 @@
     
         if (data.success) {
           updateOrderSummary(data.summary);
-          couponSelected = null
-          couponApplied = false
+          
+          
+          
           document.getElementById('coupontag').textContent = 'Apply coupon';
     
           
@@ -248,7 +254,8 @@
             const data = await response.json();
     
             if (data.success) {
-              couponApplied = true
+             
+              
               updateOrderSummary(data.summary);
               document.getElementById('coupontag').textContent = `Coupon applied`
               const applyCouponButton = document.getElementById('applyCouponButton');
@@ -331,7 +338,6 @@ if (buttonContainer) {
         const data = await response.json();
         if (data.success) {
           if (!data.isEmpty) {
-          couponApplied =false
             const itemElement = document.querySelector(`[data-product-item-id="${itemId}"]`).closest('.card.mb-3');
             if (itemElement) {
               itemElement.remove();
@@ -458,7 +464,6 @@ if (buttonContainer) {
     }
 
     if (couponDiscount) {
-      couponApplied = true
       couponDiscount.textContent = `₹${summary.couponDiscount}`;
     }
 

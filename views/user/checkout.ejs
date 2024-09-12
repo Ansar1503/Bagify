@@ -227,6 +227,7 @@
                 </div>
             </div>
             <form action="/placeOrder" method="post">
+                <input type="hidden" name="couponId" value="<%= coupon %>">
                 <input type="hidden" name="cartId" value="<%= cartdata._id %>">
                 <input type="hidden" id="selectedPaymentMethod" name="paymentMethod" value="">
                 <input type="hidden" id="selectedAddressId" name="addressId" value="">
@@ -256,7 +257,7 @@
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    
+    console.log('<%= coupon %>')
     async function razorPaycheck() {
         const userId = '<%= cartdata.user._id %>'
         const amount = parseInt('<%= cartdata.summary.total %>')
