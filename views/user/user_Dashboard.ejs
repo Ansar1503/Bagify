@@ -496,7 +496,7 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Wallet Balance</h5>
-                                                <h2 class="card-text text-primary">₹ <%= wallet.balance || '0' %> </h2> <a onclick="walletAddMoney(event,'<%= user._id %>')" class="btn btn-primary btn-sm">Add Money</a>
+                                                <h2 class="card-text text-primary">₹ <%= wallet?.balance || '0' %> </h2> <a onclick="walletAddMoney(event,'<%= user._id %>')" class="btn btn-primary btn-sm">Add Money</a>
                                             </div>
                                         </div>
                         
@@ -511,7 +511,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                              <% if(wallet.transactions.length>0 && wallet) {%>
+                                              <% if(wallet?.transactions.length>0 && wallet) {%>
                                                 <% wallet.transactions.forEach(transaction => { %>
                                                         <tr>
                                                             <td><%= transaction.razorpaymentId %></td>
