@@ -190,12 +190,15 @@
                     <h5 class="card-title">ORDER SUMMARY</h5>
                     <p class="card-text d-flex justify-content-between">
                         <span>SubTotal Amount</span>
-                        <span>Rs <%= cartdata.summary.subtotal %></span>
+                        <span>Rs <%= cartdata?.summary?.subtotal %></span>
                     </p>
-                    <input type="hidden" id="couponCode" name="couponCode" value="">
+                    <p class="card-text d-flex justify-content-between">
+                        <span>Offer Discount</span>
+                        <span>Rs <%= cartdata?.summary?.offerDiscount%></span>
+                    </p>
                     <p class="card-text d-flex justify-content-between">
                         <span>Coupon Discount</span>
-                        <span>Rs <%= cartdata.summary.couponDiscount%></span>
+                        <span>Rs <%= cartdata?.summary?.couponDiscount%></span>
                     </p>
                     <p class="card-text d-flex justify-content-between">
                         <span>Delivery Charges</span>

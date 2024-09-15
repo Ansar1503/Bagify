@@ -50,7 +50,18 @@ const orderItemsModel = new Schema({
     },
     deliveredDate:{
         type:Date
-    }
+    },
+    itemOffer:{
+        name:{type:String},
+        discountPercentage:{type:Number},
+        startDate:{type:Date},
+        expiryDate:{type:Date},
+        offerAmount:{type:Number},
+        offerType:{
+          type:String,
+          enum:['product','category']
+        }
+      }
 },{timestamps:true})
 
 const orderModel = Schema({
@@ -73,7 +84,12 @@ const orderModel = Schema({
         required:true,
         default:0
     },
-    discountAmount:{
+    couponDiscount:{
+        type:Number,
+        required:false,
+        default:0
+    },
+    offerDiscount:{
         type:Number,
         required:false,
         default:0

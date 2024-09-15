@@ -101,7 +101,7 @@
                                                             <div class="flex-grow-1" >
                                                                 <p class="mb-1"><strong>Name:</strong> <%= item.productName %></p>
                                                                 <p class="mb-1"><strong>Brand:</strong> <%= item.brandName %></p>
-                                                                <p class="mb-0"><strong>Price:</strong> Rs <%= item.price %> inc GST</p>
+                                                                <p class="mb-0"><strong>Price:</strong> Rs <%= item.itemOffer?.offerAmount ? item.price - item.itemOffer.offerAmount * item.quantity: item.price * item.quantity %> inc GST</p>
                                                                 <p class="mb-0"><strong>quantity:</strong> x <%= item.quantity %></p>
                                                                 <p id="itemOrderStatus<%= item._id %>" class="order-product-status mb-0 text-warning">
                                                                     <strong>Status: <%= item.itemOrderStatus.toUpperCase() %></strong>
@@ -142,7 +142,8 @@
                                                     <div class="mb-3">
                                                         
                                                         <p class="mb-1"><strong>Subtotal:</strong> Rs <%= order.subTotalAmount %></p>
-                                                        <p class="mb-1"><strong>Discount:</strong> Rs <%= order.discountAmount %></p>
+                                                        <p class="mb-1"><strong>Coupon Discount:</strong> Rs <%= order.couponDiscount %></p>
+                                                        <p class="mb-1"><strong>Offer Discount:</strong> Rs <%= order.offerDiscount %></p>
                                                         <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
                                                         <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
                                                     </div>
@@ -1301,8 +1302,6 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                
-    
                 Swal.fire({
                     title: 'Are you sure?',
                     text: "You are about to cancel this product.",
@@ -1314,8 +1313,7 @@
                     cancelButtonText: 'No, keep it'
                 }).then((result) => {
                     if (result.isConfirmed) {
-
-                        fetch(`http://localhost:3000/orders/cancelItem`, {
+                        fetch('http://localhost:3000/orders/cancelItem', {
                             method: "PATCH",
                             headers: {
                                 "Content-Type": "application/json"
@@ -1325,14 +1323,16 @@
                                 orderId,
                                 itemOrderStatus
                             })
-                        }).then((response) => {
+                        })
+                        .then((response) => {
                             if (!response.ok) {
                                 return response.json().then(errorData => {
                                     throw new Error(errorData.error || "Network response was not ok");
                                 });
                             }
                             return response.json();
-                        }).then((data) => {
+                        })
+                        .then((data) => {
                             console.log(data);
     
                             if (data.success) {
@@ -1346,15 +1346,19 @@
                                     timer: 3000
                                 });
     
+                                // Update UI elements
                                 const button = document.getElementById(`cancelProductButton${itemId}`);
-                                button.disabled = true;
-                                button.textContent = 'Cancelled';
+                                if (button) {
+                                    button.disabled = true;
+                                    button.textContent = 'Cancelled';
+                                }
     
                                 const orderProductStatusElement = document.getElementById(`itemOrderStatus${itemId}`);
                                 if (orderProductStatusElement) {
                                     orderProductStatusElement.innerHTML = '<strong>Status: CANCELLED</strong>';
                                 }
     
+                                // Update order amounts and status
                                 if (data.allOrderCancelled) {
                                     const cancelOrderButton = document.getElementById(`cancelOrderButton${orderId}`);
                                     if (cancelOrderButton) {
@@ -1378,8 +1382,24 @@
                                         button.textContent = "Cancelled";
                                     });
                                 }
+    
+                                // Update amounts (assuming data includes updated amounts)
+                                if (data.updatedAmounts) {
+                                    const { subTotalAmount, totalAmount } = data.updatedAmounts;
+    
+                                    const subTotalElement = document.getElementById('subTotalAmount');
+                                    if (subTotalElement) {
+                                        subTotalElement.textContent = `Subtotal: $${subTotalAmount.toFixed(2)}`;
+                                    }
+    
+                                    const totalAmountElement = document.getElementById('totalAmount');
+                                    if (totalAmountElement) {
+                                        totalAmountElement.textContent = `Total: $${totalAmount.toFixed(2)}`;
+                                    }
+                                }
                             }
-                        }).catch((error) => {
+                        })
+                        .catch((error) => {
                             console.log(`Error while cancelling product`, error.message);
                             Swal.fire({
                                 icon: 'error',
@@ -1396,7 +1416,6 @@
             }
         });
     };
-    
     
     
 </script>

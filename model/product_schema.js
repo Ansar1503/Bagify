@@ -77,6 +77,10 @@ const product_schema = new mongoose.Schema({
         type:Number,
         default:0
      },
+     offerType:{
+        type:String,
+        enum:['product','category','none'],
+     },
     offer:offerSchema
 
 },{timestamps:true})

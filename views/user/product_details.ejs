@@ -93,15 +93,35 @@
                                                 </div>
                                             </div>
                                             <div class="clearfix product-price-cover">
-                                                <div class="product-price primary-color float-left">
-                                                    <ins><span class="text-brand">₹ <%= product.offerPrice?product.offerPrice:product.product_sale_price%>
-                                                        </span></ins>
-                                                    <% if(product.product_regular_price!==product.product_sale_price) {%>
-                                                        <ins><span class="old-price font-md ml-15">
-                                                            ₹<%= product.product_regular_price %>
+                                                <% if(!product.offerPrice || product.offerType == 'none' ) {%>
+                                                    <div class="product-price primary-color float-left">
+                                                        <ins><span class="text-brand">₹ <%= product.product_sale_price%>
                                                             </span></ins>
-                                                        <% } %>
-                                                </div>
+                                                        <% if(product.product_regular_price!==product.product_sale_price) {%>
+                                                            <ins><span class="old-price font-md ml-15">
+                                                                ₹<%= product.product_regular_price %>
+                                                                </span></ins>
+                                                            <% } %>
+                                                    </div>
+                                                <% } if(product.offerPrice) { %>
+                                                    <div class="product-price primary-color float-left">
+                                                        <ins><span class="text-brand">₹ <%= product.offerPrice%>
+                                                            </span></ins>
+                                                            <ins><span class="old-price font-md ml-15">
+                                                                ₹<%= product.product_sale_price %>
+                                                                </span></ins>
+                                                                <% if(product.offerType == 'product') {%>
+                                                                    <ins>
+                                                                        <span class="text-danger ms-2 p-0 font-md"><%= product.offer?.discountPercentage %>% off</span>
+                                                                    </ins>
+                                                                <% }if(product.offerType == 'category') {%>
+                                                                    <ins>
+                                                                        <span class="text-danger ms-2 p-0 font-md"><%= product.product_category?.offer?.discountPercentage %>% Off</span>
+                                                                    </ins>
+                                                                    <% } %>
+                                                    </div>
+                                                    <% } %>
+
                                             </div>
                                             <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                             <div class="short-desc mb-30">
@@ -124,13 +144,14 @@
                                                 <% } else { %>
                                                     <div class="product-extra-link2">
                                                       
-                                                        <% if (cart && cart.items && cart.items.length > 0) { %>
+                                                        <% if (productIds.includes(product._id.toString())) { %>
                                                             <form action="/cart" method="get">
                                                                 <button type="submit" id="goToCart" class="button button-add-to-cart">Go to Cart</button>
                                                             </form>
                                                         <% } else { %>
                                                             <form action="/addtoCart" method="post">
-                                                                
+                                                                <input type="hidden" name="offerType" value="<%= product.offerType %>">
+                                                                <input type="hidden" name="offerPrice" value="<%= product.offerPrice %>">
                                                                 <input type="hidden" name="product" value="<%= product._id %>">
                                                                 <input type="hidden" name="ogprice" value="<%= product.product_regular_price %>">
                                                                 <input type="hidden" name="price" value="<%= product.product_sale_price %>">

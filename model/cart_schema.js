@@ -20,6 +20,17 @@ const CartItemSchema = new mongoose.Schema({
     regularPrice : {
       type: Number,
       required: true
+    },
+    itemOffer:{
+      name:{type:String},
+      discountPercentage:{type:Number},
+      startDate:{type:Date},
+      expiryDate:{type:Date},
+      offerAmount:{type:Number},
+      offerType:{
+        type:String,
+        enum:['product','category']
+      }
     }
     
   }, {

@@ -76,7 +76,7 @@
                     <% if(product.offerPrice == (product.product_sale_price - Math.ceil(product.product_sale_price * product.offer.discountPercentage/100))) {%>
                     <button class="btn btn-primary" id="chooseProductOffer" disabled>Product Offer Selected</button>
                     <% } %>
-                    <% if(product.offerPrice == (product.product_sale_price - Math.ceil(product.product_sale_price * product.product_category.offer.discountPercentage/100))) {%>
+                    <% if(product.offerPrice == (product.product_sale_price - Math.ceil(product.product_sale_price * product.product_category.offer?.discountPercentage/100))) {%>
                         <button type="button" class="btn btn-sm btn-primary selectOfferBtn"  data-offer-price="<%= product.offer.discountPercentage %>" data-offer-type="product">Select Product offer</button>
                     <% } %>
                 </div>
@@ -96,7 +96,7 @@
                     <% if(product.offerPrice == (product.product_sale_price - Math.ceil(product.product_sale_price * product.product_category.offer.discountPercentage/100))) {%>
                         <button class="btn btn-primary" id="chooseCategoryOffer" disabled>Category Offer Selected</button>
                         <% } %>
-                        <% if(product.offerPrice == (product.product_sale_price - Math.ceil(product.product_sale_price * product.offer.discountPercentage/100))) {%>
+                        <% if(product.offerPrice == (product.product_sale_price - Math.ceil(product.product_sale_price * product.offer?.discountPercentage/100))) {%>
                             <button type="button" class="btn btn-sm btn-primary selectOfferBtn"  data-offer-price="<%= product.product_category.offer.discountPercentage %>" data-offer-type="category">Select category offer</button>
                         <% } %>
                 </div>

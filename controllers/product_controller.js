@@ -182,6 +182,7 @@ const addProductOffer = async(req,res)=>{
         }
 
         product.offer = offer
+        product.offerType = 'product'
         product.offerPrice = product.product_sale_price - discountAmount
         await product.save()
         return res.redirect(`/admin/products/productdetail/${product._id}`)        
@@ -221,7 +222,7 @@ const removeProductOffer  = async(req,res)=>{
 const changeOfferStatus = async(req,res)=>{
     try {
         
-        const product = await Products.findById(req.params.id)
+        const product = await Products.findById(req.params.id).populate('product_category')
         const status = req.body.status
         
         if(!product || !product.offer){
@@ -229,6 +230,9 @@ const changeOfferStatus = async(req,res)=>{
         }
         if(product.offer.status == status){
             return res.status(400).json({success:false,message:'same status'})
+        }
+        if(!status && !(product.product_category?.offer?.status)){
+            product.offerType = 'none'
         }
         product.offer.status = status
         await product.save()
@@ -251,9 +255,11 @@ const updateOfferPrice = async(req,res)=>{
         }
         if(offerType == 'category'){
             product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.product_category.offer.discountPercentage/100)
+            product.offerType = 'category'
         }
         if(offerType == 'product'){
             product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.offer.discountPercentage/100)
+            product.offerType = 'product'
         }
         await product.save()
         return res.status(200).json({success:true,message:'offer price updated successfully'})

@@ -47,14 +47,15 @@
                                                 <% if(product.offerPrice) {%>
                                                     <span>₹ <%= product.offerPrice %> </span>
                                                 <span class="old-price"> <%= product.product_sale_price %>   </span>
-                                                <% } if(!product.offerPrice) {%>
+                                                <span class="ms-2 text-danger">(<%=product.offerType == 'product' ? product.offer?.discountPercentage : product.product_category?.offer?.discountPercentage %>% off)</span>
+                                                <% } if(!product.offerPrice && product?.offerType == 'none' ) {%>
                                                     <span>₹ <%= product.product_sale_price%> </span>
                                                 <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹'+ product.product_regular_price   %>   </span>
                                                 <% } %>
                                             </div>
                                             <div class="product-action-1 show">
-                                                <a aria-label="Add To Cart" class="action-btn hover-up" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up" onclick="wishlist(this,event,'<%= product._id %>')"><i <% if(product.inWishList) {%>class="bi bi-heart-fill"<%} else {%> class="bi bi-heart"<% } %> ></i></a>
+                                                <a aria-label="Add To Cart" class="action-btn hover-up mb-2" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
+                                                <a aria-label="Add To Wishlist" class="action-btn hover-up mb-2" onclick="wishlist(this,event,'<%= product._id %>')"><i <% if(product.inWishList) {%>class="bi bi-heart-fill"<%} else {%> class="bi bi-heart"<% } %> ></i></a>
                                             </div>
                                         </div>
                                     </div>

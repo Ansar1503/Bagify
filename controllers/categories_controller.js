@@ -127,6 +127,16 @@ const addCategoryOffer = async(req,res)=>{
             expiryDate,
             description
         }
+        const products = await Products.find({product_category:req.params.id}).populate('product_category')
+        if(!products || products.lenth==0){
+            console.log('no products found');
+        }
+
+        for (const product of products) {
+            product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * discountPercentage / 100);
+            product.offerType = 'category'
+            await product.save();
+        }
         
         category.offer = offer
         await category.save()
@@ -155,8 +165,24 @@ const removeCategoryOffer = async(req,res)=>{
             return res.status(400).json({success:false,message:'category/offer not found'})
         }
         
+        const products = await Products.find({product_category:req.params.id}).populate('product_category')
+        if(!products || products.lenth==0){
+            console.log('no products found');
+        }
+       
         category.offer = null
         await category.save()
+
+        for (const product of products) {
+            if(product.offer){
+                product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.offer.discountPercentage / 100);
+                product.offerType = 'product'
+            }else if(!product.offer){
+                product.offerPrice = null
+                product.offerType = 'none'
+            }
+            await product.save();
+        }
 
         return res.status(200).json({success:true,message:'offer removed successfully'})
     } catch (error) {
@@ -177,6 +203,18 @@ const changeOfferStatus = async(req,res)=>{
         if(category.offer.status == status){
             return res.status(400).json({success:false,message:'same status'})
         }
+        const products = await Products.find({product_category:req.params.id}).populate('product_category')
+        if(!products || products.lenth==0){
+            console.log('products not found');
+        }
+        
+        for(const product of products){
+            if(!status && !product.offer?.status){
+                product.offerType = 'none'
+            }
+            await product.save()
+        }
+
         category.offer.status = status
         await category.save()
         const change = status ? 'Activated' : 'Deactivated'

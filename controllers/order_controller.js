@@ -97,7 +97,7 @@ const updateOrderStatus = async (req, res) => {
 const returnList = async (req,res)=> {
     try {
         const returnList = await Return.find().populate([{path:'order',populate:{path:'user'}},{path:'product'}])
-        // console.log(returnList);
+        console.log(returnList);
         
         if(!returnList){
             return res.status(404).send(`<h1>No Returns found</h1>`)
@@ -109,66 +109,100 @@ const returnList = async (req,res)=> {
     }
 }
 
-const returnStatusChange= async(req,res)=>{
+const returnStatusChange = async (req, res) => {
     try {
-        const accept = req.query.accept ==='true' ? true :false
+        const accept = req.query.accept === 'true';  // Directly convert to boolean
         
+        if (accept === null || accept === undefined) {
+            return res.status(400).send('Please choose accept or reject');
+        }
+
+        const returnId = new mongoose.Types.ObjectId(req.query.return);
+        const returnData = await Return.findById(returnId);
+        if (!returnData) {
+            return res.status(400).send('Return request not found');
+        }
+
+        const orderData = await orderModel.findOne({ "items._id": returnData.orderItemId });
+        if (!orderData) {
+            return res.status(400).send('Order not found');
+        }
+
+        const itemDetails = orderData.items.find(item => item._id.toString() === returnData.orderItemId.toString());
+        if (!itemDetails) {
+            return res.status(400).send('Item not found in the order');
+        }
+
+        const wallet = await Wallet.findOne({ user: orderData.user });
+
+        let itemAmount = itemDetails.price * itemDetails.quantity;
+
+       
+        if (itemDetails.itemOffer?.offerAmount) {
+            itemAmount = (itemDetails.price - itemDetails.itemOffer.offerAmount) * itemDetails.quantity;
+        }
         
-        if(accept == 'null' ||  accept == 'undefined'){
-            return res.status(400).send('please choose  accept or reject')
+       
+        let discountAmount = 0;
+        if (orderData.couponDiscount) {
+            discountAmount = Math.ceil(orderData.couponDiscount * itemAmount / orderData.totalAmount);
+            itemAmount -= discountAmount; 
         }
-        // console.log(typeof(accept));
-        const  returnId = new ObjectId(req.query.return)
-        const returnData = await  Return.findById(returnId)
-        if(!returnData){
-            return res.status(400).send('return request not found')
-        }
-        const orderData = await  orderModel.findOne({"items._id":returnData.orderItemId})
-        const item = orderData.items.find(item=>item._id.toString() === returnData.orderItemId.toString())
         
-        if(!orderData || !item){
-            return res.status(400).send('item not found')
-        }
-        const wallet = await Wallet.findOne({user:orderData.user})
+      
+        orderData.offerDiscount = Math.max(0, orderData.offerDiscount - (itemDetails.itemOffer?.offerAmount || 0));
+        orderData.subTotalAmount = Math.max(0, orderData.subTotalAmount - (itemDetails.price * itemDetails.quantity));
+        orderData.totalAmount = Math.max(0, orderData.totalAmount - itemAmount);
+        orderData.couponDiscount = Math.max(0, orderData.couponDiscount - discountAmount);
         
-        if(!accept){
-            returnData.returnProductStatus = 'returnRejected'
-            item.itemOrderStatus = 'returnRejected'
-            await orderData.save()
-            await returnData.save()
-            return res.status(200).redirect('/admin/orders/returns')
+        if (!accept) {
+            returnData.returnProductStatus = 'returnRejected';
+            itemDetails.itemOrderStatus = 'returnRejected';
+            await orderData.save();
+            await returnData.save();
+            return res.status(200).redirect('/admin/orders/returns');
         }
-        returnData.returnProductStatus =  'returnApproved'
-        item.itemOrderStatus = 'returnApproved'
+
+        returnData.returnProductStatus = 'returnApproved';
+        itemDetails.itemOrderStatus = 'returnApproved';
+
         const transaction = {
-            orderId:orderData._id,
-            amount:item.price,
-            status:'success',
-            type:'credit',
-            razorpaymentId:orderData.onlinePaymentId || orderData._id
-        }
-        if(wallet){
+            orderId: orderData._id,
+            amount: itemAmount,  
+            status: 'success',
+            type: 'credit',
+            razorpaymentId: orderData.onlinePaymentId || orderData._id.toString()
+        };
+
+        if (wallet) {
             wallet.transactions.push(transaction);
-            wallet.balance+=transaction.amount
-            await wallet.save()
-        }
-        if(!wallet){
+            wallet.balance += transaction.amount;
+            await wallet.save();
+        } else {
             await new Wallet({
-                balance:transaction.amount,
-                user:orderData.user,
-                transactions:[transaction]
-            }).save()
+                balance: transaction.amount,
+                user: orderData.user,
+                transactions: [transaction]
+            }).save();
         }
-        await Products.findByIdAndUpdate(item.product,{$inc:{product_quantity:orderData.items[0].quantity}})
-        await  orderData.save()
-        await  returnData.save()
-        return res.status(200).redirect('/admin/orders/returns')
+
+        if (itemDetails.product) {
+            await Products.findByIdAndUpdate(itemDetails.product, { $inc: { product_quantity: itemDetails.quantity } });
+        } else {
+            return res.status(404).send('Product not found');
+        }
+
+        await orderData.save();
+        await returnData.save();
+
+        return res.status(200).redirect('/admin/orders/returns');
 
     } catch (error) {
-        console.error(error.message)
-        return res.status(500).send('Internal server error')
+        console.error(error.message);
+        return res.status(500).send('Internal server error');
     }
-}
+};
+
 
 module.exports ={
     orderList,

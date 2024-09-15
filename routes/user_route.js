@@ -75,8 +75,8 @@ userRoute.post('/wallet/handledPayment',userAuth.isLoggedin,userController.handl
 
 // wishlist
 userRoute.get('/wishlist',userAuth.isLoggedin,userController.loadWishlist)
-userRoute.post('/wishlist/:change',userController.addOrRemoveWishlist)
-userRoute.delete('/wishlist/:change',userController.addOrRemoveWishlist)
+userRoute.post('/wishlist/:change',userAuth.isLoggedin,userController.addOrRemoveWishlist)
+userRoute.delete('/wishlist/:change',userAuth.isLoggedin,userController.addOrRemoveWishlist)
 
 
 

@@ -1,0 +1,60 @@
+<%- include('../layout/admin_header.ejs') %>
+<body>
+    <div class="container p-4">
+        <h2 class="text-xl font-bold mb-4">Generate Sales Report</h2>
+
+        <!-- Period Buttons -->
+        <div class="mb-4">
+            <button id="btnDay" class="btn btn-dark me-2">Today</button>
+            <button id="btnWeek" class="btn btn-dark me-2">This Week</button>
+            <button id="btnMonth" class="btn btn-dark me-2">This Month</button>
+        </div>
+
+        <!-- Custom Date Range -->
+        <div class="mb-4">
+            <label for="startDate" class="form-label">Start Date:</label>
+            <input type="date" id="startDate" class="form-control">
+            <label for="endDate" class="form-label mt-2">End Date:</label>
+            <input type="date" id="endDate" class="form-control">
+            <button id="btnCustomRange" class="btn btn-dark mt-2">Fetch Custom Date Range</button>
+        </div>
+
+        <!-- Report Summary -->
+        <div class="mb-4">
+            <h3>Report Summary</h3>
+            <p><strong>Total Sales Count:</strong> <span id="totalSalesCount">0</span></p>
+            <p><strong>Total Order Amount:</strong> $<span id="totalOrderAmount">0.00</span></p>
+            <p><strong>Total Discount:</strong> $<span id="totalDiscount">0.00</span></p>
+        </div>
+
+        <!-- Sales Details Table -->
+        <div class="mb-4">
+            <h3>Sales Details</h3>
+            <table class="table table-striped" id="salesTable">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Order Amount</th>
+                        <th>Coupon Discount</th>
+                        <th>Discount On MRP</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Download Report -->
+        <div class="mb-4">
+            <label for="format" class="form-label">Format:</label>
+            <select id="format" class="form-select">
+                <option value="pdf">PDF</option>
+                <option value="xlsx">Excel</option>
+            </select>
+            <button id="btnDownload" class="btn btn-dark mt-2">Download Report</button>
+        </div>
+    </div>
+
+    <%- include('../layout/admin_footer.ejs') %>

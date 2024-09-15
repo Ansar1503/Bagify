@@ -112,6 +112,7 @@
                                     <% if(product.offerPrice) {%>
                                         <span>₹ <%= product.offerPrice %> </span>
                                     <span class="old-price"> <%= product.product_sale_price %>   </span>
+                                    <span class="ms-3 text-danger">(<%=product.offerType == 'product' ? product.offer?.discountPercentage : product.product_category?.offer?.discountPercentage %>% off)</span>
                                     <% } if(!product.offerPrice) {%>
                                         <span>₹ <%= product.product_sale_price%> </span>
                                     <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹'+ product.product_regular_price   %>   </span>

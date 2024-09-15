@@ -2,61 +2,89 @@
 
 <div class="container mt-5" id="mainContainer" style="height: auto;">
     <div class="row">
-        <% if (true) { %>
-            <div class="col-12 text-center wishlistEmptyMessage" style="margin-top: 60px; ">
+        <% if (!wishlist || !wishlist.products || wishlist.products.length === 0) { %>
+            <div class="col-12 text-center wishlistEmptyMessage" style="margin-top: 60px;">
                 <h2>Your wishlist is empty!</h2>
                 <p>Add items to it now.</p>
-                <a href="/home" class="btn btn-primary">Shop now</a>
+                <a href="/shop" class="btn btn-primary">Shop now</a>
             </div>
         <% } else { %>
             <div class="col-12 d-flex flex-wrap justify-content-start" id="sendWishListItem" style="margin-top: 50px;">
-                <% productData.forEach(product => { %>
+                <% wishlist.products.forEach(product => { %>
                     <div class="card shadow-sm mb-3" id="productContainer<%= product._id %>" style="width: 18rem; margin: 10px;">
                         <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none" style="display: block;">
-                            <img src="/productImages/<%= product.images[0]?.filename %>" class="card-img-top"
-                                 style="width: 100%; height: 200px; object-fit: cover;" alt="Product Image">
+                            <img src="/imgs/products/<%= product.product_images[0] %>" class="card-img-top"
+                                 style="width: 100%; height: 200px; object-fit: cover;" alt="<%= product.product_name %>">
                         </a>
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none" style="flex: 1 ; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                    <h5 class="card-title" style="font-size: 13px; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
-                                        <%= product.name %>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none"
+                                   style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    <h5 class="card-title" style="font-size: 14px; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                                        <%= product.product_name %>
                                     </h5>
                                 </a>
                                 <button class="btn btn-link btn-sm" style="text-decoration: none;" 
-                                    onclick="removeFromWishList('<%= product._id %>')">Remove</button>
+                                        onclick="removeFromWishList('<%= product._id %>', this)">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
                             </div>
                             <p class="card-text">
-                                <% if (product?.productSalesPriceAfterOfferDiscount && new Date(product?.productOffer?.offerExpiryDate) > new Date() && product?.productSalesPriceAfterOfferDiscount !== 0 && product?.productOffer?.offerStatus) { %>
-                                    <strong>₹<%= product?.productSalesPriceAfterOfferDiscount %></strong>
+                                <% if(product.offerPrice) { %>
+                                    <strong>₹<%= product.offerPrice %></strong>
                                 <% } else { %>
-                                    <strong>₹<%= product?.salesPrice %></strong>
+                                    <strong>₹<%= product.salesPrice %></strong>
                                 <% } %>
                             </p>
                         </div>
                     </div>
                 <% }); %>
             </div>
-            
-            
         <% } %>
     </div>
 </div>
 
-    <!-- <div id="preloader-active">
-        <div class="preloader d-flex align-items-center justify-content-center">
-            <div class="preloader-inner position-relative">
-                <div class="text-center">
-                    <h5 class="mb-5">Now Loading</h5>
-                    <div class="loader">
-                        <div class="bar bar1"></div>
-                        <div class="bar bar2"></div>
-                        <div class="bar bar3"></div>
-                    </div>
+<div id="preloader-active">
+    <div class="preloader d-flex align-items-center justify-content-center">
+        <div class="preloader-inner position-relative">
+            <div class="text-center">
+                <h5 class="mb-5">Now Loading</h5>
+                <div class="loader">
+                    <div class="bar bar1"></div>
+                    <div class="bar bar2"></div>
+                    <div class="bar bar3"></div>
                 </div>
             </div>
         </div>
-      </div>
-       -->
+    </div>
+</div>
+
+
+<script>
+    async function removeFromWishList(productId, button) {
+        try {
+            const response = await fetch(`/wishlist/remove`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId })
+            });
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.message || 'Response error');
+
+            const productElement = button.closest('.card');
+            if (productElement) {
+                productElement.remove();
+            }
+
+            // location.reload();
+
+            swal.fire('Success', 'Item removed from wishlist', 'success');
+
+        } catch (err) {
+            swal.fire('Error', err.message || 'Error processing wishlist', 'error');
+        }
+    }
+</script>
 
 <%- include('../layout/user_footer.ejs') %>

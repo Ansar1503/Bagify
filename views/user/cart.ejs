@@ -21,7 +21,7 @@
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title"><%= item.product?.name %></h5>
-              <strong>Price:</strong> <span style="color: green;"> ₹<%= item.price %></span> <del style="color: red; <%= item.regularPrice === item.price ? 'display: none;' : '' %>">₹<%= item.regularPrice %></del>
+              <strong>Price:</strong> <span style="color: green;"> ₹<%= item.price %></span>
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                   <div class="me-2">Qty:</div>
@@ -67,7 +67,7 @@
           </p>
           <p class="card-text d-flex justify-content-between">
             <span>Offer Discount</span>
-            <span id="couponDiscount" class="text-success">₹<%= summary.offerDiscount || '0.00'%></span>
+            <span id="offerDiscount" class="text-success">₹<%= summary.offerDiscount || '0.00'%></span>
           </p>
           <p class="card-text d-flex justify-content-between">
             <span>Coupon Discount</span>
@@ -443,13 +443,14 @@ if (buttonContainer) {
     }
   }
 
-  // Function to update the order summary from the server response
+  
   function updateOrderSummary(summary) {
     const subTotalPrice = document.getElementById('subTotalPrice');
     const totalPrice = document.getElementById('totalPrice');
     const deliveryCharge = document.getElementById('deliveryCharge');
     const checkoutButton = document.getElementById('checkoutButton');
     const couponDiscount = document.getElementById('couponDiscount');
+    const offerDiscount = document.getElementById('offerDiscount');
 
     if (subTotalPrice) {
       subTotalPrice.textContent = `₹${summary.subtotal}`;
@@ -466,10 +467,13 @@ if (buttonContainer) {
     if (couponDiscount) {
       couponDiscount.textContent = `₹${summary.couponDiscount}`;
     }
-
+    if(offerDiscount){
+      offerDiscount.textContent = `₹${summary.offerDiscount}`;
+    }
     if (checkoutButton) {
       checkoutButton.disabled = parseFloat(summary.total) === 0;
     }
+   
   }
 
   

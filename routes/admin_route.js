@@ -13,6 +13,7 @@ const categories_controller = require('../controllers/categories_controller')
 const product_controller = require('../controllers/product_controller')
 const order_controller = require('../controllers/order_controller')
 const coupon_controller = require('../controllers/coupon_controller')
+const sales_controller = require('../controllers/sales_controller')
 
 
 
@@ -85,5 +86,7 @@ adminRoute.post('/coupons/edit-coupon/:id',admin_session.isLoggedin,coupon_contr
 adminRoute.post('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller.addCoupon)
 adminRoute.patch('/coupons/:id',admin_session.isLoggedin,coupon_controller.changeCouponStats)
 
+// sales report
+adminRoute.get('/salesReport',admin_session.isLoggedin,sales_controller.salesReport)
 
 module.exports = adminRoute;
