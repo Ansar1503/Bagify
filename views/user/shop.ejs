@@ -48,7 +48,7 @@
                                                     <span>₹ <%= product.offerPrice %> </span>
                                                 <span class="old-price"> <%= product.product_sale_price %>   </span>
                                                 <span class="ms-2 text-danger">(<%=product.offerType == 'product' ? product.offer?.discountPercentage : product.product_category?.offer?.discountPercentage %>% off)</span>
-                                                <% } if(!product.offerPrice && product?.offerType == 'none' ) {%>
+                                                <% } if(!product.offerPrice || product?.offerType == 'none' ) {%>
                                                     <span>₹ <%= product.product_sale_price%> </span>
                                                 <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹'+ product.product_regular_price   %>   </span>
                                                 <% } %>
@@ -157,6 +157,34 @@
 <%- include('../layout/user_footer.ejs') %>
 <script>
     $(document).ready(function() {
+        // Fetch search input suggestions dynamically
+        $("#searchInput").autocomplete({
+            source: async function(request, response) {
+                try {
+                    const res = await fetch(`/shop?query=${encodeURIComponent(request.term)}`);
+                    const data = await res.json();
+                    if (data.success) {
+                        const suggestions = data.suggestions.map(suggestion => ({
+                            label: suggestion.name,
+                            value: suggestion.id
+                        }));
+                        response(suggestions)
+                    } else {
+                        response([]);
+                    }
+                } catch (err) {
+                    console.log(err);
+                    response([]);
+                }
+            },
+
+            select: function(event, ui) {
+     
+                window.location.href = `/product-details/${ui.item.value}`;
+            }
+
+        });
+
         // Price range slider
         $("#slider-range").slider({
             range: true,
@@ -169,6 +197,7 @@
                 $("#max_price").val(ui.values[1]);
             }
         });
+
         $("#amount").val("₹" + $("#slider-range").slider("values", 0) +
             " - ₹" + $("#slider-range").slider("values", 1));
 
@@ -192,7 +221,6 @@
             $('input[name="outOfStock"]').prop('checked', true);
         <% } %>
 
-        
         $('select[name="sort"]').val('<%= currentFilters.sort %>');
     });
 
@@ -223,6 +251,6 @@
             swal.fire('Error', err.message || 'Error processing wishlist', 'error');
         }
     }
-    
-    
 </script>
+
+

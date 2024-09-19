@@ -136,25 +136,39 @@ const returnStatusChange = async (req, res) => {
         const wallet = await Wallet.findOne({ user: orderData.user });
 
         let itemAmount = itemDetails.price * itemDetails.quantity;
-
+        // console.log('itemAmount at initial itemprice x itemquantity',itemAmount);
+        
        
         if (itemDetails.itemOffer?.offerAmount) {
-            itemAmount = (itemDetails.price - itemDetails.itemOffer.offerAmount) * itemDetails.quantity;
+            itemAmount = itemDetails.price - itemDetails.itemOffer.offerAmount * itemDetails.quantity;
+            // console.log('itemAmount if itemOfferexists itemprice - itemOfferAmount x itemquantity',itemAmount);
         }
         
        
         let discountAmount = 0;
         if (orderData.couponDiscount) {
-            discountAmount = Math.ceil(orderData.couponDiscount * itemAmount / orderData.totalAmount);
+            discountAmount = Math.ceil(orderData.couponDiscount * itemDetails.price * itemDetails.quantity / orderData.subTotalAmount);
+            // console.log('dicount amount if coupon discount exists discount proportion coupon x item / total',discountAmount);
+            
             itemAmount -= discountAmount; 
+            // console.log('itemAmount if coupon discount exists itemmount - discount',itemAmount);
         }
+        itemDetails.itemCouponPropotion = discountAmount;
         
       
-        orderData.offerDiscount = Math.max(0, orderData.offerDiscount - (itemDetails.itemOffer?.offerAmount || 0));
-        orderData.subTotalAmount = Math.max(0, orderData.subTotalAmount - (itemDetails.price * itemDetails.quantity));
-        orderData.totalAmount = Math.max(0, orderData.totalAmount - itemAmount);
-        orderData.couponDiscount = Math.max(0, orderData.couponDiscount - discountAmount);
+        orderData.offerDiscount = Math.max(0, orderData.offerDiscount - (itemDetails.itemOffer?.offerAmount * itemDetails.quantity || 0));
+        // console.log('offerDiscount offerDisc - itemOfferAmount',orderData.offerDiscount);
         
+        orderData.subTotalAmount = Math.max(0, orderData.subTotalAmount - (itemDetails.price * itemDetails.quantity));
+        // console.log('subtotal subtotal - price x quantty',orderData.subTotalAmount);
+        
+        orderData.totalAmount = Math.max(0, orderData.totalAmount - itemAmount);
+        // console.log('totalAmount totalAmount - itemAmount',orderData.totalAmount);
+        
+        orderData.couponDiscount = Math.max(0, orderData.couponDiscount - discountAmount);
+        // console.log('couponDiscount- discoun Amount',orderData.couponDiscount);
+                
+
         if (!accept) {
             returnData.returnProductStatus = 'returnRejected';
             itemDetails.itemOrderStatus = 'returnRejected';
@@ -190,6 +204,11 @@ const returnStatusChange = async (req, res) => {
             await Products.findByIdAndUpdate(itemDetails.product, { $inc: { product_quantity: itemDetails.quantity } });
         } else {
             return res.status(404).send('Product not found');
+        }
+        const allReturned = orderData.items.every(item=>item.itemOrderStatus == 'returnApproved')
+        if(allReturned){
+            orderData.orderStatus = 'returned';
+            orderData.paymentStatus = 'refunded';
         }
 
         await orderData.save();

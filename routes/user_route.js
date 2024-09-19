@@ -58,6 +58,7 @@ userRoute.post('/checkout/add-address/:user_id',userAuth.isLoggedin,userControll
 userRoute.post('/checkout/update-address/:address_id',userAuth.isLoggedin,userController.checkoutupdateAddress)
 userRoute.patch('/orders/cancelItem',userAuth.isLoggedin,userController.cancelOrderItem)
 userRoute.patch('/orders/returnOrder',userAuth.isLoggedin,userController.returnOrder)
+userRoute.get('/order/downloadInvoice/:id',userAuth.isLoggedin,userController.downloadInvoice)
 
 //dashbord profile
 userRoute.patch('/userDashboard/updatePersonal',upload.none(),userAuth.isLoggedin,userController.edituserPersonal) 
@@ -79,8 +80,6 @@ userRoute.post('/wishlist/:change',userAuth.isLoggedin,userController.addOrRemov
 userRoute.delete('/wishlist/:change',userAuth.isLoggedin,userController.addOrRemoveWishlist)
 
 
-
-// google authentication
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email','https://www.googleapis.com/auth/user.phonenumbers.read'] }))
 userRoute.get('/auth/google/callback',passport.authenticate('google',{successRedirect:"/auth/protected",failureRedirect:"/"}))  
 userRoute.get('/auth/protected',userController.googleAuth)

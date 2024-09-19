@@ -71,8 +71,9 @@
                                 <tr>
                                     <th width="30%">Product</th>
                                     <th width="15%">Unit Price</th>
-                                    <th width="15%">Quantity</th>
+                                    <th width="10%">Offer</th>
                                     
+                                    <th width="10%">Quantity</th>
                                     <th width="10%">Status</th>
                                     <th width="20%">Change Status</th>
                                     <th width="20%" class="text-end">Total</th>
@@ -90,7 +91,9 @@
                                                 <div class="info"> <%= item.productName %> </div>
                                             </a>
                                         </td>
-                                        <td>₹ <%= item.price %></td>
+                                        <td>₹ <%= item.itemOffer? item.price : item.regularPrice %></td>
+                                        <td>₹ <%= item.itemOffer?.offerAmount || 0%></td>
+                                        
                                         <td><%= item.quantity %></td>
                                     
                                         <td>
@@ -152,11 +155,11 @@
                                             </div>
                                         </td>
                                     
-                                        <td class="text-end">₹ <%= item.regularPrice %></td>
+                                        <td class="text-end">₹ <%= item.price - item.itemOffer?.offerAmount %></td>
                                     </tr>
                                     <% }) %>
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="8">
                                         <article class="float-end">
                                             <dl class="dlist">
                                                 <dt>Subtotal:</dt>
@@ -164,7 +167,11 @@
                                             </dl>
                                             <dl class="dlist">
                                                 <dt>Shipping cost:</dt>
-                                                <dd>₹ 0.00</dd>
+                                                <dd>₹ 0</dd>
+                                            </dl>
+                                            <dl class="dlist">
+                                                <dt>Coupon Discount:</dt>
+                                                <dd>₹ <%= orderData.couponDiscount %></dd>
                                             </dl>
                                             <dl class="dlist">
                                                 <dt>Grand total:</dt>
@@ -175,7 +182,7 @@
                                 </tr>
                                <% } else { %>
                                     <tr>
-                                        <td colspan="6" class="text-center">
+                                        <td colspan="8" class="text-center">
                                             <h4>No Items found</h4>
                                             <a href="/admin/orders" class="btn btn-secondary">Return to Order Lists</a>
                                         </td>

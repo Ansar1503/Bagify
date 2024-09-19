@@ -23,8 +23,8 @@
         <div class="mb-4">
             <h3>Report Summary</h3>
             <p><strong>Total Sales Count:</strong> <span id="totalSalesCount">0</span></p>
-            <p><strong>Total Order Amount:</strong> $<span id="totalOrderAmount">0.00</span></p>
-            <p><strong>Total Discount:</strong> $<span id="totalDiscount">0.00</span></p>
+            <p><strong>Total Order Amount:</strong> <span id="totalOrderAmount">0.00</span></p>
+            <p><strong>Total Discount:</strong> <span id="totalDiscount">0.00</span></p>
         </div>
 
         <!-- Sales Details Table -->
@@ -35,6 +35,7 @@
                     <tr>
                         <th>Order ID</th>
                         <th>Order Amount</th>
+                        <th>status</th>
                         <th>Coupon Discount</th>
                         <th>Discount On MRP</th>
                         <th>Date</th>
@@ -56,5 +57,88 @@
             <button id="btnDownload" class="btn btn-dark mt-2">Download Report</button>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnDay = document.getElementById('btnDay');
+            const btnWeek = document.getElementById('btnWeek');
+            const btnMonth = document.getElementById('btnMonth');
+            const btnCustomRange = document.getElementById('btnCustomRange');
+            const btnDownload = document.getElementById('btnDownload');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const formatSelect = document.getElementById('format');
+            
+            let currentPeriod = 'day'; 
+    
+            async function fetchReport(period, startDate = '', endDate = '') {
+                try {
+                    const response = await fetch(`/admin/generate-report?period=${period}&startDate=${startDate}&endDate=${endDate}`);
+                    const data = await response.json();
+                    updateReportDisplay(data);
+                } catch (error) {
+                    console.error('Error fetching report:', error);
+                }
+            }
+            
+            function updateReportDisplay(data) {
+                document.getElementById('totalSalesCount').textContent = data.overallSalesCount;
+                document.getElementById('totalOrderAmount').textContent = `₹${data.overallOrderAmount.toFixed(2)}`;
+                document.getElementById('totalDiscount').textContent = `₹${data.overallDiscount.toFixed(2)}`;
+            
+                const tableBody = document.querySelector('#salesTable tbody');
+                tableBody.innerHTML = '';
+                data.orders.forEach(order => {
+                    const row = `
+                        <tr>
+                            <td>${order._id}</td>
+                            <td>₹${order.totalAmount.toFixed(2)}</td>
+                            <td>₹${order.totalAmount}</td>
+                            <td>₹${order.couponDiscount.toFixed(2)}</td>
+                            <td>₹${order.offerDiscount.toFixed(2)}</td>
+                            <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            }
+    
+            btnDay.addEventListener('click', () => {
+                currentPeriod = 'day';
+                fetchReport(currentPeriod);
+            });
+            
+            btnWeek.addEventListener('click', () => {
+                currentPeriod = 'week';
+                fetchReport(currentPeriod);
+            });
+            
+            btnMonth.addEventListener('click', () => {
+                currentPeriod = 'month';
+                fetchReport(currentPeriod);
+            });
+            
+            btnCustomRange.addEventListener('click', () => {
+                currentPeriod = 'custom';
+                fetchReport(currentPeriod, startDateInput.value, endDateInput.value);
+            });
+            
+            btnDownload.addEventListener('click', async () => {
+                const format = formatSelect.value;
+                let query = `?format=${format}&period=${currentPeriod}`;
+                
+                if (currentPeriod === 'custom') {
+                    const startDate = startDateInput.value;
+                    const endDate = endDateInput.value;
+                    query += `&startDate=${startDate}&endDate=${endDate}`;
+                }
+    
+                window.location.href = `/admin/download-report${query}`;
+            });
+    
+            fetchReport(currentPeriod);
+        });
+    </script>
+    
 
     <%- include('../layout/admin_footer.ejs') %>

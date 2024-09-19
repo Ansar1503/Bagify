@@ -53,6 +53,7 @@ adminRoute.post('/products/addProductOffer/:id',admin_session.isLoggedin,product
 adminRoute.delete('/products/removeProductOffer/:id',admin_session.isLoggedin,product_controller.removeProductOffer)
 adminRoute.put('/products/changeOfferStatus/:id',admin_session.isLoggedin,product_controller.changeOfferStatus)
 adminRoute.patch('/products/updateOfferPrice/:id',admin_session.isLoggedin,product_controller.updateOfferPrice)
+adminRoute.delete('/products/removeAllOffers/:id',admin_session.isLoggedin,product_controller.removeAllOffers)
 
 
 
@@ -87,6 +88,8 @@ adminRoute.post('/coupons/add-coupon',admin_session.isLoggedin,coupon_controller
 adminRoute.patch('/coupons/:id',admin_session.isLoggedin,coupon_controller.changeCouponStats)
 
 // sales report
-adminRoute.get('/salesReport',admin_session.isLoggedin,sales_controller.salesReport)
+adminRoute.get('/sales-report',admin_session.isLoggedin,sales_controller.salesReport)
+adminRoute.get('/generate-report',admin_session.isLoggedin,sales_controller.generateReport)
+adminRoute.get('/download-report',admin_session.isLoggedin,sales_controller.downloadReport)
 
 module.exports = adminRoute;

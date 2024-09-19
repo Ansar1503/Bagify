@@ -101,7 +101,7 @@
                                                             <div class="flex-grow-1" >
                                                                 <p class="mb-1"><strong>Name:</strong> <%= item.productName %></p>
                                                                 <p class="mb-1"><strong>Brand:</strong> <%= item.brandName %></p>
-                                                                <p class="mb-0"><strong>Price:</strong> Rs <%= item.itemOffer?.offerAmount ? item.price - item.itemOffer.offerAmount * item.quantity: item.price * item.quantity %> inc GST</p>
+                                                                <p class="mb-0"><strong>Price:</strong> Rs <%= item.itemOffer?.offerAmount ? (item.price - item.itemOffer.offerAmount) * item.quantity: item.price * item.quantity %></p>
                                                                 <p class="mb-0"><strong>quantity:</strong> x <%= item.quantity %></p>
                                                                 <p id="itemOrderStatus<%= item._id %>" class="order-product-status mb-0 text-warning">
                                                                     <strong>Status: <%= item.itemOrderStatus.toUpperCase() %></strong>
@@ -140,12 +140,15 @@
                                                         </div>
                                                     <% }); %>
                                                     <div class="mb-3">
-                                                        
+
                                                         <p class="mb-1"><strong>Subtotal:</strong> Rs <%= order.subTotalAmount %></p>
                                                         <p class="mb-1"><strong>Coupon Discount:</strong> Rs <%= order.couponDiscount %></p>
                                                         <p class="mb-1"><strong>Offer Discount:</strong> Rs <%= order.offerDiscount %></p>
                                                         <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
                                                         <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+                                                        <% if(order.orderStatus == 'delivered') {%>
+                                                            <p class="mb-1"><button onclick="downloadInvoice(event,'<%= order._id %>')" class="btn btn-sm btn-outline-primary"><strong><i class="bi bi-file-earmark-arrow-down-fill"></i>Download Invoice</strong></button></p>
+                                                        <% } %>
                                                     </div>
                                                     <div class="text-end">
                                                         <% const shouldDisableCancelOrder = order.items.some(item => ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)); %>
@@ -604,7 +607,16 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 
-
+    async function downloadInvoice(event,orderId){
+        event.preventDefault()
+        event.stopPropagation();
+        try{
+            window.location.href = `/order/downloadInvoice/${orderId}`
+        }catch(err){
+            console.log(err)
+            swal.fire('error!',err.message || 'An error Occcured while downloading the invoice','error')
+        }
+    }
     async function walletAddMoney(event, userId) {
         event.preventDefault();
     
@@ -637,7 +649,7 @@
             Swal.fire({
                 title: 'Processing Payment...',
                 text: 'Please wait while we process your payment.',
-                didOpen: () => {
+                diOpen: () => {
                     Swal.showLoading();
                 },
                 allowOutsideClick: false,

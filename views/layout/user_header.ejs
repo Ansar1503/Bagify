@@ -26,7 +26,29 @@
     <link rel="stylesheet" href="/css/main.css?v=3.4">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/js-image-zoom/0.2.4/js-image-zoom.min.css">
-        
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.0/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<style>
+  .ui-autocomplete {
+    width: 300px;      
+    max-height: 300px; 
+    overflow-y: auto;  
+    font-size: 14px;   
+    border-radius: 20px; /* Adjust the value for more or less rounding */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow */
+}
+
+.ui-autocomplete li {
+    margin: 0;
+    padding: 0px;      
+    border-radius: 8px; /* Round edges for individual items */
+}
+
+.ui-autocomplete li:hover {
+    background-color: #f0f0f0; /* Optional: Change background on hover */
+}
+
+</style>   
 
 </head>
 <body>
@@ -41,7 +63,7 @@
            </button>
            <div class="collapse navbar-collapse nav-abouts" id="navbarTogglerDemo01">
              <form class="d-flex mx-auto my-2 my-lg-0 form-inline" role="search">
-                 <input type="search " class="rounded-pill search-input"  placeholder="Search...">
+                 <input type="search " class="rounded-pill search-input" id="searchInput"  placeholder="Search...">
                  <a href=""><i class="fs-3 bi bi-search search-icon" ></i></a>
              </form>
              <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -88,3 +110,4 @@
              </div>
          </div>
      </header>
+

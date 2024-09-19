@@ -61,7 +61,11 @@ const orderItemsModel = new Schema({
           type:String,
           enum:['product','category']
         }
-      }
+      },
+    itemCouponPropotion:{
+        type:Number,
+        default:0
+    }
 },{timestamps:true})
 
 const orderModel = Schema({
@@ -107,7 +111,7 @@ const orderModel = Schema({
     orderStatus:{
         type:String,
         required:false,
-        enum:['pending','confirmed','shipped','delivered','cancelled','returnInitiated','returnApproved','returnRejectd'],
+        enum:['pending','confirmed','shipped','delivered','cancelled','returned',],
         default:'pending'
     },
     paymentMethod:{

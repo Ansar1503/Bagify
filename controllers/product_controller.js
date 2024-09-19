@@ -2,6 +2,7 @@ const path =require('path')
 const Products = require('../model/product_schema')
 const fs = require('fs')
 const Category = require('../model/category_schema')
+const mongoose = require('mongoose')
 
 
 
@@ -203,21 +204,34 @@ const editProductOfferPage = async(req,res)=>{
     }
 } 
 
-const removeProductOffer  = async(req,res)=>{
+const removeProductOffer = async (req, res) => {
     try {
-        const product = await Products.findById(req.params.id)
-        if(!product || !product.offer){
-          return res.satus(400).json({success:false,message:'product/offer not found'})  
+        const product = await Products.findById(req.params.id).populate('product_category');
+
+        if (!product || !product.offer) {
+            return res.status(400).json({ success: false, message: 'Product or offer not found' });
         }
-        product.offer = null,
-        product.offerPrice = null
-        await product.save()
-        return res.status(200).json({success:true,message:'prodcut offer removed successfully'})
+        product.offerType = 'none';
+        product.offer = null;
+        product.offerPrice = null;
+
+        if (product.product_category?.offer) {
+            product.offerType = 'category';
+            product.offerPrice = product.product_sale_price - (Math.ceil(product.product_sale_price * (product.product_category.offer.discountPercentage / 100)))
+        }
+
+        await product.save();
+
+        return res.status(200).json({ success: true, message: 'Product offer removed successfully' });
+
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).json({success:false,message:'Internal server Error'})        
+
+        console.error(error.message);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
     }
-}
+};
+
+
 
 const changeOfferStatus = async(req,res)=>{
     try {
@@ -249,15 +263,22 @@ const updateOfferPrice = async(req,res)=>{
     try {
         
         const offerType = req.body.offerType
-        const product = await Products.findById(req.params.id).populate('product_category')
-        if(!product || !product.offer || !product.product_category.offer){
-            return res.status(400).json({success:false,message:'product/offer not found'})
+        const productId = new mongoose.Types.ObjectId(req.params.id)
+        const product = await Products.findById(productId).populate('product_category')
+        // console.log(product);
+        if(!product){
+            return res.status(400).json({success:false,message:'product not found'})
         }
+        
+        
         if(offerType == 'category'){
+            console.log('category offer Added');
+            
             product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.product_category.offer.discountPercentage/100)
             product.offerType = 'category'
         }
         if(offerType == 'product'){
+            console.log('product offer Added');
             product.offerPrice = product.product_sale_price - Math.ceil(product.product_sale_price * product.offer.discountPercentage/100)
             product.offerType = 'product'
         }
@@ -267,6 +288,19 @@ const updateOfferPrice = async(req,res)=>{
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({success:false,message:'Internal Server Error'})        
+    }
+}
+const removeAllOffers = async(req,res)=>{
+    try {
+        const productId  = req.params.id
+        const product = await Products.findById(productId)
+        product.offerType = 'none'
+        product.offerPrice = 0
+        await product.save()
+        return res.status(200).json({success:true,message:'all offers removed successfully'})
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({success:false,message:'Internal Server Error'})
     }
 }
 
@@ -284,5 +318,6 @@ module.exports = {
     editProductOfferPage,
     removeProductOffer,
     changeOfferStatus,
-    updateOfferPrice
+    updateOfferPrice,
+    removeAllOffers
 }

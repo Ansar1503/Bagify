@@ -12,7 +12,7 @@
             <div class="col-12 d-flex flex-wrap justify-content-start" id="sendWishListItem" style="margin-top: 50px;">
                 <% wishlist.products.forEach(product => { %>
                     <div class="card shadow-sm mb-3" id="productContainer<%= product._id %>" style="width: 18rem; margin: 10px;">
-                        <a href="/productDetails?id=<%= product._id %>" class="text-decoration-none" style="display: block;">
+                        <a href="/product-details/<%= product._id %>" class="text-decoration-none" style="display: block;">
                             <img src="/imgs/products/<%= product.product_images[0] %>" class="card-img-top"
                                  style="width: 100%; height: 200px; object-fit: cover;" alt="<%= product.product_name %>">
                         </a>
@@ -33,7 +33,7 @@
                                 <% if(product.offerPrice) { %>
                                     <strong>₹<%= product.offerPrice %></strong>
                                 <% } else { %>
-                                    <strong>₹<%= product.salesPrice %></strong>
+                                    <strong>₹<%= product.product_sale_price %></strong>
                                 <% } %>
                             </p>
                         </div>
@@ -44,7 +44,7 @@
     </div>
 </div>
 
-<div id="preloader-active">
+<!-- <div id="preloader-active">
     <div class="preloader d-flex align-items-center justify-content-center">
         <div class="preloader-inner position-relative">
             <div class="text-center">
@@ -57,7 +57,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 
 <script>
