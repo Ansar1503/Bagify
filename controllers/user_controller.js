@@ -306,10 +306,10 @@ const loadShop = async (req, res) => {
         const skip = (page - 1) * limit;
 
         let query = {};
-
         
-        if (req.query.query) {  
-            const searchTerm = req.query.query.toLowerCase();
+        
+        if (req.query.query || req.body.search) {  
+            const searchTerm = req.query.query.toLowerCase() || req.body.search.toLowerCase()
             query.product_name = { $regex: searchTerm, $options: 'i' }; 
         }
 
