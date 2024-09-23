@@ -10,14 +10,14 @@
                             </div>
                             <h5 class="mt-20 mb-10 fw-600 text-grey-4 wow fadeIn animated">Contact</h5>
                             <p class="wow fadeIn animated">
-                                <strong>Address: </strong>562 Wellington Road, Street 32, San Francisco
+                                <strong>Address: </strong>Bagify pvt Ltd. ,Kaloor, Ernakulam, Kerala
                             </p>
                             <p class="wow fadeIn animated">
-                                <strong>Phone: </strong>+01 2222 365 /(+91) 01 2345 6789
+                                <strong>Phone: </strong>(+91) 4737 3248 22 /(+91) 4737 3248 23
                             </p>
-                            <p class="wow fadeIn animated">
-                                <strong>Hours: </strong>10:00 - 18:00, Mon - Sat
-                            </p>
+                            <!-- <p class="wow fadeIn animated">
+                                <strong>Hours: </strong>
+                            </p> -->
                             <h5 class="mb-10 mt-30 fw-600 text-grey-4 wow fadeIn animated">Follow Us</h5>
                             <div class="mobile-social-icon wow fadeIn animated mb-sm-5 mb-md-0">
                                 <a href="#"><img src="/imgs/theme/icons/icon-facebook.svg" alt=""></a>
@@ -42,12 +42,12 @@
                     <div class="col-lg-2  col-md-3">
                         <h5 class="widget-title wow fadeIn animated">My Account</h5>
                         <ul class="footer-list wow fadeIn animated">
-                            <li><a href="#">Sign In</a></li>
-                            <li><a href="#">View Cart</a></li>
-                            <li><a href="#">My Wishlist</a></li>
-                            <li><a href="#">Track My Order</a></li>
+                            <li><a href="/login">Sign In</a></li>
+                            <li><a href="/cart">View Cart</a></li>
+                            <li><a href="/wishlist">My Wishlist</a></li>
+                            <li><a href="/userDashboard">Track My Order</a></li>
                             <li><a href="#">Help</a></li>
-                            <li><a href="#">Order</a></li>
+                            <li><a href="/userDashboard">Order</a></li>
                         </ul>
                     </div>
                     <div class="col-lg-4">
@@ -150,6 +150,19 @@
         });
 
     })
+    async function search(){
+        try{
+            event.preventDefault()
+            event.stopPropagation()
+            const query = document.getElementById('searchInput').value
+            if(query){
+                window.location.href = `/shop?search=${encodeURIComponent(query)}`
+            }
+        }catch(error){
+            console.error(error);
+        }
+    }
 </script>
+
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://code.jquery.com/ui/1.14.0/jquery-ui.js"></script>

@@ -41,7 +41,9 @@
                     <p><strong>Regular Price:</strong> ₹ <%= product.product_regular_price %></p>
                     <p><strong>Sale Price:</strong> ₹ <%= product.product_sale_price %></p>
                     <p><strong>Offer Price:</strong> ₹ <span id="offerPrice"><%= product.offerPrice || 0.0 %></span></p>
-                    <p>Remove offers : <button class="btn btn-sm btn-danger" onclick="removeallOffer()">Remove</button></span></p>
+                    <% if(product.offerPrice) {%>
+                        <p>Remove offers : <button class="btn btn-sm btn-danger" onclick="removeallOffer()">Remove</button></span></p>
+                    <% } %>
                     <p><strong>Status:</strong>
                         <% if(product.isActive) { %>
                             <span class="badge bg-success">Active</span>

@@ -45,4 +45,12 @@ const categories = new mongoose.Schema({
     offer:offerSchema
 })
 
+categories.statics.updateExpiredOffers = async function() {
+    const currentDate = new Date();
+    await this.updateMany(
+        { 'offer.expiryDate': { $lt: currentDate }, 'offer.status': true },
+        { $set: { 'offer.status': false } }
+    );
+};
+
 module.exports = mongoose.model('categories',categories)

@@ -64,9 +64,10 @@
                         <% product.product_images.forEach((image, index) => { %>
                             <div class="image-item position-relative">
                                 <img src="/imgs/products/<%= image %>" alt="Existing image" class="mt-2" style="max-width: 200px;">
+                                <button class="btn btn-sm btn-danger" onclick="removeImage(event, '<%= image %>', '<%= product._id %>')">remove</button>
                             </div>
                         <% }) %>
-                    </div>
+                    </div>                    
                 </div>
 
                 <div class="mb-3">
@@ -89,6 +90,38 @@
 </section>
 
 <script>
+
+    async function removeImage(event, image, productId) {
+        event.preventDefault();
+        event.stopPropagation();
+    
+        try {
+            const response = await fetch('/admin/product/remove-image', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image, productId })
+            });
+    
+            if (!response.ok) throw new Error('Server responded with an error');
+    
+            const data = await response.json();
+            if (!data.success) throw new Error(data.message || 'Something went wrong');
+           
+            const imageItem = event.target.closest('.image-item');
+            if (imageItem) {
+                imageItem.remove();
+            }
+            addedFiles = addedFiles.filter(f => f.name !== image); 
+    
+        } catch (e) {
+            console.log(e);
+            Swal.fire('Error', e.message || 'Something went wrong', 'error');
+        }
+    }
+    
+    
+    
+
 let addedFiles = [];
 
 function handleFileInput() {

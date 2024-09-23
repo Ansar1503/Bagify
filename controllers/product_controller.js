@@ -6,15 +6,27 @@ const mongoose = require('mongoose')
 
 
 
-const loadProducts = async function (req,res){
+const loadProducts = async function (req, res) {
+    const page = parseInt(req.query.page) || 1; 
+    const limit = 10; 
+    const skip = (page - 1) * limit; 
+
     try {
-      const products = await Products.find().populate('product_category')
-       return res.render('products',{products})
+        const totalProducts = await Products.countDocuments(); 
+        const products = await Products.find()
+            .populate('product_category')
+            .skip(skip)
+            .limit(limit);
+
+        const totalPages = Math.ceil(totalProducts / limit); 
+
+        return res.render('products', { products, currentPage: page, totalPages });
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        res.status(500).send("Server error");
     }
-}
+};
+
 const loadAddproduct=async function(req,res){
     try {
         const categories = await Category.find()
@@ -119,6 +131,23 @@ const  editProduct = async function(req,res){
     } catch (error) {
         console.log(error.message);
         res.status(500).send('edit product error')
+    }
+}
+
+const deleteImage = async function(req,res){
+    try {
+       const {productId,image}=req.body
+       const oldImagePath = path.join(__dirname, '../public/imgs/products/', image)
+       fs.unlinkSync(oldImagePath)
+       
+       const product = await Products.findByIdAndUpdate(productId,{$pull:{product_images:image}},{new:true})
+        console.log(product);
+
+        return res.status(200).json({success:true,message:'image deleted successfully'})
+
+    } catch (error) {
+        console.log(error)
+        return status(500).json({success:false,message:'Internal Server Error'})
     }
 }
 
@@ -319,5 +348,6 @@ module.exports = {
     removeProductOffer,
     changeOfferStatus,
     updateOfferPrice,
-    removeAllOffers
+    removeAllOffers,
+    deleteImage
 }

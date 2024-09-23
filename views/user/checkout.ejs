@@ -261,6 +261,7 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     console.log('<%= coupon %>')
+
     async function razorPaycheck() {
         const userId = '<%= cartdata.user._id %>'
         const amount = parseInt('<%= cartdata.summary.total %>')
@@ -339,8 +340,9 @@
     
             const rzp1 = new Razorpay(options);
             rzp1.on('payment.failed', async function () {
-                Swal.fire('Error!', 'Payment failed', 'error');
+                window.location.href = `/failedPayment/<%= cartdata.user._id %>`
             });
+            
             rzp1.open();
             Swal.close();
     

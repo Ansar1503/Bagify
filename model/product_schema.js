@@ -85,4 +85,13 @@ const product_schema = new mongoose.Schema({
 
 },{timestamps:true})
 
+product_schema.statics.updateExpiredOffers = async function() {
+    const currentDate = new Date();
+    await this.updateMany(
+        { 'offer.expiryDate': { $lt: currentDate }, 'offer.status': true },
+        { $set: { 'offer.status': false } }
+    );
+};
+
+
 module.exports = mongoose.model('products',product_schema)

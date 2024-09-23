@@ -54,12 +54,19 @@
                                     <div class="col-md-6 col-sm-12">
                                         <div class="detail-gallery">
                                             <% if (product && product.product_images && product.product_images.length > 0) { %>
-                                                <div class="row justify-content-center">
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3" id="imagezoomjquery">
+                                                            <img src="/imgs/products/<%= product.product_images[0] %>"
+                                                            data-zoom-image="/imgs/products/<%= product.product_images[0] %>"
+                                                            class="img-fluid main-image" alt="product image">
+                                                    </div>
+                                                </div>
+                                                <div class="row">
                                                     <% for (let i = 0; i < Math.min(product.product_images.length, 4); i++) { %>
-                                                        <div id="img-container" class="col-md-6 col-sm-6 col-6 mb-3 d-flex justify-content-center">
-                                                            <img  src="/imgs/products/<%= product.product_images[i] %>"
-                                                                 data-zoom-image="/imgs/products/<%= product.product_images[i] %>"
-                                                                 class="img-fluid zoom-main" alt="product image">
+                                                        <div class="col-md-3 col-sm-3 col-3 mb-3 d-flex justify-content-center" >
+                                                                <img src="/imgs/products/<%= product.product_images[i] %>"
+                                                                class="img-fluid thumbnail" data-zoom-image="/imgs/products/<%= product.product_images[i] %>" alt="product thumbnail"
+                                                                onclick="changeMainImage('/imgs/products/<%= product.product_images[i] %>')">
                                                         </div>
                                                     <% } %>
                                                 </div>
@@ -67,11 +74,7 @@
                                                 <p>No images available.</p>
                                             <% } %>
                                         </div>
-                                        <!-- End Gallery -->
                                     </div>
-                                    
-                                    
-                                    
                                     
                                     <div class="col-md-6 col-sm-12 col-xs-12">
                                         <div class="detail-info">
@@ -173,12 +176,12 @@
                                                                 </a>
                                                             </div> -->
                                                         
-                                                            <div class="product-extra-link2" style="margin-left: 10px;">
+                                                            <!-- <div class="product-extra-link2" style="margin-left: 10px;">
                                                                 <a aria-label="Add To Wishlist" class="wishlist-link" data-product-id="">
                                                                     <i class="fi-rs-heart" ></i>
                                                                 </a>
                                                             </div>
-                                                        
+                                                         -->
                                                     
                                             </div>
 
@@ -551,17 +554,22 @@
                     </div>
                 </div>
             </section>
-        </main>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                // Initialize image zoom for images with the 'zoom-main' class
-                const zoom = new ImageZoom({
-                    selector: '.zoom-main', // This selects images with the 'zoom-main' class
-                    zoomPosition: 'right' // Optional: Change the zoom position as needed
-                });
-            });
-        </script>
+        </main> 
+        
+<%- include('../layout/user_footer.ejs') %>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="/zoom-master/jquery.zoom.js"></script>
 
-        <%- include('../layout/user_footer.ejs') %>
-        
-        
+<script>
+function changeMainImage(imageSrc) {
+const mainImage = document.querySelector('.main-image');
+mainImage.src = imageSrc;
+mainImage.setAttribute('data-zoom-image', imageSrc);
+$('#imagezoomjquery').trigger('zoom.destroy');
+$('#imagezoomjquery').zoom({magnify:2});
+}
+
+$(document).ready(function() {
+$('#imagezoomjquery').zoom({magnify:2});
+});
+</script>

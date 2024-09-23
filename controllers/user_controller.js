@@ -45,8 +45,9 @@ const loadHome = async function(req,res){
     try {
         const categories = await Category.find({isListed:true})
         const products = await Products.find({isActive:true}).populate({path:'product_category',populate:{path:'offer'}}).populate('offer').limit(6)
+        const sortedProducts = await Products.find({isActive:true}).sort({createdAt:-1}).limit(10)
     
-        res.render('home',{products,categories})
+        res.render('home',{products,categories,sortedProducts})
     } catch (error) {
         console.log(error);
         res.status(500).send("homepage loading error")
@@ -308,8 +309,8 @@ const loadShop = async (req, res) => {
         let query = {};
         
         
-        if (req.query.query || req.body.search) {  
-            const searchTerm = req.query.query.toLowerCase() || req.body.search.toLowerCase()
+        if (req.query.query || req.query.search) {  
+            const searchTerm = req.query.query ? req.query.query.toLowerCase() : req.query.search 
             query.product_name = { $regex: searchTerm, $options: 'i' }; 
         }
 
@@ -1275,6 +1276,15 @@ const checkoutupdateAddress = async(req,res)=>{
     }
 }
 
+const paymentFailed = async(req,res)=>{
+    try {
+        const userId = req.params.id
+        res.render('paymentFailed',{userId})
+    } catch (error) {
+        console.error(error)
+        return res.status(500).send('Internal server Error')
+    }
+}
 
 
 
@@ -1752,7 +1762,7 @@ const removeCoupon = async(req,res)=>{
 
 const loadWishlist = async (req,res)=>{
     try {
-        const wishlist = await Wishlist.findOne({userId:req.session.user_id}).populate('products')
+        const wishlist = await Wishlist.findOne({userId:req.session.user_id}).populate({path:'products',populate:{path:'product_category'}})
         return res.render('wishlist',{wishlist})
     } catch (error) {
         console.log(error.message);
@@ -1839,6 +1849,7 @@ module.exports = {
     getCartSummary,
     checkoutaddAddress,
     checkoutupdateAddress,
+    paymentFailed,
 
     // exports of Order cancel and return  
     cancelOrderItem,

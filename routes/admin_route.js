@@ -24,10 +24,13 @@ adminRoute.set('views','./views/admin');
 
 
 adminRoute.get('/',admin_session.notLoggedin,admin_controller.loadlogin)
-adminRoute.get('/dashboard',admin_session.isLoggedin,admin_controller.loadadminDashboard)
 adminRoute.get('/logout',admin_controller.logout)
 
 adminRoute.post('/',admin_controller.verifyLogin)
+
+// Dashboard
+adminRoute.get('/dashboard',admin_session.isLoggedin,admin_controller.loadadminDashboard);
+adminRoute.get('/dashboard/fetchReport',admin_session.isLoggedin,admin_controller.getAdminReport)
 
 
 // customer page request
@@ -54,6 +57,7 @@ adminRoute.delete('/products/removeProductOffer/:id',admin_session.isLoggedin,pr
 adminRoute.put('/products/changeOfferStatus/:id',admin_session.isLoggedin,product_controller.changeOfferStatus)
 adminRoute.patch('/products/updateOfferPrice/:id',admin_session.isLoggedin,product_controller.updateOfferPrice)
 adminRoute.delete('/products/removeAllOffers/:id',admin_session.isLoggedin,product_controller.removeAllOffers)
+adminRoute.delete('/product/remove-image',admin_session.isLoggedin,product_controller.deleteImage)
 
 
 

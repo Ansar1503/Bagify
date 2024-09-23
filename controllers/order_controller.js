@@ -6,15 +6,25 @@ const { format, parseISO, formatDate } = require('date-fns');
 const mongoose = require('mongoose')
 const { ObjectId } = mongoose.Types;
 
-const orderList = async (req,res)=>{
+const orderList = async (req, res) => {
+    const page = parseInt(req.query.page) || 1; 
+    const limit = 10; 
+    const skip = (page - 1) * limit;
+
     try {
-        const orderData = await orderModel.find().populate('user')
-        return res.render('orderList',{orderData})
+        const totalOrders = await orderModel.countDocuments();
+        const orderData = await orderModel.find().populate('user').skip(skip).limit(limit); 
+
+        const totalPages = Math.ceil(totalOrders / limit); 
+
+        return res.render('orderList', { orderData, currentPage: page, totalPages });
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('couldnt find order list')        
+        return res.status(500).send('Couldn’t find order list');        
     }
-}
+};
+
+
 
 const orderDetails = async (req, res) => {
     try {

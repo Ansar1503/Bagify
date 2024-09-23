@@ -121,8 +121,8 @@ const downloadReport = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-const getSalesReport = async (startDate, endDate, period) => {
+ 
+const getSalesReport = async (startDate='', endDate='', period) => {
     let start, end;
 
     if (period === 'day') {
@@ -134,6 +134,9 @@ const getSalesReport = async (startDate, endDate, period) => {
     } else if (period === 'month') {
         start = startOfMonth(new Date());
         end = endOfMonth(new Date());
+    } else if (period === 'year') {
+        start = new Date(new Date().getFullYear(), 0, 1); // January 1st of the current year
+        end = new Date(new Date().getFullYear(), 11, 31); // December 31st of the current year
     } else if (startDate && endDate) {
         start = startOfDay(parseISO(startDate));
         end = endOfDay(parseISO(endDate));
@@ -144,7 +147,6 @@ const getSalesReport = async (startDate, endDate, period) => {
     const orders = await Order.find({
         orderDate: { $gte: start, $lte: end },
     });
-    
 
     const overallSalesCount = orders.length;
     const overallOrderAmount = orders.reduce((acc, order) => acc + order.totalAmount, 0);
@@ -158,8 +160,11 @@ const getSalesReport = async (startDate, endDate, period) => {
     };
 };
 
+
+
 module.exports = {
     salesReport,
     generateReport,
     downloadReport,
+    getSalesReport
 };

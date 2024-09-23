@@ -111,7 +111,7 @@ const orderModel = Schema({
     orderStatus:{
         type:String,
         required:false,
-        enum:['pending','confirmed','shipped','delivered','cancelled','returned',],
+        enum:['pending','confirmed','shipped','delivered','cancelled','returned'],
         default:'pending'
     },
     paymentMethod:{

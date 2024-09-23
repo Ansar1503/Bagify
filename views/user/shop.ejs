@@ -168,7 +168,7 @@
                             label: suggestion.name,
                             value: suggestion.id
                         }));
-                        response(suggestions)
+                        response(suggestions);
                     } else {
                         response([]);
                     }
@@ -179,10 +179,8 @@
             },
 
             select: function(event, ui) {
-     
                 window.location.href = `/product-details/${ui.item.value}`;
             }
-
         });
 
         // Price range slider
@@ -201,9 +199,15 @@
         $("#amount").val("₹" + $("#slider-range").slider("values", 0) +
             " - ₹" + $("#slider-range").slider("values", 1));
 
-        // Submit form on filter change
+        // Submit form only when "Apply Filters" button is clicked
+        $('#filterForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            this.submit(); // Submit the form
+        });
+
+        // Handle the price range slider change
         $('input[type="checkbox"], #slider-range').change(function() {
-            $('#filterForm').submit();
+            // Do not submit form here
         });
 
         // Preserve selected filters
@@ -252,5 +256,6 @@
         }
     }
 </script>
+
 
 

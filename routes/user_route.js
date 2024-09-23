@@ -54,11 +54,13 @@ userRoute.patch('/cart/removeCoupon',userAuth.isLoggedin,userController.removeCo
 // order
 userRoute.get('/checkoutpage/:user_id',userAuth.isLoggedin,userController.loadCheckout)
 userRoute.post('/placeOrder',userAuth.isLoggedin,userController.placeOrder)
+userRoute.get('/failedPayment/:id',userAuth.isLoggedin,userController.paymentFailed)
 userRoute.post('/checkout/add-address/:user_id',userAuth.isLoggedin,userController.checkoutaddAddress)
 userRoute.post('/checkout/update-address/:address_id',userAuth.isLoggedin,userController.checkoutupdateAddress)
 userRoute.patch('/orders/cancelItem',userAuth.isLoggedin,userController.cancelOrderItem)
 userRoute.patch('/orders/returnOrder',userAuth.isLoggedin,userController.returnOrder)
 userRoute.get('/order/downloadInvoice/:id',userAuth.isLoggedin,userController.downloadInvoice)
+
 
 //dashbord profile
 userRoute.patch('/userDashboard/updatePersonal',upload.none(),userAuth.isLoggedin,userController.edituserPersonal) 

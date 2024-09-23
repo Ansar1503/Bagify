@@ -24,7 +24,6 @@
                 </div>
             </div>
         </header>
-        <!-- table content starts -->
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover">
@@ -40,7 +39,7 @@
                             <th scope="col" class="text-end">Action</th>
                         </tr>
                     </thead>
-                    <% if(orderData.length>0) {%>
+                    <% if(orderData.length > 0) { %>
                         <tbody>
                             <% orderData.forEach(order => { %>
                             <tr>
@@ -51,7 +50,6 @@
                                     <%= order.shippingAddress.fullname %><br>
                                     <%= order.shippingAddress.phone %><br>
                                     <%= order.shippingAddress.city %>, <%= order.shippingAddress.Address %>, <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %><br>
-                                   
                                 </td>
                                 <td>Rs <%= order.totalAmount %></td>
                                 <td>
@@ -74,29 +72,46 @@
                                     .join(' ') %>
                                     </span>
                                 </td>
-                                
                                 <td><%= new Date(order.orderDate).toLocaleString() %></td>
                                 <td class="text-end">
-                                    <a href="/admin/orders/orderDetails/<%= order._id %>" class="btn btn-md rounded font-sm" >Detail</a>
+                                    <a href="/admin/orders/orderDetails/<%= order._id %>" class="btn btn-md rounded font-sm">Detail</a>
                                 </td>
                             </tr>
                             <% }); %>
                         </tbody>
-                        <% }else {%>
-                            <tbody>
-                                <tr>
-                                    <td colspan="8">
-                                        <h3>No orders listed</h3>  
-
-                                    </td>
-                              </tr>
-                            </tbody>
-                            <% } %>
+                    <% } else { %>
+                        <tbody>
+                            <tr>
+                                <td colspan="8">
+                                    <h3>No orders listed</h3>
+                                </td>
+                            </tr>
+                        </tbody>
+                    <% } %>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Pagination Controls -->
+    <div class="pagination-area mt-15 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <% if (currentPage > 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                    </li>
+                <% } %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+                <% if (currentPage < totalPages) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+                    </li>
+                <% } %>
             </ul>
         </nav>
     </div>
