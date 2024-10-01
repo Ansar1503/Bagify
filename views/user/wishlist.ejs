@@ -35,7 +35,7 @@
                                     </div>
                                 </div>
                                 <div class="ml-auto">
-                                    <a href="/product/<%= product._id %>" class="btn btn-primary btn-sm">View Product</a>
+                                    <a href="/product-details/<%= product._id %>" class="btn btn-primary btn-sm">View Product</a>
                                     <button class="btn btn-danger btn-sm ml-2" onclick="removeFromWishList('<%= product._id %>', this)">Remove</button>
                                 </div>
                             </div>
@@ -62,7 +62,6 @@
             const data = await response.json();
             if (!data.success) throw new Error(data.message || 'Response error');
 
-            // Remove the product element from the DOM
             const productElement = button.closest('.list-group-item');
             if (productElement) {
                 productElement.remove();

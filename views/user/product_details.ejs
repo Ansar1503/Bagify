@@ -147,7 +147,7 @@
                                                 <% } else { %>
                                                     <div class="product-extra-link2">
                                                       
-                                                        <% if (productIds.includes(product._id.toString())) { %>
+                                                        <% if (productIds && productIds.includes(product._id.toString())) { %>
                                                             <form action="/cart" method="get">
                                                                 <button type="submit" id="goToCart" class="button button-add-to-cart">Go to Cart</button>
                                                             </form>
@@ -162,7 +162,6 @@
                                                             </form>
                                                         <% } %>
                                                     </div>
-                                                    
                                                     
                                                     <div class="product-extra-link2">
                                                         <button type="submit" class="button button-add-to-cart" id="buyNow" style="margin-left: 10px;">Buy Now</button>
@@ -561,15 +560,17 @@
 <script src="/zoom-master/jquery.zoom.js"></script>
 
 <script>
-function changeMainImage(imageSrc) {
-const mainImage = document.querySelector('.main-image');
-mainImage.src = imageSrc;
-mainImage.setAttribute('data-zoom-image', imageSrc);
-$('#imagezoomjquery').trigger('zoom.destroy');
-$('#imagezoomjquery').zoom({magnify:2});
-}
-
-$(document).ready(function() {
-$('#imagezoomjquery').zoom({magnify:2});
-});
-</script>
+   
+    function changeMainImage(imageSrc) {
+      const mainImage = document.querySelector('.main-image');
+      mainImage.src = imageSrc;
+      mainImage.setAttribute('data-zoom-image', imageSrc);
+      $('#imagezoomjquery').trigger('zoom.destroy');
+      $('#imagezoomjquery').zoom({ magnify: 2 });
+    }
+    
+    $(document).ready(function() {
+      $('#imagezoomjquery').zoom({ magnify: 2 });
+    });
+    </script>
+    

@@ -5,6 +5,8 @@ const Products = require('../model/product_schema')
 const Category = require('../model/category_schema')
 const User = require('../model/user_schema')
 const {getSalesReport} = require('../controllers/sales_controller')
+const ExcelJS = require('exceljs');
+const ReturnProductModel = require('../model/order_return_Schema');
 
 const loadlogin = async function(req,res){
     try {
@@ -17,56 +19,51 @@ const loadlogin = async function(req,res){
 
 const loadadminDashboard = async function (req, res) {
     try {
-        const orderData = await Order.find();
-        const orderCount = orderData.length;
-        const totalRevenue = orderData.reduce((total, order) => total + order.totalAmount, 0);
-        const productCount = await Products.countDocuments()
-        const categoryCount = await Category.countDocuments();
-        const userCount = await User.countDocuments();
+        
+        const [orderData,productCount,categoryCount,userCount] = await Promise.all([Order.find(), Products.countDocuments(), Category.countDocuments(), User.countDocuments()])
 
-        let bestSellingProductsIds = await Order.aggregate([{$unwind: '$items'},
+        let bestSellingProducts = await Order.aggregate([{$unwind: '$items'},
             {$match:{'items.itemOrderStatus': 'delivered'}},
             {$group:{_id: '$items.product',totalSold:{$sum:'$items.quantity'}}},
-            {$sort:{totalSold:-1}},{$limit:10}]);
-            // console.log(bestSellingProductsIds)
-        bestSellingProductsIds  =  bestSellingProductsIds.map(product=>product._id)
-            // console.log(bestSellingProductsIds)
-        const bestSellingProducts = await Products.find({_id:{$in:bestSellingProductsIds}})
-        const sortedProducts = bestSellingProductsIds.map(id =>
-            bestSellingProducts.find(product => product._id.equals(id))
-        );
-        // console.log(bestSellingProducts)
-        let bestCategoryIds = bestSellingProducts.map(product=>product.product_category.toString())
-        bestCategoryIds = [...new Set(bestCategoryIds)]
-        const bestCategories = await Category.find({_id:{$in:bestCategoryIds}})
+            {$sort:{totalSold:-1}},{$limit:10},
+            {$lookup:{from:'products',localField:'_id',foreignField:'_id',as:'products'}},
+            {$unwind:{path:'$products',preserveNullAndEmptyArrays:true}},
+            {$project:{_id:0,totalSold:0}},
+        ]);
+        bestSellingProducts = bestSellingProducts.map((item) => item.products)
+        // console.log(bestSellingProducts);
+        
+        let bestCategories = await Order.aggregate([
+            {$unwind:'$items'},{$match:{'items.itemOrderStatus':'delivered'},},
+            {$group:{_id:'$items.category',totalSold:{$sum:'$items.quantity'}}},{$sort:{totalSold:-1}},{$limit:10},
+            {$lookup: {from: 'categories', localField: '_id',foreignField: '_id',as: 'categories'}},
+            {$unwind:{path:'$categories',preserveNullAndEmptyArrays:true}},
+            {$project:{_id:0,totalSold:0}}
+        ])
+        bestCategories = bestCategories.map((item) => item.categories)
+        // console.log(bestCategories);
         
         const daily = {
             start: startOfDay(new Date()),
             end: endOfDay(new Date())
-        };
+        }
         const weekly = {
             start: startOfWeek(new Date()),
             end: endOfWeek(new Date())
-        };
+        }
         const monthly = {
             start: startOfMonth(new Date()),
             end: endOfMonth(new Date())
-        };
+        }
+        const totalRevenue = orderData.reduce((total, order) => total + order.totalAmount, 0);
+        const dailyRevenue = orderData.filter(order => order.createdAt >= daily.start && order.createdAt <= daily.end).reduce((total, order) => total + order.totalAmount, 0);
 
-        const dailyRevenue = orderData
-            .filter(order => order.createdAt >= daily.start && order.createdAt <= daily.end)
-            .reduce((total, order) => total + order.totalAmount, 0);
+        const weeklyRevenue = orderData.filter(order => order.createdAt >= weekly.start && order.createdAt <= weekly.end).reduce((total, order) => total + order.totalAmount, 0);
 
-        const weeklyRevenue = orderData
-            .filter(order => order.createdAt >= weekly.start && order.createdAt <= weekly.end)
-            .reduce((total, order) => total + order.totalAmount, 0);
-
-        const monthlyRevenue = orderData
-            .filter(order => order.createdAt >= monthly.start && order.createdAt <= monthly.end)
-            .reduce((total, order) => total + order.totalAmount, 0);
+        const monthlyRevenue = orderData.filter(order => order.createdAt >= monthly.start && order.createdAt <= monthly.end).reduce((total, order) => total + order.totalAmount, 0);
 
         res.render('admin_Dashboard', {
-            orderCount,
+            orderCount:orderData.length,
             totalRevenue,
             productCount,
             categoryCount,
@@ -74,7 +71,7 @@ const loadadminDashboard = async function (req, res) {
             dailyRevenue,
             weeklyRevenue,
             monthlyRevenue,
-            bestSellingProducts:sortedProducts,
+            bestSellingProducts,
             bestCategories
         });
     } catch (error) {
@@ -126,9 +123,54 @@ const verifyLogin = async function (req,res){
 }
 
 
+const generateLedger = async (req, res) => {
+    try {
+        const orders = await Order.find({}).populate('user', 'name email')
+        const returns = await ReturnProductModel.find({}).populate('order', 'totalAmount orderDate')
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Ledger');
+        worksheet.columns = [
+            { header: 'Order ID', key: 'orderId', width: 30 },
+            { header: 'User', key: 'user', width: 30 },
+            { header: 'Order Date', key: 'orderDate', width: 25 },
+            { header: 'Total Amount', key: 'totalAmount', width: 20 },
+            { header: 'Coupon Discount', key: 'couponDiscount', width: 20 },
+            { header: 'Offer Discount', key: 'offerDiscount', width: 25 },
+            { header: 'Return ID', key: 'returnId', width: 20 },
+            { header: 'Return Date', key: 'returnDate', width: 25 },
+            { header: 'Refund Amount', key: 'refundAmount', width: 15 },
+            { header: 'Return Reason', key: 'returnReason', width: 30 },
+        ];
+        const returnMap = {};
+        returns.forEach(returnItem => {
+            returnMap[returnItem.order._id] = returnItem;
+        });
 
+        orders.forEach(order => {
+            const returnItem = returnMap[order._id]; 
+            worksheet.addRow({
+                orderId: order._id,
+                user: order.user ? order.user.name : 'N/A',
+                orderDate: format(typeof order.orderDate === 'object' ? order.orderDate : parseISO(order.orderDate), 'yyyy-MM-dd HH:mm:ss'),
+                totalAmount: order.totalAmount,
+                couponDiscount: order.couponDiscount,
+                offerDiscount: order.offerDiscount,
+                returnId: returnItem ? returnItem._id : '',
+                returnDate: returnItem ? format(typeof returnItem.productReturnDate === 'object' ? returnItem.productReturnDate : parseISO(returnItem.productReturnDate), 'yyyy-MM-dd HH:mm:ss') : '',
+                refundAmount: returnItem ? returnItem.productRefundAmount : 0,
+                returnReason: returnItem ? returnItem.productReturnReason : '',
+            });
+        });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=ledger.xlsx');
 
-
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
 
 module.exports = {
     loadlogin,
@@ -136,4 +178,5 @@ module.exports = {
     loadadminDashboard,
     logout,
     getAdminReport,
+    generateLedger,
 }

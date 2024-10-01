@@ -3,6 +3,7 @@ const Coupons = require('../model/coupon_schema')
 const loadCoupon =  async (req, res) => {
     try {
         const coupon = await Coupons.find()
+            .sort({createdAt:-1})
         return res.render('coupons',{coupon})
     } catch (error) {
         console.log(error.message);

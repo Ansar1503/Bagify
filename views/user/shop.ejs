@@ -54,8 +54,8 @@
                                                 <% } %>
                                             </div>
                                             <div class="product-action-1 show">
-                                                <a aria-label="Add To Cart" class="action-btn hover-up mb-2" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up mb-2" onclick="wishlist(this,event,'<%= product._id %>')"><i <% if(product.inWishList) {%>class="bi bi-heart-fill"<%} else {%> class="bi bi-heart"<% } %> ></i></a>
+                                                <a aria-label="Add To Cart" class="action-btn hover-up mb-2" href="/" onclick="addtoCart('<%= product.offerType %>','<%= product.offerPrice %>')"><i class="fi-rs-shopping-bag-add"></i></a>
+                                                <a aria-label="Add To Wishlist" class="action-btn hover-up mb-2" onclick="wishlist(this,event,'<%= product._id %>')"><i <% if(wishlist && wishlist.products && wishlist.products.includes(product._id)) {%>class="bi bi-heart-fill"<%} else {%> class="bi bi-heart"<% } %> ></i></a>
                                             </div>
                                         </div>
                                     </div>

@@ -31,6 +31,7 @@ adminRoute.post('/',admin_controller.verifyLogin)
 // Dashboard
 adminRoute.get('/dashboard',admin_session.isLoggedin,admin_controller.loadadminDashboard);
 adminRoute.get('/dashboard/fetchReport',admin_session.isLoggedin,admin_controller.getAdminReport)
+adminRoute.get('/dashboard/generateLedger',admin_session.isLoggedin,admin_controller.generateLedger)
 
 
 // customer page request

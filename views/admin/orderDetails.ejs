@@ -82,81 +82,82 @@
                             <tbody>
                                <% if(orderData.items.length > 0) {%>
                                 <% orderData.items.forEach(item => { %>
-                                    <tr>
-                                        <td>
-                                            <a class="itemside" href="#">
-                                                <div class="left">
-                                                    <img src="/imgs/products/<%= item.images[0] %>" width="40" height="40" class="img-xs" alt="Item">
-                                                </div>
-                                                <div class="info"> <%= item.productName %> </div>
-                                            </a>
-                                        </td>
-                                        <td>₹ <%= item.itemOffer? item.price : item.regularPrice %></td>
-                                        <td>₹ <%= item.itemOffer?.offerAmount || 0%></td>
-                                        
-                                        <td><%= item.quantity %></td>
-                                    
-                                        <td>
-                                            <span class="badge rounded-pill 
-                                                <% if (item.itemOrderStatus === 'pending') { %>
-                                                    alert-warning
-                                                <% } else if (item.itemOrderStatus === 'confirmed') { %>
-                                                    alert-info
-                                                <% } else if (item.itemOrderStatus === 'shipped') { %>
-                                                    alert-info
-                                                <% } else if (item.itemOrderStatus === 'delivered') { %>
-                                                    alert-success
-                                                <% } else if (item.itemOrderStatus === 'cancelled') { %>
-                                                    alert-danger
-                                                <% } else if (item.itemOrderStatus === 'returnInitiated') { %>
-                                                    alert-secondary
-                                                <% } else if (item.itemOrderStatus === 'returnApproved') { %>
-                                                    alert-secondary
-                                                <% } else if (item.itemOrderStatus === 'returnRejected') { %>
-                                                    alert-secondary
-                                                <% } %>
-                                            ">
-                                            <%= item.itemOrderStatus.replace(/([a-z])([A-Z])/g, '$1 $2')
-                                                .split(' ')
-                                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                                .join(' ') %>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <select aria-label="Change order status"
-                                                    data-item-id="<%= item._id %>"
-                                                    <% if (['cancelled', 'delivered', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
-                                                        disabled
-                                                    <% } %>
-                                                >
-                                                    <option value="pending" <% if (item.itemOrderStatus === 'pending') { %> selected <% } %>
-                                                        <% if (['confirmed', 'shipped', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %> disabled <% } %>
-                                                    >Pending</option>
-                                                    <option value="confirmed" <% if (item.itemOrderStatus === 'confirmed') { %> selected  <% } %>
-                                                        <% if (['shipped', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %> disabled <% } %>
-                                                    >Order Confirmed</option>
-                                                    <option value="shipped" <% if (item.itemOrderStatus === 'shipped') { %> selected <% } %>
-                                                        <% if (['delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %> disabled <% } %>
-                                                    >Shipped</option>
-                                                    <option value="delivered" <% if (item.itemOrderStatus === 'delivered') { %> selected <% } %>
-                                                        <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %> disabled <% } %>
-                                                    >Delivered</option>
-                                                    <option value="cancelled" <% if (item.itemOrderStatus === 'cancelled') { %> selected <% } %>
-                                                        <% if (['delivered', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %> disabled <% } %>
-                                                    >Cancelled</option>
-                                                </select>
-                                                <button type="button" onclick="saveStatus(this)"
-                                                    <% if (['cancelled', 'delivered', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
-                                                        disabled
-                                                    <% } %>
-                                                    data-item-id="<%= item._id %>"
-                                                >Save</button>
-                                            </div>
-                                        </td>
-                                    
-                                        <td class="text-end">₹ <%= item.price - item.itemOffer?.offerAmount %></td>
-                                    </tr>
+                                    <!-- Inside each table row for items -->
+<tr>
+    <td>
+        <a class="itemside" href="#">
+            <div class="left">
+                <img src="/imgs/products/<%= item.images[0] %>" width="40" height="40" class="img-xs" alt="Item">
+            </div>
+            <div class="info"> <%= item.productName %> </div>
+        </a>
+    </td>
+    <td>₹ <%= item.itemOffer ? item.price : item.regularPrice %></td>
+    <td>₹ <%= item.itemOffer?.offerAmount || 0 %></td>
+    <td><%= item.quantity %></td>
+
+    <td>
+        <span class="badge rounded-pill 
+            <% if (item.itemOrderStatus === 'pending') { %>
+                alert-warning
+            <% } else if (item.itemOrderStatus === 'confirmed') { %>
+                alert-info
+            <% } else if (item.itemOrderStatus === 'shipped') { %>
+                alert-info
+            <% } else if (item.itemOrderStatus === 'delivered') { %>
+                alert-success
+            <% } else if (item.itemOrderStatus === 'cancelled') { %>
+                alert-danger
+            <% } else if (item.itemOrderStatus === 'returnInitiated') { %>
+                alert-secondary
+            <% } else if (item.itemOrderStatus === 'returnApproved') { %>
+                alert-secondary
+            <% } else if (item.itemOrderStatus === 'returnRejected') { %>
+                alert-secondary
+            <% } %>
+        ">
+        <%= item.itemOrderStatus.replace(/([a-z])([A-Z])/g, '$1 $2')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ') %>
+        </span>
+    </td>
+    <td>
+        <div class="d-flex align-items-center">
+            <select aria-label="Change order status"
+                data-item-id="<%= item._id %>"
+                <% if (['cancelled', 'delivered', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %>
+                    disabled
+                <% } %>
+            >
+                <option value="pending" <% if (item.itemOrderStatus === 'pending') { %> selected <% } %>
+                    <% if (['confirmed', 'shipped', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %> disabled <% } %>
+                >Pending</option>
+                <option value="confirmed" <% if (item.itemOrderStatus === 'confirmed') { %> selected  <% } %>
+                    <% if (['shipped', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %> disabled <% } %>
+                >Order Confirmed</option>
+                <option value="shipped" <% if (item.itemOrderStatus === 'shipped') { %> selected <% } %>
+                    <% if (['delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %> disabled <% } %>
+                >Shipped</option>
+                <option value="delivered" <% if (item.itemOrderStatus === 'delivered') { %> selected <% } %>
+                    <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %> disabled <% } %>
+                >Delivered</option>
+                <option value="cancelled" <% if (item.itemOrderStatus === 'cancelled') { %> selected <% } %>
+                    <% if (['delivered', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %> disabled <% } %>
+                >Cancelled</option>
+            </select>
+            <button type="button" onclick="saveStatus(this)"
+                <% if (['cancelled', 'delivered', 'returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) || orderData.paymentStatus === 'failed') { %>
+                    disabled
+                <% } %>
+                data-item-id="<%= item._id %>"
+            >Save</button>
+        </div>
+    </td>
+
+    <td class="text-end">₹ <%= item.price - (item.itemOffer?.offerAmount || 0) %></td>
+</tr>
+
                                     <% }) %>
                                 <tr>
                                     <td colspan="8">
@@ -202,6 +203,12 @@
         const status = selectElement.value;
         const itemId = buttonElement.getAttribute('data-item-id');
     
+        // Disable action if payment failed
+        if (<%= orderData.paymentStatus === 'failed' %>) {
+            alert('Cannot update order status as the payment has failed.');
+            return;
+        }
+    
         try {
             const response = await fetch('/admin/orders/update-status', {
                 method: 'PATCH',
@@ -224,10 +231,10 @@
                 // Update the status badge
                 statusCell.innerHTML = `<span class="badge rounded-pill 
                     ${status === 'pending' ? 'alert-warning' :
-                     status === 'confirmed' ? 'alert-info' :
-                     status === 'shipped' ? 'alert-info' :
-                     status === 'delivered' ? 'alert-success' :
-                     status === 'cancelled' ? 'alert-danger' : 'alert-secondary'}">
+                    status === 'confirmed' ? 'alert-info' :
+                    status === 'shipped' ? 'alert-info' :
+                    status === 'delivered' ? 'alert-success' :
+                    status === 'cancelled' ? 'alert-danger' : 'alert-secondary'}">
                     ${status.replace(/([a-z])([A-Z])/g, '$1 $2')
                     .split(' ')
                     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())

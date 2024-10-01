@@ -12,7 +12,7 @@ const userRoute = express()
 // set view engine
 userRoute.set('view engine','ejs');
 userRoute.set('views','./views/user');
-// ,userAuth.isLoggedin
+
 
 // GET requests
 userRoute.get('/',userController.loadHome)
@@ -43,6 +43,7 @@ userRoute.post('/update-address/:address_id',userAuth.isLoggedin,userController.
 
 // cart
 userRoute.get('/cart',userAuth.isLoggedin,userController.loadCart)
+userRoute.get('/cart/validateCart/:id',userAuth.isLoggedin,userController.validateCart)
 userRoute.get('/get-cart-summary',userAuth.isLoggedin,userController.getCartSummary)
 userRoute.post('/addtoCart',userAuth.isLoggedin,userController.addtoCart)
 userRoute.patch('/increase-quantity',userAuth.isLoggedin,userController.increaseItem)
@@ -54,8 +55,11 @@ userRoute.patch('/cart/removeCoupon',userAuth.isLoggedin,userController.removeCo
 // order
 userRoute.get('/checkoutpage/:user_id',userAuth.isLoggedin,userController.loadCheckout)
 userRoute.post('/placeOrder',userAuth.isLoggedin,userController.placeOrder)
-userRoute.get('/failedPayment/:id',userAuth.isLoggedin,userController.paymentFailed)
-userRoute.post('/checkout/add-address/:user_id',userAuth.isLoggedin,userController.checkoutaddAddress)
+userRoute.get('/failedPayment/:id',userAuth.isLoggedin,userController.loadPaymentFailedPage)
+userRoute.post('/failedPayment/:id',userAuth.isLoggedin,userController.paymentFailed)
+userRoute.get('/retryPayment/:id',userAuth.isLoggedin,userController.retryPayment)
+userRoute.post('/retryPayment',userAuth.isLoggedin,userController.retryPlaceOrder)
+userRoute.post('/checkout/add-address/:id',userAuth.isLoggedin,userController.checkoutaddAddress)
 userRoute.post('/checkout/update-address/:address_id',userAuth.isLoggedin,userController.checkoutupdateAddress)
 userRoute.patch('/orders/cancelItem',userAuth.isLoggedin,userController.cancelOrderItem)
 userRoute.patch('/orders/returnOrder',userAuth.isLoggedin,userController.returnOrder)

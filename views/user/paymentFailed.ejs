@@ -8,7 +8,7 @@
                 <h1 class="h2 text-danger font-weight-bold mb-4">Payment Failed</h1>
                 <p class="lead text-muted mb-4">We encountered an issue while processing your payment. Please try again.</p>
                 <p class="lead text-muted mb-4">If the issue persists, please contact our customer support team.</p>
-                <a href="/checkoutpage/<%= userId %>" class="btn btn-danger btn-lg mb-2 me-2" style="background-color: brown;" >Retry Payment</a>
+                <a href="/retryPayment/<%= locals.orderId %>" class="btn btn-danger btn-lg mb-2 me-2" style="background-color: brown;" >Retry Payment</a>
                 <a href="/shop" class="btn btn-secondary btn-lg mb-2">Continue Shopping</a>
             </div>
         </div>

@@ -88,6 +88,11 @@ const orderModel = Schema({
         required:true,
         default:0
     },
+    deliveryCharges:{
+        type:Number,
+        required:false,
+        default:0
+    },
     couponDiscount:{
         type:Number,
         required:false,

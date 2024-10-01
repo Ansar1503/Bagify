@@ -13,7 +13,10 @@ const orderList = async (req, res) => {
 
     try {
         const totalOrders = await orderModel.countDocuments();
-        const orderData = await orderModel.find().populate('user').skip(skip).limit(limit); 
+        const orderData = await orderModel.find().populate('user')
+            .sort({createdAt:-1})
+            .skip(skip)
+            .limit(limit); 
 
         const totalPages = Math.ceil(totalOrders / limit); 
 
@@ -121,7 +124,7 @@ const returnList = async (req,res)=> {
 
 const returnStatusChange = async (req, res) => {
     try {
-        const accept = req.query.accept === 'true';  // Directly convert to boolean
+        const accept = req.query.accept === 'true';  
         
         if (accept === null || accept === undefined) {
             return res.status(400).send('Please choose accept or reject');

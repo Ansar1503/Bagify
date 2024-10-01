@@ -62,126 +62,119 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
-                                <% if (orderData && orderData.length > 0) { %>
-                                    <% orderData.forEach(order => { %>
-                                        <div class="order-card card mb-3" style="border-radius: 10px;"data-order-id="<%= order._id %>">
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#orderDetails-<%= order._id %>">
-                                                    <div>
-                                                        <p class="mb-1"><strong>Order Number:</strong> #<%= order._id %></p>
-                                                        <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
-                                                        <p class="mb-1"><strong>Order Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
-                                                        <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-                                                    </div>
-                                                    <div id="orderStatus<%= order._id %>" class="text-warning">
-                                                        <strong><%= order.orderStatus.toUpperCase() %></strong>
-                                                    </div>
-                                                </div>
-                                                <div id="orderDetails-<%= order._id %>" class="collapse">
-                                                    <hr>
-                                                    <div class="mb-3">
-                                                        <p class="mb-1">Order Date: <%= new Date(order.orderDate).toLocaleDateString() %></p>
-                                                        <p class="mb-1">Ship To: <%= order.shippingAddress.fullname %></p>
-                                                        <p class="mb-1" style="margin-left: 55px;"><%= order.shippingAddress.Address %></p>
-                                                        <p class="mb-1" style="margin-left: 55px;"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %></p>
-                                                        <p class="mb-1" style="margin-left: 55px;">Pincode: <%= order.shippingAddress.pincode %></p>
-                                                        
-                                                    </div>
-
-
-                                                    <% order.items.forEach(item => { %>
-                                                        <div class="d-flex mb-3">
-                                                            <div class="flex-shrink-0 me-3" style="width: 50px;">
-                                                                <% if (item.images && item.images.length > 0) { %>
-                                                                    <img src="/imgs/products/<%= item.images[0] %>" alt="Product Image" class="img-fluid">
-                                                                <% } else { %>
-                                                                    <span>No image</span>
-                                                                <% } %>
-                                                            </div>
-                                                            <div class="flex-grow-1" >
-                                                                <p class="mb-1"><strong>Name:</strong> <%= item.productName %></p>
-                                                                <p class="mb-1"><strong>Brand:</strong> <%= item.brandName %></p>
-                                                                <p class="mb-0"><strong>Price:</strong> Rs <%= item.itemOffer?.offerAmount ? (item.price - item.itemOffer.offerAmount) * item.quantity: item.price * item.quantity %></p>
-                                                                <p class="mb-0"><strong>quantity:</strong> x <%= item.quantity %></p>
-                                                                <p id="itemOrderStatus<%= item._id %>" class="order-product-status mb-0 text-warning">
-                                                                    <strong>Status: <%= item.itemOrderStatus.toUpperCase() %></strong>
-                                                                </p>
-                                                            </div>
-                                                            
-                                                            <div>
-                                                               
-
-                                                              <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
-
-                                                                <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" disabled>
-                                                                    Return
-                                                                </button>
-                                                            <% } else if (item.itemOrderStatus !== 'delivered' && item.itemOrderStatus !== 'shipped') { %>
-
-                                                                <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" 
-                                                                    onclick="cancelOrderItem('<%= item._id %>', '<%= order._id %>', '<%= item.itemOrderStatus %>')"
-                                                                    <%= item.itemOrderStatus === 'cancelled' ? 'disabled' : '' %> >
-                                                                    <%= item.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel' %>
-                                                                </button>
-                                                            <% } %>
-                                                            
-
-                                                            <% if (item.itemOrderStatus === 'delivered'  || item.itemOrderStatus === 'shipped') { %>
-                                                              
-                                                                <button id="returnProductButton<%= item._id %>" class="btn btn-primary btn-sm" 
-                                                                    onclick="returnProduct('<%= item._id %>','<%= item.product %>', '<%= order._id %>','<%= item.itemOrderStatus %>')"
-                                                                    <%= ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) ? 'disabled' : '' %>>
-                                                                    Return
-                                                                </button>
-                                                            <% } %>
-   
-                                                              
-                                                            </div>
+                                    <% if (orderData && orderData.length > 0) { %>
+                                        <% orderData.forEach(order => { %>
+                                            <div class="order-card card mb-3" style="border-radius: 10px;" data-order-id="<%= order._id %>">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#orderDetails-<%= order._id %>">
+                                                        <div>
+                                                            <p class="mb-1"><strong>Order Number:</strong> #<%= order._id %></p>
+                                                            <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
+                                                            <p class="mb-1"><strong>Order Date:</strong> <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                                                            <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
                                                         </div>
-                                                    <% }); %>
-                                                    <div class="mb-3">
-
-                                                        <p class="mb-1"><strong>Subtotal:</strong> Rs <%= order.subTotalAmount %></p>
-                                                        <p class="mb-1"><strong>Coupon Discount:</strong> Rs <%= order.couponDiscount %></p>
-                                                        <p class="mb-1"><strong>Offer Discount:</strong> Rs <%= order.offerDiscount %></p>
-                                                        <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
-                                                        <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-                                                        <% if(order.orderStatus == 'delivered') {%>
-                                                            <p class="mb-1"><button onclick="downloadInvoice(event,'<%= order._id %>')" class="btn btn-sm btn-outline-primary"><strong><i class="bi bi-file-earmark-arrow-down-fill"></i>Download Invoice</strong></button></p>
-                                                        <% } %>
+                                                        <div id="orderStatus<%= order._id %>" class="text-warning">
+                                                            <strong><%= order.orderStatus.toUpperCase() %></strong>
+                                                        </div>
                                                     </div>
-                                                    <div class="text-end">
-                                                        <% const shouldDisableCancelOrder = order.items.some(item => ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)); %>
-                                                        <% if (order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled') { %>
-                                                           <!-- <button class="btn btn-secondary btn-sm" onclick="getInvoice('order._id ')">Invoice</button> -->
-                                                            <!-- <button class="btn btn-sm" id="cancelOrderButton< order._id %>" 
-                                                                onclick="cancelOrder('< order._id %>', ' order.orderStatus %>')"
-                                                                 shouldDisableCancelOrder ? 'disabled' : '' %>>
-                                                                Cancel Order
-                                                            </button> -->
-                                                        <% } else { %>
-                                                           <!-- <button class="btn btn-secondary btn-sm" onclick="getInvoice(' order._id %>')">Invoice</button> -->
-                                                            <button class="btn btn-secondary btn-sm" disabled>
-                                                                <%= order.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel Order' %>
+                                                    <div id="orderDetails-<%= order._id %>" class="collapse">
+                                                        <hr>
+                                                        <div class="mb-3">
+                                                            <p class="mb-1">Order Date: <%= new Date(order.orderDate).toLocaleDateString() %></p>
+                                                            <p class="mb-1">Ship To: <%= order.shippingAddress.fullname %></p>
+                                                            <p class="mb-1" style="margin-left: 55px;"><%= order.shippingAddress.Address %></p>
+                                                            <p class="mb-1" style="margin-left: 55px;"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %></p>
+                                                            <p class="mb-1" style="margin-left: 55px;">Pincode: <%= order.shippingAddress.pincode %></p>
+                                                        </div>
+                                
+                                                        <% order.items.forEach(item => { %>
+                                                            <div class="d-flex mb-3">
+                                                                <div class="flex-shrink-0 me-3" style="width: 50px;">
+                                                                    <% if (item.images && item.images.length > 0) { %>
+                                                                        <img src="/imgs/products/<%= item.images[0] %>" alt="Product Image" class="img-fluid">
+                                                                    <% } else { %>
+                                                                        <span>No image</span>
+                                                                    <% } %>
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <p class="mb-1"><strong>Name:</strong> <%= item.productName %></p>
+                                                                    <p class="mb-1"><strong>Brand:</strong> <%= item.brandName %></p>
+                                                                    <p class="mb-0"><strong>Price:</strong> Rs <%= item.itemOffer?.offerAmount ? (item.price - item.itemOffer.offerAmount) * item.quantity : item.price * item.quantity %></p>
+                                                                    <p class="mb-0"><strong>Quantity:</strong> x <%= item.quantity %></p>
+                                                                    <p id="itemOrderStatus<%= item._id %>" class="order-product-status mb-0 text-warning">
+                                                                        <strong>Status: <%= item.itemOrderStatus.toUpperCase() %></strong>
+                                                                    </p>
+                                                                </div>
+                                                                
+                                                                <div>
 
-                                                            </button>
-                                                            
-                                                        <% } %>
+                                                                    <% if (order.paymentStatus === 'failed') { %>
+                                                                        <a href="/retryPayment/<%= order._id %>" id="retryPaymentButton<%= item._id %>" class="btn btn-primary btn-sm" >
+                                                                            Retry Payment
+                                                                        </a>
+                                                                    <% } else { %>
+                                                                       
+                                                                        <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
+                                                                            <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" disabled>
+                                                                                Return
+                                                                            </button>
+                                                                        <% } else if (item.itemOrderStatus !== 'delivered' && item.itemOrderStatus !== 'shipped') { %>
+                                                                            <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" 
+                                                                                onclick="cancelOrderItem('<%= item._id %>', '<%= order._id %>', '<%= item.itemOrderStatus %>')"
+                                                                                <%= item.itemOrderStatus === 'cancelled' ? 'disabled' : '' %> >
+                                                                                <%= item.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel' %>
+                                                                            </button>
+                                                                        <% } %>
+                                
+                                                                        <% if (item.itemOrderStatus === 'delivered' || item.itemOrderStatus === 'shipped') { %>
+                                                                            <button id="returnProductButton<%= item._id %>" class="btn btn-primary btn-sm" 
+                                                                                onclick="returnProduct('<%= item._id %>','<%= item.product %>', '<%= order._id %>','<%= item.itemOrderStatus %>')"
+                                                                                <%= ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) ? 'disabled' : '' %> >
+                                                                                Return
+                                                                            </button>
+                                                                        <% } %>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                        <% }); %>
+                                
+                                                        <div class="mb-3">
+                                                            <p class="mb-1"><strong>Subtotal:</strong> Rs <%= order.subTotalAmount %></p>
+                                                            <p class="mb-1"><strong>Coupon Discount:</strong> Rs <%= order.couponDiscount %></p>
+                                                            <p class="mb-1"><strong>Offer Discount:</strong> Rs <%= order.offerDiscount %></p>
+                                                            <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
+                                                            <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+                                                            <% if(order.orderStatus == 'delivered') {%>
+                                                                <p class="mb-1">
+                                                                    <button onclick="downloadInvoice(event,'<%= order._id %>')" class="btn btn-sm btn-outline-primary">
+                                                                        <strong><i class="bi bi-file-earmark-arrow-down-fill"></i> Download Invoice</strong>
+                                                                    </button>
+                                                                </p>
+                                                            <% } %>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <% const shouldDisableCancelOrder = order.items.some(item => ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)); %>
+                                                            <% if (order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled') { %>
+                                                                <button class="btn btn-secondary btn-sm" disabled>
+                                                                    <%= order.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel Order' %>
+                                                                </button>
+                                                            <% } %>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    <% }); %>
-                                <% } else { %>
-                                    <p>No orders found.</p>
-                                <% } %>
-                                 </div>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <p>No orders found.</p>
+                                    <% } %>
+                                </div>
+                                
                                 <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
                                     <div class="d-flex justify-content-end mb-3">
                                         <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#add-address-form">Add New Address</button>
                                     </div>
                                     <div id="add-address-form" class="collapse">
-                                        <form method="post" action="/add-address/<%= user._id %>">
+                                        <form method="post" action="/add-address/<%= user._id %>" >
                                             
                                             <div class="row">
                                                 <div class="form-group col-md-12">
@@ -1261,9 +1254,8 @@
                 confirmButtonText: 'OK'
             });
     
-            // Check and debug element selection
             const row = document.querySelector(`div[data-order-id="${orderId}"]`);
-            console.log('Row:', row);  // Debugging statement
+            console.log('Row:', row); 
     
             if (!row) {
                 throw new Error('Order row not found');

@@ -15,6 +15,7 @@ const loadProducts = async function (req, res) {
         const totalProducts = await Products.countDocuments(); 
         const products = await Products.find()
             .populate('product_category')
+            .sort({createdAt:-1})
             .skip(skip)
             .limit(limit);
 
@@ -43,7 +44,7 @@ const addProduct = async function(req,res){
         if(!product_images){
             return res.status(404).send("files not found")
         }
-        const products =  new Products({
+        const products = new Products({
             product_name: req.body.pro_name,
             product_sale_price: req.body.pro_sale_price, 
             product_regular_price: req.body.pro_reg_price,

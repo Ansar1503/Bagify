@@ -135,8 +135,8 @@ const getSalesReport = async (startDate='', endDate='', period) => {
         start = startOfMonth(new Date());
         end = endOfMonth(new Date());
     } else if (period === 'year') {
-        start = new Date(new Date().getFullYear(), 0, 1); // January 1st of the current year
-        end = new Date(new Date().getFullYear(), 11, 31); // December 31st of the current year
+        start = new Date(new Date().getFullYear(), 0, 1);
+        end = new Date(new Date().getFullYear(), 11, 31);
     } else if (startDate && endDate) {
         start = startOfDay(parseISO(startDate));
         end = endOfDay(parseISO(endDate));

@@ -8,6 +8,7 @@ const loadCustomer = async function(req, res) {
     try {
         const totalUsers = await User.countDocuments(); 
         const userData = await User.find()
+            .sort({createdAt:-1})
             .skip(skip)
             .limit(limit);
 

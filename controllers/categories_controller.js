@@ -5,6 +5,7 @@ const Products = require('../model/product_schema')
 const loadCategory = async function (req,res){
       
         const categories = await Category.find()
+            .sort({createdAt:-1})
         if(!categories){
         return    res.status(404).send('categories not found')
           }
