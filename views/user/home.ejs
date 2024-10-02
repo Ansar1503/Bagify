@@ -105,7 +105,7 @@
                                 </a>
                             </div>
                             <div class="product-action-1">
-                                <a aria-label="Add To Wishlist" class="action-btn hover-up" href="/"><i class="fi-rs-heart"></i></a>
+                                <a aria-label="Add To Wishlist" class="action-btn hover-up mb-2" onclick="wishlist(this,event,'<%= product._id %>')"><i <% if(wishlist && wishlist.products && wishlist.products.includes(product._id)) {%>class="bi bi-heart-fill"<%} else {%> class="bi bi-heart"<% } %> ></i></a>
                             </div>
                         </div>
                         <div class="product-content-wrap">
@@ -119,11 +119,15 @@
                                 </span>
                             </div>
                             <div class="product-price">
-                                <% if (product.offerPrice) { %>
+                                <% if (product.offerType == 'product' && product.offer.expiryDate >= Date.now()) { %>
                                     <span>₹ <%= product.offerPrice %> </span>
                                     <span class="old-price"> <%= product.product_sale_price %> </span>
-                                    <span class="ms-3 text-danger">(<%= product.offerType == 'product' ? product.offer?.discountPercentage : product.product_category?.offer?.discountPercentage %>% off)</span>
-                                <% } else { %>
+                                    <span class="ms-3 text-danger">(<%= product.offer?.discountPercentage %>% off)</span>
+                                <% }else if(product.offerType == 'category' && product.product_category?.offer?.expiryDate>=Date.now()){%>
+                                    <span>₹ <%= product.offerPrice %> </span>
+                                    <span class="old-price"> <%= product.product_sale_price %> </span>
+                                    <span class="ms-3 text-danger">(<%= product.product_category?.offer?.discountPercentage %>% off)</span>
+                                <%}else{ %>
                                     <span>₹ <%= product.product_sale_price %> </span>
                                     <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹' + product.product_regular_price %></span>
                                 <% } %>
@@ -146,4 +150,51 @@
     </div>
 
     <%- include("../layout/user_footer.ejs") %>
+    <script>
+        async function wishlist(wish, event, productId) {
+            event.preventDefault();
+            const icon = wish.querySelector('i');
+            const change = icon.classList.contains('bi-heart') ? 'add' : 'remove';
+            const method = change === 'add' ? 'POST' : 'DELETE';
+            
+            icon.classList.add(change === 'add' ? 'heart-beat' : 'fade-out');
+            
+            try {
+                const response = await fetch(`/wishlist/${change}`, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
+                });
+                
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || 'Response error');
+        
+                if (change === 'add') {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                }
+        
+            } catch (err) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: err || 'Error processing wishlist',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'colored-toast'
+                    }
+                });
+            } finally {
+                setTimeout(() => {
+                    icon.classList.remove('heart-beat', 'fade-out');
+                }, 600);
+            }
+        }
+    </script>
 </main>

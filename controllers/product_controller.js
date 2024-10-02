@@ -18,7 +18,7 @@ const loadProducts = async function (req, res) {
             .sort({createdAt:-1})
             .skip(skip)
             .limit(limit);
-
+        
         const totalPages = Math.ceil(totalProducts / limit); 
 
         return res.render('products', { products, currentPage: page, totalPages });
@@ -38,34 +38,43 @@ const loadAddproduct=async function(req,res){
         res.status(500).send("server error")
     }
 }
-const addProduct = async function(req,res){
-    try {        
-        const product_images = req.files ? req.files.map(images => images.filename) : null
-        if(!product_images){
-            return res.status(404).send("files not found")
+const addProduct = async function(req, res) {
+    try {
+        const product_images = req.files ? req.files.map(file => file.filename) : [];
+        
+        if (product_images.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "At least one product image is required"
+            });
         }
-        const products = new Products({
+
+        const product = new Products({
             product_name: req.body.pro_name,
             product_sale_price: req.body.pro_sale_price, 
             product_regular_price: req.body.pro_reg_price,
             product_category: req.body.pro_category,
             product_description: req.body.pro_description,
             product_quantity: req.body.pro_quantity,
-            product_images,
-            // product_color:req.body.pro_colors,
-            product_brand:req.body.pro_brand,
-        })
-        // console.log(req.body);
+            product_images,  
+            product_brand: req.body.pro_brand,
+        });
+
+        await product.save();
         
-        await products.save()
-        if(products){
-           return res.redirect('/admin/products')
-        }
+        res.json({
+            success: true,
+            message: "Product added successfully"
+        });
     } catch (error) {
-        console.log(error.message);
-        res.status(500).send("server error")
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Server error occurred while adding the product"
+        });
     }
-}
+};
+
 const loadEditProduct = async function(req,res){
     try {
         const categories = await Category.find()

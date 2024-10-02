@@ -72,7 +72,6 @@
                                     <th width="30%">Product</th>
                                     <th width="15%">Unit Price</th>
                                     <th width="10%">Offer</th>
-                                    
                                     <th width="10%">Quantity</th>
                                     <th width="10%">Status</th>
                                     <th width="20%">Change Status</th>
@@ -226,7 +225,7 @@
     
             if (data.success) {
                 const row = buttonElement.closest('tr');
-                const statusCell = row.querySelector('td:nth-child(4)');
+                const statusCell = row.querySelector('td:nth-child(5)');
     
                 // Update the status badge
                 statusCell.innerHTML = `<span class="badge rounded-pill 
@@ -242,11 +241,11 @@
                 </span>`;
     
                 const options = {
-                    pending: ['confirmed', 'shipped', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'],
-                    confirmed: ['pending', 'shipped', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'],
-                    shipped: ['pending', 'confirmed', 'delivered', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'],
-                    delivered: ['pending', 'confirmed', 'shipped', 'cancelled', 'returnInitiated', 'returnApproved', 'returnRejected'],
-                    cancelled: ['pending', 'confirmed', 'shipped', 'delivered', 'returnInitiated', 'returnApproved', 'returnRejected'],
+                    pending: [],
+                    confirmed: ['pending'],
+                    shipped: ['pending', 'confirmed',  'cancelled'],
+                    delivered: ['pending', 'confirmed', 'shipped', 'cancelled','delivered'],
+                    cancelled: ['pending', 'confirmed', 'shipped', 'delivered','cancelled'],
                     returnInitiated: [],
                     returnApproved: [],
                     returnRejected: []

@@ -44,13 +44,17 @@
                                                 </span>
                                             </div>
                                             <div class="product-price">
-                                                <% if(product.offerPrice) {%>
+                                                <% if (product.offerType == 'product' && product.offer.expiryDate >= Date.now()) { %>
                                                     <span>₹ <%= product.offerPrice %> </span>
-                                                <span class="old-price"> <%= product.product_sale_price %>   </span>
-                                                <span class="ms-2 text-danger">(<%=product.offerType == 'product' ? product.offer?.discountPercentage : product.product_category?.offer?.discountPercentage %>% off)</span>
-                                                <% } if(!product.offerPrice || product?.offerType == 'none' ) {%>
-                                                    <span>₹ <%= product.product_sale_price%> </span>
-                                                <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹'+ product.product_regular_price   %>   </span>
+                                                    <span class="old-price"> <%= product.product_sale_price %> </span>
+                                                    <span class="ms-3 text-danger">(<%= product.offer?.discountPercentage %>% off)</span>
+                                                <% }else if(product.offerType == 'category' && product.product_category?.offer?.expiryDate>=Date.now()){%>
+                                                    <span>₹ <%= product.offerPrice %> </span>
+                                                    <span class="old-price"> <%= product.product_sale_price %> </span>
+                                                    <span class="ms-3 text-danger">(<%= product.product_category?.offer?.discountPercentage %>% off)</span>
+                                                <%}else{ %>
+                                                    <span>₹ <%= product.product_sale_price %> </span>
+                                                    <span class="old-price"> <%= product.product_regular_price === product.product_sale_price ? '' : '₹' + product.product_regular_price %></span>
                                                 <% } %>
                                             </div>
                                             <div class="product-action-1 show">
@@ -153,6 +157,44 @@
         </div>
     </section>
 </main>
+<style>
+
+.heart-beat {
+    animation: heartbeat 0.6s ease-in-out;
+}
+
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.3);
+    }
+    60% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(1.3);
+    }
+}
+
+
+.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+</style>
 
 <%- include('../layout/user_footer.ejs') %>
 <script>
@@ -183,11 +225,10 @@
             }
         });
 
-        // Price range slider
         $("#slider-range").slider({
             range: true,
             min: 0,
-            max: 10000, // Adjust as necessary
+            max: 10000,
             values: [<%= currentFilters.min_price || 0 %>, <%= currentFilters.max_price || 10000 %>],
             slide: function(event, ui) {
                 $("#amount").val("₹" + ui.values[0] + " - ₹" + ui.values[1]);
@@ -199,18 +240,15 @@
         $("#amount").val("₹" + $("#slider-range").slider("values", 0) +
             " - ₹" + $("#slider-range").slider("values", 1));
 
-        // Submit form only when "Apply Filters" button is clicked
         $('#filterForm').on('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
-            this.submit(); // Submit the form
+            event.preventDefault(); 
+            this.submit(); 
         });
 
-        // Handle the price range slider change
+        
         $('input[type="checkbox"], #slider-range').change(function() {
-            // Do not submit form here
         });
 
-        // Preserve selected filters
         <% if (currentFilters.categories) { %>
             <% (Array.isArray(currentFilters.categories) ? currentFilters.categories : [currentFilters.categories]).forEach(function(category) { %>
                 $('input[name="categories"][value="<%= category %>"]').prop('checked', true);
@@ -234,6 +272,8 @@
         const change = icon.classList.contains('bi-heart') ? 'add' : 'remove';
         const method = change === 'add' ? 'POST' : 'DELETE';
         
+        icon.classList.add(change === 'add' ? 'heart-beat' : 'fade-out');
+        
         try {
             const response = await fetch(`/wishlist/${change}`, {
                 method: method,
@@ -241,6 +281,7 @@
                 body: JSON.stringify({ productId })
             });
             
+
             const data = await response.json();
             if (!data.success) throw new Error(data.message || 'Response error');
     
@@ -251,10 +292,32 @@
                 icon.classList.remove('bi-heart-fill');
                 icon.classList.add('bi-heart');
             }
+    
         } catch (err) {
-            swal.fire('Error', err.message || 'Error processing wishlist', 'error');
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: err || 'Error processing wishlist',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'colored-toast'
+                }
+            });
+        } finally {
+            setTimeout(() => {
+                icon.classList.remove('heart-beat', 'fade-out');
+            }, 600);
         }
     }
+
+    async function addtoCart(){
+        event.preventDefault();
+        c
+    } 
+    
 </script>
 
 

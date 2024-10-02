@@ -96,34 +96,33 @@
                                                 </div>
                                             </div>
                                             <div class="clearfix product-price-cover">
-                                                <% if(!product.offerPrice || product.offerType == 'none' ) {%>
-                                                    <div class="product-price primary-color float-left">
-                                                        <ins><span class="text-brand">₹ <%= product.product_sale_price%>
-                                                            </span></ins>
-                                                        <% if(product.product_regular_price!==product.product_sale_price) {%>
-                                                            <ins><span class="old-price font-md ml-15">
-                                                                ₹<%= product.product_regular_price %>
-                                                                </span></ins>
-                                                            <% } %>
-                                                    </div>
-                                                <% } if(product.offerPrice) { %>
-                                                    <div class="product-price primary-color float-left">
-                                                        <ins><span class="text-brand">₹ <%= product.offerPrice%>
-                                                            </span></ins>
-                                                            <ins><span class="old-price font-md ml-15">
-                                                                ₹<%= product.product_sale_price %>
-                                                                </span></ins>
-                                                                <% if(product.offerType == 'product') {%>
-                                                                    <ins>
-                                                                        <span class="text-danger ms-2 p-0 font-md"><%= product.offer?.discountPercentage %>% off</span>
-                                                                    </ins>
-                                                                <% }if(product.offerType == 'category') {%>
-                                                                    <ins>
-                                                                        <span class="text-danger ms-2 p-0 font-md"><%= product.product_category?.offer?.discountPercentage %>% Off</span>
-                                                                    </ins>
-                                                                    <% } %>
-                                                    </div>
+                                                <% 
+                                                const productOfferExpired = product.offerType == 'product' && product.offer?.expiryDate < Date.now();
+                                                const categoryOfferExpired = product.offerType == 'category' && product.product_category?.offer?.expiryDate < Date.now();
+                                            
+                                                if (productOfferExpired || categoryOfferExpired) { 
+                                            %>
+                                                <div class="product-price primary-color float-left">
+                                                    <ins><span class="text-brand">₹ <%= product.product_sale_price %></span></ins>
+                                                    <% if (product.product_regular_price !== product.product_sale_price) { %>
+                                                        <ins><span class="old-price font-md ml-15">₹<%= product.product_regular_price %></span></ins>
                                                     <% } %>
+                                                </div>
+                                            <% 
+                                                } else if (product.offerPrice) { 
+                                            %>
+                                                <div class="product-price primary-color float-left">
+                                                    <ins><span class="text-brand">₹ <%= product.offerPrice %></span></ins>
+                                                    <ins><span class="old-price font-md ml-15">₹ <%= product.product_sale_price %></span></ins>
+                                            
+                                                    <% if (product.offerType === 'product' && product.offer?.expiryDate >= Date.now()) { %>
+                                                        <ins><span class="text-danger ms-2 p-0 font-md"><%= product.offer?.discountPercentage %>% off</span></ins>
+                                                    <% } else if (product.offerType === 'category' && product.product_category?.offer?.expiryDate >= Date.now()) { %>
+                                                        <ins><span class="text-danger ms-2 p-0 font-md"><%= product.product_category?.offer?.discountPercentage %>% off</span></ins>
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
+                                            
 
                                             </div>
                                             <div class="bt-1 border-color-1 mt-15 mb-15"></div>

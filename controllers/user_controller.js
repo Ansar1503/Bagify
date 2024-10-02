@@ -47,8 +47,8 @@ const loadHome = async function(req,res){
         const categories = await Category.find({isListed:true})
         const products = await Products.find({isActive:true}).populate({path:'product_category',populate:{path:'offer'}}).populate('offer').limit(6)
         const sortedProducts = await Products.find({isActive:true}).sort({createdAt:-1}).limit(10)
-    
-        res.render('home',{products,categories,sortedProducts})
+        const wishlist = await Wishlist.findOne({ userId: req.session.user_id });
+        res.render('home',{products,categories,sortedProducts,wishlist})
     } catch (error) {
         console.log(error);
         res.status(500).send("homepage loading error")
@@ -375,8 +375,8 @@ const loadShop = async (req, res) => {
 
         const categories = await Category.find();
         const wishlist = await Wishlist.findOne({ userId: req.session.user_id });
-        console.log('user',req.session.user_id)
-        console.log('wishlist',wishlist)
+        // console.log('user',req.session.user_id)
+        // console.log('wishlist',wishlist)
         res.render('shop', {
             wishlist,
             products,
@@ -1312,7 +1312,7 @@ const paymentFailed = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No items in the cart to process the order.' });
         }
 
-        console.log('CartData:', cartData);
+        // console.log('CartData:', cartData);
 
         const address = await AddressModel.findById(selectAddressId);
         if (!address) {

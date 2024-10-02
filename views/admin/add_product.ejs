@@ -79,6 +79,7 @@
         let addedFiles = [];
         let croppieInstance;
         let currentFileIndex = 0;
+        let formData = new FormData(); 
     
         function handleFileInput() {
             const files = fileInput.files;
@@ -134,11 +135,17 @@
     
         btnCrop.addEventListener('click', function() {
             croppieInstance.result('base64').then(function(base64) {
+                const blob = dataURItoBlob(base64);
+                const fileName = `cropped-image-${currentFileIndex}.png`;
+        
+                formData.append('croppedImages', blob, fileName);
+        
                 addCroppedImage(base64);
                 currentFileIndex++;
                 processNextImage();
             });
         });
+        
     
         function addCroppedImage(base64) {
             const imgDiv = document.createElement('div');
@@ -182,12 +189,12 @@
         }
     
         form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+    
             const regPrice = parseFloat(document.getElementById('productPrice').value);
             const salePrice = parseFloat(document.getElementById('offerPrice').value);
     
             if (salePrice > regPrice) {
-                event.preventDefault();
-                event.stopPropagation();
                 Swal.fire({
                     icon: 'error',
                     text: 'Offer price cannot be greater than the regular price.',
@@ -197,15 +204,71 @@
                     timerProgressBar: true,
                     timer: 3000
                 });
+                return;
             }
     
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-                form.classList.add('was-validated');
-            }
+            
+            formData.append('pro_name', document.getElementById('productName').value);
+            formData.append('pro_brand', document.getElementById('productBrand').value);
+            formData.append('pro_description', document.getElementById('productDescription').value);
+            formData.append('pro_category', document.getElementById('category').value);
+            formData.append('pro_reg_price', document.getElementById('productPrice').value);
+            formData.append('pro_sale_price', document.getElementById('offerPrice').value);
+            formData.append('pro_quantity', document.getElementById('productQuantity').value);
+    
+           
+            submitFormData(formData);
         });
+    
+        
+        function submitFormData(formData) {
+            // Show loading indicator if you want
+            fetch('/admin/products/addproduct', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/admin/products';
+                } else {
+                    throw new Error(data.message || 'Error submitting product.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    text: error.message || 'An error occurred while submitting the form.',
+                    toast: true,
+                    position: 'top-right',
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                    timer: 3000
+                });
+            });
+        }
+    
+        
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+    
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+    
+            return new Blob([ab], { type: mimeString });
+        }
     });
+    
 </script>
 
 <%- include('../layout/admin_footer.ejs') %>
