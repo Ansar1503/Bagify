@@ -807,7 +807,90 @@ const loadCart = async (req, res) => {
     }
 };
 
+const updatecart = async(req,res)=>{
+    try {
+        const userId = req.session.user_id
+        if(!userId) {
+            return res.status(400).json({success:false,message:'Please Login'})
+        }
+        const productId = new mongoose.Types.ObjectId(req.body.productId)
+        let cartData = await Cart.findOne({user:userId})
 
+        if(cartData && cartData.items && cartData.items.length > 0){
+            const existingItem = cartData?.items.filter(item=>item.product.toString() === productId.toString())
+            console.log('existingItem:',existingItem)
+            if(existingItem.length>0){
+                return res.status(404).json({success:false,message:'Item already exist in cart',itemExist:true})
+            }
+        }else{
+            cartData = new Cart({ user: userId, items: [] });
+        }
+        const productDetails = await Products.findById(productId).populate('product_category');
+
+        if(productDetails.product_quantity <= 0) {
+            return res.status(404).json({success:false,message:'product is out  of stock'})
+        }
+
+        let itemOffer = {};
+        if (productDetails) {
+            if (productDetails.offerType === 'product' && productDetails.offer?.expiryDate > Date.now()) {
+                // console.log('product offer workng');
+                itemOffer = {
+                    name: productDetails.offer?.name,
+                    discountPercentage: productDetails.offer?.discountPercentage,
+                    startDate: productDetails.offer?.startDate,
+                    expiryDate: productDetails.offer?.expiryDate,
+                    offerAmount: productDetails.product_sale_price - productDetails.offerPrice,
+                    offerType: productDetails.offerType
+                };
+            } else if (productDetails.offerType === 'category' && productDetails.product_category.offer?.expiryDate > Date.now()) {
+                // console.log('category offer workng');
+                itemOffer = {
+                    name: productDetails.product_category?.offer?.name,
+                    discountPercentage: productDetails.product_category?.offer?.discountPercentage,
+                    startDate: productDetails.product_category?.offer?.startDate,
+                    expiryDate: productDetails.product_category?.offer?.expiryDate,
+                    offerAmount: productDetails.product_sale_price - productDetails.offerPrice,
+                    offerType: productDetails.offerType
+                };
+            }
+        }
+
+        const item = {
+            product: productId,
+            quantity: 1,
+            price: productDetails.product_sale_price,
+            regularPrice: productDetails.product_regular_price,
+            itemOffer: itemOffer || {}
+        };
+        if(cartData.items && cartData.items.length > 0){
+            cartData.items = [...cartData.items, item];
+        }else{
+            cartData.items = [item]
+        }
+
+        let existingOffer = cartData?.summary?.offerDiscount || 0;
+        let offerDiscount = 0;
+
+        if (Object.keys(itemOffer).length > 0) {
+            offerDiscount = existingOffer + (productDetails.product_sale_price - productDetails.offerPrice);
+            // console.log('this is item Offer',itemOffer);
+        } else {
+            offerDiscount = existingOffer;
+        }
+        
+        const summary = calculateCartSummary(cartData,0,offerDiscount);
+        cartData.summary = summary;
+
+        await cartData.save();
+       
+        return  res.status(200).json({success:true,message:'Item Added to Cart'})
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({success:false,message:'Internal Server Error'})
+    }
+}
 
 const addtoCart = async (req, res) => {
     try {
@@ -818,9 +901,7 @@ const addtoCart = async (req, res) => {
         let cart = await Cart.findOne({ user: userId });
 
         if (cart) {
-            
             const existingCartItemIndex = cart.items.findIndex(item => item.product.toString() === productId.toString());
-
         if (existingCartItemIndex !== -1) {
                 return res.redirect('/cart');
          }
@@ -831,7 +912,7 @@ const addtoCart = async (req, res) => {
         
         const productDetails = await Products.findById(productId).populate('product_category');
         if(productDetails.product_quantity <= 0) { 
-            return res.status(400).send(`<h1>product is out of stock</h1>
+            return res.status(400).send(`<h4 style="color:red">product is out of stock</h4>
                                         <br> <a href="/shop">continue shopping</a>`)
         }
       
@@ -861,8 +942,6 @@ const addtoCart = async (req, res) => {
             }
         }
         
-        
-        
         const item = {
             product: productId,
             quantity: 1,
@@ -871,7 +950,6 @@ const addtoCart = async (req, res) => {
             itemOffer: itemOffer || {}
         };
 
-        
         cart.items.push(item);
 
         await Coupon.findOneAndUpdate({ usedBy: userId }, { $pull: { usedBy: userId } });
@@ -881,7 +959,7 @@ const addtoCart = async (req, res) => {
 
         if (Object.keys(itemOffer).length > 0) {
             offerDiscount = existingOffer + (price - offerPrice);
-            console.log('this is item Offer',itemOffer);
+            // console.log('this is item Offer',itemOffer);
         } else {
             offerDiscount = existingOffer;
         }
@@ -1907,6 +1985,9 @@ const applyCoupon = async (req, res) => {
       const order = await orderModel.findById(orderId);
   
       if (cart && cart.user.toString() === userId.toString()) {
+        if(couponData.minAmount > cart.summary?.total){
+            return res.status(400).json({ success: false, message: 'Coupon minimum amount not reached' });
+          }
         couponAmount = cart.summary.total * (couponData.discountPercentage / 100);
         couponAmount = Math.min(Math.ceil(couponAmount), couponData.maxAmount); 
   
@@ -1915,6 +1996,9 @@ const applyCoupon = async (req, res) => {
         cart.summary = summary;
         await cart.save();
       } else if (order && order._id.toString() === orderId.toString()) {
+        if(couponData.minAmount > order.totalAmount){
+          return res.status(400).json({ success: false, message: 'Coupon minimum amount not reached' });
+        }
         couponAmount = order.totalAmount * (couponData.discountPercentage / 100);
         couponAmount = Math.min(Math.ceil(couponAmount), couponData.maxAmount); 
   
@@ -2062,6 +2146,7 @@ module.exports = {
     fogotPassAndChangePassword,
 
     // exports of cart pages in user side,
+    updatecart,
     addtoCart,
     validateCart,
     loadCart,
