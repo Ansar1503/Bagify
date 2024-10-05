@@ -73,7 +73,7 @@ const loadDashboard = async function(req, res) {
 
         const user = await User.findOne(query).populate('address');
 
-        const orderData = await orderModel.find({ user: req.session.user_id });
+        const orderData = await orderModel.find({ user: req.session.user_id }).sort({createdAt:-1,updatedAt:-1});
 
         return res.render('user_Dashboard', { user, orderData, wallet });
     } catch (error) {
@@ -113,13 +113,24 @@ const registerAuth = async function (req,res){
 
         if (existingUser) {
             if(!existingUser.isVerified){
-                return res.render('otp-verification',{email,msg:'email already exists! verify your email'})
+                const otp = await generateOtp()
+                let otpSession = {
+                    otp:otp,
+                    otpExp: new Date(Date.now() + 5 * 60 * 1000),
+                    email:email
+                }
+                const mailcontent = `<h1> Thank you for choosing Bagify</h1>
+                <p>please click on the link below to activate your account or use the code below:</p>
+                ${otp}`
+        
+                const sendmail = await nodemailer(email,mailcontent,otp)
+                req.session.otpSession = otpSession
+                return res.render('otp-verification',{email,fail:'email already exists! verify your email'})
             }
             if(existingUser.isVerified){
                 return res.render('login',{email,msg:'email already exists please login'})
             }
         }
-
       
         const user = new User({
             name: req.body.name,
@@ -130,20 +141,25 @@ const registerAuth = async function (req,res){
 
         const otp = generateOtp()
 
-        user.otp = otp
-        user.otpexp = new Date(Date.now() + 5 * 60 * 1000); 
+        let otpSession = {
+            email:req.body.email,
+            otp:otp,
+            otpExp: new Date(Date.now() + 5 * 60 * 1000)
+        }
+
+        req.session.otpSession = otpSession
+        // console.log(req.session.otpSession)
 
         await user.save();
         console.log("User saved to database");
        
 
-        const mailcontent = `<h1> Thank you for choosing SzucciBags</h1>
+        const mailcontent = `<h1> Thank you for choosing Bagify</h1>
         <p>please click on the link below to activate your account or use the code below:</p>
         ${otp}`
         const mailsend = await nodemailer(req.body.email,mailcontent,otp)
         if(mailsend){
-       
-        res.render('otp-verification',{success: "Registration successful! now verify your mail", email:req.body.email})
+        res.render('otp-verification',{success: "Registration successful! now verify your mail"})
         }
 
     } catch (error) {
@@ -154,47 +170,61 @@ const registerAuth = async function (req,res){
 
 const verifyOtp = async function (req,res){
     try {
-        const {email,otp} = req.body;
-// console.log(email,otp);
-
-     const userData = await User.findOne({ email: email });
-    if(!userData){
-       return  res.render('otp-verification',{fail:"no user with this email",email})
-    }
-    // console.log(userData.otpexp);
-    // console.log(Date.now());
-    if(userData.otp == otp && userData.otpexp>Date.now()){
-        userData.otp=null;
-        userData.otpexp=null
-        userData.isVerified=true
+        const otp = req.body.otp
+        if(!otp) {
+            return res.status(400).json({success:false,message:'please enter otp'})
+        }
+        const {otp:sOtp,email:sEmail,otpExp:sOtpExp} = req.session.otpSession
+        const userData = await User.findOne({email:sEmail})
+        if(!userData || otp!=sOtp) {
+            return res.status(400).json({success:false,message:'please check your otp again!'})
+        }
+        if(sOtpExp < Date.now()){
+            req.session.otpSession = null
+            return res.status(400).json({success:false,message:'otp Expired'})
+        }    
+        userData.isVerified = true
         await userData.save()
-       return  res.render('login',{success:"otp verification success You can now login"})
-    }else if(userData.otpexp<Date.now()){
-        userData.otp = null;
-        userData.otpexp = null;
-        await userData.save();
-        return res.render('otp-verification',{email,fail:'otp expired',email})
-    }else{
-       return res.render('otp-verification',{email,fail:'invalid otp',email})
-    }
+        req.session.otpSession = null
+        return res.status(200).json({success:true,message:'otp verified successfully'})
     
     } catch (error) {
         console.log(error)
-        res.status(500).send("user registration error")
+        res.status(500).json({success:false,message:'Internal Server Err0r'})
     }
 }
 
 const verifyUser = async function(req,res){
     try {
         const{email,password} = req.body;
+        if(req.session.otpSession){
+            req.session.otpSession = null
+        }
       const userData = await  User.findOne({email:email})
-      if(userData){
+    //   console.log(userData)
+    if(!userData.isVerified){
+        const otp = await generateOtp()
+        let otpSession = {
+            otp:otp,
+            otpExp: new Date(Date.now() + 5 * 60 * 1000),
+            email:email
+        }
+        const mailcontent = `<h1> Thank you for choosing Bagify</h1>
+        <p>please click on the link below to activate your account or use the code below:</p>
+        ${otp}`
+
+        const sendmail = await nodemailer(email,mailcontent,otp)
+        req.session.otpSession = otpSession
+        return res.render('otp-verification',{email,fail:'email already exists! verify your email'})
+    }
+      if(userData &&  !userData.googleId){
         const pasmatch = await bcrypt.compare(password, userData.password)
+
         if(!pasmatch){
-            res.render('login',{fail:"invalid password"})
+            res.render('login',{msg:"invalid password"})
           }else{
             if(userData.block){
-                return res.render('login',{fail:'user is blocked'})
+                return res.render('login',{msg:'user is blocked'})
             }
                 req.session.user_id = userData._id;
 
@@ -202,7 +232,7 @@ const verifyUser = async function(req,res){
             
           }
       }else{
-        res.render('login',{fail:'invalid email'})
+        res.render('login',{msg:'invalid email'})
       }
     } catch (error) {
         console.log(error);
@@ -212,7 +242,7 @@ const verifyUser = async function(req,res){
 const googleAuth = async function(req, res) {
     try {
         // console.log('Full req.user object:', JSON.stringify(req.user, null, 2));
-        console.log(req.user);
+        // console.log(req.user);
         
         const { id, displayName, emails, phoneNumbers } = req.user;
         const email = emails && emails.length > 0 ? emails[0].value : null;
@@ -280,22 +310,33 @@ const loadproducts = async (req, res) => {
 const resendOtp = async(req,res)=>{
     try {
         const otp = generateOtp()
-        const email = req.session.regitrationmail
-        const user = await User.findOne({email})
-        const mailcontent = `<h1> Thank you for choosing SzucciBags</h1>
+        let email
+
+        if(req.session.otpSession.email){
+            email = req.session.otpSession?.email
+            req.session.otpSession = null
+        }
+        const userData = await User.findOne({email:email})
+        if(!userData){return res.status(404).json({success:false,message:'User not found'})}
+        if(userData && userData.isVerified){return res.status(400).json({success:false,message:'user already verified'})}
+        
+        const mailcontent = `<h1> Thank you for choosing Bagify</h1>
         <p>please click on the link below to activate your account or use the code below:</p>
         ${otp}`
-
-        user.otp=otp;
-        user.otpexp=new Date(Date.now() + 5 * 60 * 1000); 
-        await user.save()
+        
+        req.session.otpSession ={
+            email:email,
+            otp:otp,
+            otpExp:new Date(Date.now() + 5 * 60 * 1000)
+        }
         const sendmail = await nodemailer(email,mailcontent,otp)
         if(sendmail){
-           return res.render('otp-verification',{success: "Registration successful! now verify your mail", email})
+           return res.status(200).json({success:true,message:'Otp send successfully verify email now'})
         }
+        return res.status(300).json({success:false,message:'Network error Please check your connection'})
     } catch (error) {
         console.log(error.message);
-        res.status(500).send('error sending otp')
+        res.status(500).json({success:false,message:'Internal Server Error'})
     }
 }
 const loadShop = async (req, res) => {
@@ -1625,13 +1666,15 @@ const cancelOrderItem = async (req, res) => {
         if (!orderId || !itemOrderStatus || !itemId) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
-
+        const orderData = await orderModel.findById(orderId);
         const validStatuses = orderModel.schema.path('orderStatus').enumValues;
         if (!validStatuses.includes(itemOrderStatus)) {
             return res.status(400).json({ error: 'Invalid order status' });
         }
-
-        if (itemOrderStatus === "pending" || itemOrderStatus === "confirmed") {
+        console.log('validstatus:',validStatuses)
+        console.log('itemorderstatus:',itemOrderStatus)
+        
+        if ((itemOrderStatus === "pending" || itemOrderStatus === "confirmed") && orderData.paymentMethod != 'COD') {
 
             const updateResult = await orderModel.updateOne(
                 { _id: orderId, "items._id": itemId },
@@ -1642,7 +1685,7 @@ const cancelOrderItem = async (req, res) => {
                 return res.status(404).json({ error: 'Item not found in the order' });
             }
 
-            const orderData = await orderModel.findById(orderId);
+            
             if (!orderData) {
                 return res.status(404).json({ error: 'Order not found' });
             }
@@ -1943,7 +1986,7 @@ const createOrder = async (req, res) => {
         wallet.balance+=(amount/100)
         wallet.transactions.push(transaction)
         await wallet.save()
-        return res.json({success:true,message:'wallet updated successfully'})
+        return res.json({success:true,message:'wallet updated successfully',amount:wallet.balance})
 
     } catch (error) {
         console.log(error.message);
