@@ -22,7 +22,7 @@ userRoute.get('/userDashboard',userAuth.isLoggedin,userController.loadDashboard)
 userRoute.get('/logout',userAuth.isLoggedin,userController.Logout)
 userRoute.get('/forgot',userAuth.notLoggedin,userController.loadForgotPassword)
 userRoute.get('/product-details/:id',userController.loadproducts)
-userRoute.get('/resendOtp',userController.resendOtp)
+userRoute.patch('/resendOtp',userController.resendOtp)
 userRoute.get('/shop',userController.loadShop)
 userRoute.get('/delete-address/:id',userAuth.isLoggedin,userController.deleteAdress)
 // userRoute.get('/edit-address',userAuth.isLoggedin,userController.loadEditAddress)
@@ -36,7 +36,7 @@ userRoute.patch('/forgot/verifyOtpAndChangePassword',userAuth.notLoggedin,userCo
 // POST requests
 userRoute.post('/login',userController.verifyUser)
 userRoute.post('/register',userController.registerAuth)
-userRoute.post('/verify-otp',userController.verifyOtp)
+userRoute.put('/verify-otp',userController.verifyOtp)
 userRoute.post('/add-address/:user_id',userAuth.isLoggedin,userController.addAddress)
 userRoute.post('/update-address/:address_id',userAuth.isLoggedin,userController.updateAddress)
 

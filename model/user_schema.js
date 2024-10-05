@@ -8,12 +8,10 @@ const user_schema = new mongoose.Schema({
     email:{
         type:String,
         required:true,
-        unique:true
     },
     mobile:{
         type:String,
         required:false,
-        unique:true,
         default:null
     },
     password:{
@@ -26,7 +24,6 @@ const user_schema = new mongoose.Schema({
     },
     googleId:{
         type:String,
-        unique:true
     },
     address:[{
         type:mongoose.Schema.Types.ObjectId,
@@ -41,14 +38,14 @@ const user_schema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    otp:{
-     type:String
-    }
-        ,
-    otpexp:{
-        type:Date
+    // otp:{
+    //  type:String
+    // }
+    //     ,
+    // otpexp:{
+    //     type:Date
         
-    },
+    // },
  
 },{timestamps:true})
 

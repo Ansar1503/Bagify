@@ -80,7 +80,6 @@
                                                     <div id="orderDetails-<%= order._id %>" class="collapse">
                                                         <hr>
                                                         <div class="mb-3">
-                                                            <p class="mb-1">Order Date: <%= new Date(order.orderDate).toLocaleDateString() %></p>
                                                             <p class="mb-1">Ship To: <%= order.shippingAddress.fullname %></p>
                                                             <p class="mb-1" style="margin-left: 55px;"><%= order.shippingAddress.Address %></p>
                                                             <p class="mb-1" style="margin-left: 55px;"><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %></p>
@@ -105,31 +104,35 @@
                                                                         <strong>Status: <%= item.itemOrderStatus.toUpperCase() %></strong>
                                                                     </p>
                                                                 </div>
-                                                                
+                                
                                                                 <div>
-
                                                                     <% if (order.paymentStatus === 'failed') { %>
-                                                                        <a href="/retryPayment/<%= order._id %>" id="retryPaymentButton<%= item._id %>" class="btn btn-primary btn-sm" >
+                                                                        <a href="/retryPayment/<%= order._id %>" id="retryPaymentButton<%= item._id %>" class="btn btn-primary btn-sm">
                                                                             Retry Payment
                                                                         </a>
                                                                     <% } else { %>
-                                                                       
-                                                                        <% if (['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) { %>
+                                                                        <% const canCancel = item.itemOrderStatus !== 'delivered' && item.itemOrderStatus !== 'shipped'; %>
+                                                                        <% const canReturn = item.itemOrderStatus === 'delivered' || item.itemOrderStatus === 'shipped'; %>
+                                                                        <% const isReturnInitiated = ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus); %>
+                                                                        
+                                                                        <% if (isReturnInitiated) { %>
                                                                             <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" disabled>
                                                                                 Return
                                                                             </button>
-                                                                        <% } else if (item.itemOrderStatus !== 'delivered' && item.itemOrderStatus !== 'shipped') { %>
+                                                                        <% } else if (order.paymentMethod === 'COD' && canCancel) { %>
+                                                                            <button disabled class="btn btn-sm individualCancel">Cancel</button>
+                                                                        <% } else if (canCancel) { %>
                                                                             <button id="cancelProductButton<%= item._id %>" class="btn btn-sm individualCancel" 
                                                                                 onclick="cancelOrderItem('<%= item._id %>', '<%= order._id %>', '<%= item.itemOrderStatus %>')"
-                                                                                <%= item.itemOrderStatus === 'cancelled' ? 'disabled' : '' %> >
+                                                                                <%= item.itemOrderStatus === 'cancelled' ? 'disabled' : '' %>>
                                                                                 <%= item.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel' %>
                                                                             </button>
                                                                         <% } %>
                                 
-                                                                        <% if (item.itemOrderStatus === 'delivered' || item.itemOrderStatus === 'shipped') { %>
+                                                                        <% if (canReturn) { %>
                                                                             <button id="returnProductButton<%= item._id %>" class="btn btn-primary btn-sm" 
-                                                                                onclick="returnProduct('<%= item._id %>','<%= item.product %>', '<%= order._id %>','<%= item.itemOrderStatus %>')"
-                                                                                <%= ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus) ? 'disabled' : '' %> >
+                                                                                onclick="returnProduct('<%= item._id %>', '<%= item.product %>', '<%= order._id %>', '<%= item.itemOrderStatus %>')"
+                                                                                <%= isReturnInitiated ? 'disabled' : '' %>>
                                                                                 Return
                                                                             </button>
                                                                         <% } %>
@@ -144,19 +147,21 @@
                                                             <p class="mb-1"><strong>Offer Discount:</strong> Rs <%= order.offerDiscount %></p>
                                                             <p class="mb-1"><strong>Total:</strong> Rs <%= order.totalAmount %></p>
                                                             <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
-                                                            <% if(order.orderStatus == 'delivered') {%>
+                                                            <% if (order.orderStatus === 'delivered') { %>
                                                                 <p class="mb-1">
-                                                                    <button onclick="downloadInvoice(event,'<%= order._id %>')" class="btn btn-sm btn-outline-primary">
+                                                                    <button onclick="downloadInvoice(event, '<%= order._id %>')" class="btn btn-sm btn-outline-primary">
                                                                         <strong><i class="bi bi-file-earmark-arrow-down-fill"></i> Download Invoice</strong>
                                                                     </button>
                                                                 </p>
                                                             <% } %>
                                                         </div>
                                                         <div class="text-end">
-                                                            <% const shouldDisableCancelOrder = order.items.some(item => ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)); %>
-                                                            <% if (order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled') { %>
-                                                                <button class="btn btn-secondary btn-sm" disabled>
-                                                                    <%= order.itemOrderStatus === 'cancelled' ? 'Cancelled' : 'Cancel Order' %>
+                                                            <% const orderCancelable = order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled'; %>
+                                                            <% if (orderCancelable) { %>
+                                                                <button class="btn btn-secondary btn-sm" 
+                                                                    onclick="cancelOrder('<%= order._id %>')" 
+                                                                    <%= order.items.some(item => ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) ? 'disabled' : '' %>>
+                                                                    Cancel Order
                                                                 </button>
                                                             <% } %>
                                                         </div>
@@ -167,8 +172,7 @@
                                     <% } else { %>
                                         <p>No orders found.</p>
                                     <% } %>
-                                </div>
-                                
+                                </div>                                
                                 <div class="tab-pane fade" id="address" role="tabpanel" aria-labelledby="address-tab">
                                     <div class="d-flex justify-content-end mb-3">
                                         <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#add-address-form">Add New Address</button>
@@ -493,7 +497,7 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <h5 class="card-title">Wallet Balance</h5>
-                                                <h2 class="card-text text-primary">₹ <%= wallet?.balance || '0' %> </h2> <a onclick="walletAddMoney(event,'<%= user._id %>')" class="btn btn-primary btn-sm">Add Money</a>
+                                                <h2 class="card-text text-primary" id="walletTotalBalance">₹ <%= wallet?.balance || '0' %> </h2> <a onclick="walletAddMoney(event,'<%= user._id %>')" class="btn btn-primary btn-sm">Add Money</a>
                                             </div>
                                         </div>
                         
@@ -699,9 +703,9 @@
                         if (!handledResponse.success) {
                             return Swal.fire('Error!', handledResponse.message || 'An error occurred', 'error');
                         }
-    
+                        document.getElementById('walletTotalBalance').textContent = handledResponse.amount;
                         return Swal.fire('Success!', handledResponse.message || 'Money added to wallet successfully!', 'success');
-    
+                        
                     } catch (error) {
                         Swal.fire('Error!', error.message || 'An error occurred while verifying payment.', 'error');
                     }
@@ -778,7 +782,7 @@
                 throw new Error(data?.message || 'Failed to handle payment');
             }
     
-            return { message: data.message, success };
+            return { message: data.message, success , amount:data.amount};
         } catch (err) {
             console.error('Error:', err);
             Swal.fire('Error!', err.message || 'An error occurred while handling payment.', 'error');

@@ -133,7 +133,7 @@
                                 <% } %>
                             </div>
                             <div class="product-action-1 show">
-                                <a aria-label="Add To Cart" class="action-btn hover-up" href="/"><i class="fi-rs-shopping-bag-add"></i></a>
+                                <a aria-label="Add To Cart" class="action-btn hover-up" onclick="addtoCart('<%= product._id %>')" ><i class="fi-rs-shopping-bag-add"></i></a>
                             </div>
                         </div>
                     </div>
@@ -150,6 +150,7 @@
     </div>
 
     <%- include("../layout/user_footer.ejs") %>
+    
     <script>
         async function wishlist(wish, event, productId) {
             event.preventDefault();
@@ -196,5 +197,56 @@
                 }, 600);
             }
         }
+
+        
+        async function addtoCart(productId) {
+            try {
+                event.preventDefault();
+                const response = await fetch('/update-cart', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId })
+                });
+        
+                const data = await response.json();
+                if (!data.success && data.itemExist) {
+                    return window.location.href = '/cart';
+                }
+                if (!data.success) throw new Error(data.message || 'Response error');
+        
+                if (data.success) {
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: data.message || 'Item added to cart',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'colored-toast'
+                        }
+                    });
+                }
+                
+            } catch (err) {
+                console.log(err);
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: err || 'Error processing wishlist',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'colored-toast'
+                    }
+                });
+            }
+        }
+        
+    
     </script>
 </main>

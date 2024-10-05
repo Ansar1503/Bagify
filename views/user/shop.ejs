@@ -313,23 +313,39 @@
         }
     }
 
-    async function addtoCart(productId){
-        try{
+    async function addtoCart(productId) {
+        try {
             event.preventDefault();
-        const response = await fetch('/update-cart',{
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({productId})
-        })
+            const response = await fetch('/update-cart', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId })
+            });
+    
+            const data = await response.json();
+            if (!data.success && data.itemExist) {
+                return window.location.href = '/cart';
+            }
+            if (!data.success) throw new Error(data.message || 'Response error');
+    
+            if (data.success) {
 
-        const data = await response.json();
-        if(!data.success && data.itemExist) {
-            return window.location.href = '/cart'
-        }
-        if(!data.success) throw new Error(data.message || 'Response error');
-        
-        }catch(err){
-            console.log(err)
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: data.message || 'Item added to cart',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'colored-toast'
+                    }
+                });
+            }
+            
+        } catch (err) {
+            console.log(err);
             Swal.fire({
                 toast: true,
                 position: 'top-end',
@@ -343,7 +359,8 @@
                 }
             });
         }
-    } 
+    }
+    
     
 </script>
 

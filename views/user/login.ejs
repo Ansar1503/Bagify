@@ -43,8 +43,13 @@
             <input type="text" required name="email" placeholder="<% if(locals.email) {%><%= locals.email %><% } %> <% if(!locals.email) {%>Enter Email<% } %>" style="background-color: white;">
         </div>
         <div class="form-group">
-            <input required type="password" name="password" placeholder="Password" style="background-color: white;">
-        </div>
+            <div class="input-group">
+                <input required type="password" name="password" id="login-password" class="form-control" placeholder="Password" style="background-color: white;">
+                <span class="input-group-text" onclick="togglePasswordVisibility('login-password')" style="cursor: pointer;">
+                    <i class="bi bi-eye" id="toggle-icon-login-password"></i>
+                </span>
+            </div>
+        </div>            
         <div class="login_footer form-group">
             <div class="chek-form">
                 <!-- <div class="custome-checkbox">
@@ -70,3 +75,41 @@
 </div>
                              
 <%- include('../layout/user_footer.ejs') %>
+<style>
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .input-group-text {
+        background-color: white;
+        border-left: none;
+        border-radius: 0 4px 4px 0; /* Rounded corners for the right side */
+        padding: 8px 12px;
+    }
+    
+    .form-control {
+        border-radius: 4px 0 0 4px; /* Rounded corners for the left side */
+        border-right: none;
+    }
+    
+    .input-group-text i {
+        font-size: 1.2rem;
+        color: #000;
+    }
+    
+</style>
+<script>
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById('toggle-icon-' + inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+    
+</script>
