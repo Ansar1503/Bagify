@@ -18,7 +18,7 @@ const multimageCrop = async (req,res,next)=>{
        await fs.writeFile(imgpath,processedImage);
         console.log('image resized successfully');
         next()
-        }}
+        }} 
         catch(err){
             console.log(err.message);   
         }
