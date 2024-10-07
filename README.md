@@ -8,12 +8,12 @@ Bagfy is a full-featured E-commerce platform designed to provide a seamless onli
 - **User Authentication**: 
   - Sign up and login with validations.
   - OTP-based signup with timer and resend functionality.
-  - Social login via Google and Facebook.
+  - Social login via Google
   
 - **Product Catalog**:
-  - List of products with detailed views including product images with zoom, breadcrumbs, ratings, price, reviews, and stock availability.
+  - List of products with detailed views including product images with zoom, breadcrumbs, ratings, price, and stock availability.
   - Related product recommendations.
-  - Filter and sorting options (Price, Ratings, Popularity, New Arrivals, etc.).
+  - Filter and sorting options (Price, Ratings, New Arrivals, etc.).
 
 - **Cart & Checkout**:
   - Add to cart functionality with stock control and maximum quantity limits.
