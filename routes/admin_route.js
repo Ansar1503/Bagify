@@ -15,6 +15,7 @@ const order_controller = require('../controllers/order_controller')
 const coupon_controller = require('../controllers/coupon_controller')
 const sales_controller = require('../controllers/sales_controller')
 const errorController = require('../controllers/errorController')
+const { errorHandler } = require('../middlewares/errorHandler')
 
 
 // set view engine
@@ -50,7 +51,7 @@ adminRoute.get('/products/addproduct',admin_session.isLoggedin,product_controlle
 adminRoute.get('/products/edit-product/:id',admin_session.isLoggedin,product_controller.loadEditProduct)
 adminRoute.get('/products/productdetail/:id',admin_session.isLoggedin,product_controller.productdetail)
 adminRoute.post('/products/edit-product',admin_session.isLoggedin,multer.product_upload.array("pro_images",3),imageResizer.multimageCrop,product_controller.editProduct)
-adminRoute.post('/products/addproduct',admin_session.isLoggedin, multer.product_upload.array('croppedImages', 3),imageResizer.multimageCrop,product_controller.addProduct);
+adminRoute.post('/products/addproduct', multer.product_upload.array('croppedImages', 3),imageResizer.multimageCrop,product_controller.addProduct);
 adminRoute.post('/products/deactivate-product/:id',admin_session.isLoggedin,product_controller.deactivateProduct)
 adminRoute.post('/products/activate-product/:id',admin_session.isLoggedin,product_controller.activateProduct)
 adminRoute.get('/products/addProductOfferPage/:id',admin_session.isLoggedin,product_controller.addProductOfferPage)
@@ -62,7 +63,7 @@ adminRoute.patch('/products/updateOfferPrice/:id',admin_session.isLoggedin,produ
 adminRoute.delete('/products/removeAllOffers/:id',admin_session.isLoggedin,product_controller.removeAllOffers)
 adminRoute.delete('/product/remove-image',admin_session.isLoggedin,product_controller.deleteImage)
 
-
+ 
 
 // categories
 adminRoute.get('/category/',admin_session.isLoggedin,categories_controller.loadCategory);
@@ -98,5 +99,7 @@ adminRoute.patch('/coupons/:id',admin_session.isLoggedin,coupon_controller.chang
 adminRoute.get('/sales-report',admin_session.isLoggedin,sales_controller.salesReport)
 adminRoute.get('/generate-report',admin_session.isLoggedin,sales_controller.generateReport)
 adminRoute.get('/download-report',admin_session.isLoggedin,sales_controller.downloadReport)
+
+adminRoute.use(errorHandler)
 
 module.exports = adminRoute;

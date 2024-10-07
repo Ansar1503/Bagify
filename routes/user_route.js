@@ -57,7 +57,7 @@ userRoute.delete('/removeItem',userAuth.isLoggedin,userController.removeCartItem
 userRoute.post('/cart/applyCoupon',userAuth.isLoggedin,userController.applyCoupon)
 userRoute.patch('/cart/removeCoupon',userAuth.isLoggedin,userController.removeCoupon)
 
-// order
+// order 
 userRoute.get('/checkoutpage/:user_id',userAuth.isLoggedin,userController.loadCheckout)
 userRoute.post('/placeOrder',userAuth.isLoggedin,userController.placeOrder)
 userRoute.get('/failedPayment/:id',userAuth.isLoggedin,userController.loadPaymentFailedPage)

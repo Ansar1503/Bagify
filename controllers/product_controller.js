@@ -40,13 +40,13 @@ const loadAddproduct=async function(req,res){
 }
 const addProduct = async function(req, res) {
     try {
+        // if(!req.session.admin_id){
+        //     return res.status(400).json({ success: false, message: 'Please login' });
+        // }
         const product_images = req.files ? req.files.map(file => file.filename) : [];
-        
+
         if (product_images.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: "At least one product image is required"
-            });
+            return res.status(400).json({success: false, message: "At least one product image is required"});
         }
 
         const product = new Products({
@@ -60,20 +60,16 @@ const addProduct = async function(req, res) {
             product_brand: req.body.pro_brand,
         });
 
-        await product.save();
-        
-        res.json({
-            success: true,
-            message: "Product added successfully"
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: "Server error occurred while adding the product"
-        });
+        const newProduct = await product.save();
+        console.log('Product:', newProduct);
+        // res.setHeader('Content-Type', 'application/json');
+        return res.status(200).json({ success: true, message: "Product added successfully"});
+    } catch (error) {  
+        // console.error(error);
+        return res.status(500).json({ success: false, message: "Server error occurred while adding the product" });
     }
 };
+
 
 const loadEditProduct = async function(req,res){
     try {

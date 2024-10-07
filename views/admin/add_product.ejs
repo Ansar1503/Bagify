@@ -222,14 +222,18 @@
     
         
         function submitFormData(formData) {
-            // Show loading indicator if you want
+            console.log('form:',...formData)
             fetch('/admin/products/addproduct', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
+                console.log('Response:', response);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    return response.json().then(err => {
+                        // If the response is not ok, throw a detailed error
+                        throw new Error(err.message || 'Error occurred while submitting the product');
+                    });
                 }
                 return response.json();
             })
@@ -253,7 +257,7 @@
                 });
             });
         }
-    
+        
         
         function dataURItoBlob(dataURI) {
             const byteString = atob(dataURI.split(',')[1]);
