@@ -8,7 +8,7 @@ const salesReport = async (req, res) => {
         return res.render('salesReport');
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error');
+        return res.redirect('/500')
     }
 };
 
@@ -28,7 +28,7 @@ const downloadReport = async (req, res) => {
         const { format: fileFormat, startDate, endDate, period } = req.query;
         const reportData = await getSalesReport(startDate, endDate, period);
           
-
+ 
         if (fileFormat === 'xlsx') {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Sales Report');
@@ -114,7 +114,7 @@ const downloadReport = async (req, res) => {
 
             doc.end();
         } else {
-            res.status(400).send('Invalid format');
+            res.status(400).json({success:false,message:'Invalid format'});
         }
     } catch (error) {
         console.error(error);

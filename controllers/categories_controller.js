@@ -7,21 +7,21 @@ const loadCategory = async function (req,res){
         const categories = await Category.find()
             .sort({createdAt:-1})
         if(!categories){
-        return    res.status(404).send('categories not found')
+        return res.redirect('/admin/404')
           }
     try { 
         
         return res.render('categories',{categories})
           
     } catch (error) {
-        res.status(500).send('category page error')
+        return res.redirect('/admin/500')
     }
 }
 const LoadAddCategory = async(req,res)=>{
     try {
         return res.render('add-category')
     } catch (error) {
-      return res.status(500).send('add category page loaded error')
+        return res.redirect('/admin/404')
     }
 }
  
@@ -38,13 +38,13 @@ const addCategory = async function (req,res){
 
     } catch (error) {
         console.log(error.message);
-       return res.status(500).send('category page loadded error')
+        return res.redirect('/admin/404')
     }
 }
 const unlistCategory = async function(req,res){
         const unlist = await Category.findByIdAndUpdate(req.params.id,{$set:{isListed:false}})
         if(!unlist){
-        return  res.status(404).send('unlit category erorr')
+            return res.redirect('/admin/404')
         }
     try {
         res.redirect('/admin/category/')
@@ -55,25 +55,25 @@ const unlistCategory = async function(req,res){
 const relistCategory = async (req,res)=>{
     const relist = await Category.findByIdAndUpdate(req.params.id,{$set:{isListed:true}})
     if(!relist){
-        return res.status(404).send('relist category error')
+        return res.redirect('/admin/404')
     }
     try {
         res.redirect('/admin/category')
     } catch (error) {
-        res.status(500).send('category page load error')
+        return res.redirect('/admin/500')
     }
 }
 
 const LoadeditCategory = async function(req,res){
      const category=await Category.findOne({_id:req.params.id})
      if(!category){
-        return res.status(404).send('category not found')
+        return res.redirect('/admin/404')
     }
     try {
         return res.render('edit-category',{category})
     } catch (error) {
         console.log(error.message);
-       return res.status(500).send('edit category page load error')
+        return res.redirect('/admin/500')
       
     }
 }
@@ -83,22 +83,22 @@ const updateCategory = async function (req,res){
         const existingCategory = await Category.findById(req.params.id)
         const updateCategory = await Category.findByIdAndUpdate(req.params.id,{$set:{name:req.body.name,image:req.file?req.file.filename:existingCategory.image}})
         if(!updateCategory){
-            return res.status(404).send('update category error')
+            return res.redirect('/admin/404')
         }
         return res.redirect('/admin/category/')
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('updating category error')
+        return res.redirect('/admin/500')
     }
 }
 const loadCategoryDetails = async(req,res)=>{
     try{
         const category = await Category.findOne({_id:req.params.id})
-        console.log(category);
+        // console.log(category);
         return res.render('categoryDetails',{category})
     }catch(error){
         console.log(error.message);
-        return res.status(500).send('Internal Server')
+        return res.redirect('/admin/404')
     }
 }
 
@@ -107,7 +107,7 @@ const loadAddCategoryPage = async(req,res)=>{
         return res.render('addCategoryOffer',{categoryId:req.params.id})
     }catch(error){
         console.log(error.message)
-        return res.status(500).send('Internal Server Error')  
+        return res.redirect('/admin/404')
     }
 }
 
@@ -116,10 +116,10 @@ const addCategoryOffer = async(req,res)=>{
         const { name,discountPercentage,startDate,expiryDate,description } = req.body
         const category = await Category.findById(req.params.id)
         if(!category || !category.isListed ){
-            return res.status(400).send('category not found')
+            return res.redirect('/admin/404')
         }
         if(category.offer || category.offer?.name == name){
-            return res.status(400).send('offer already added')
+            return res.redirect('/admin/404')
         }
         const offer = {
             name,
@@ -145,7 +145,7 @@ const addCategoryOffer = async(req,res)=>{
 
     }catch(error){
         console.log(error.message)
-        return res.status(500).send('Internal Server Error')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -155,7 +155,7 @@ const loadEditCategoryOfferPage  = async(req,res)=>{
         return res.render('editCategoryOfferPage',{category})
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error')        
+        return res.redirect('/admin/404')
     }
 }
 

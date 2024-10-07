@@ -8,6 +8,7 @@ const env = require('dotenv').config()
 const db = require('./config/db')
 db();
 
+
 // middlewares
 app.use(nocache())
 app.use(express.static('public'))
@@ -31,9 +32,11 @@ app.use(morgan('tiny'))
 const user_route = require('./routes/user_route');
 const admin_route = require('./routes/admin_route');
 
+
 // user
 app.use('/',user_route);
 // admin
 app.use('/admin/',admin_route);
+
 
 app.listen(3000,console.log("user--http://localhost:3000 || admin--http://localhost:3000/admin"))

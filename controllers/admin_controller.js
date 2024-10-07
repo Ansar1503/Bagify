@@ -13,7 +13,7 @@ const loadlogin = async function(req,res){
         res.render('login')
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        return res.redirect('/admin/404')
     }
 }
 
@@ -76,7 +76,7 @@ const loadadminDashboard = async function (req, res) {
         });
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error");
+        return res.redirect('/admin/500')
     }
 };
 const getAdminReport = async function(req,res){
@@ -101,7 +101,7 @@ const  logout = async function(req,res){
         res.redirect('/admin/')
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        return res.redirect('/admin/500')
     }
 }
 
@@ -118,7 +118,7 @@ const verifyLogin = async function (req,res){
         }
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        return res.redirect('/admin/404')
     }
 }
 
@@ -147,7 +147,7 @@ const generateLedger = async (req, res) => {
         });
 
         orders.forEach(order => {
-            const returnItem = returnMap[order._id]; 
+            const returnItem = returnMap[order._id];  
             worksheet.addRow({
                 orderId: order._id,
                 user: order.user ? order.user.name : 'N/A',

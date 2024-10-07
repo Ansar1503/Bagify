@@ -29,7 +29,7 @@ const loadlogin = async function(req,res){
         res.render('login')
     } catch (error) {
         console.log(error);
-        res.status(500).send("login page not loaded")
+        return res.redirect('/500')
     }
 }
 
@@ -38,7 +38,7 @@ const loadRegister = async function (req,res){
         res.render('registration')
     } catch (error) {
         console.log(error);
-        res.status(500).send("registration rendering error")
+        return res.redirect('/500')
     }
 }
 
@@ -51,7 +51,7 @@ const loadHome = async function(req,res){
         res.render('home',{products,categories,sortedProducts,wishlist})
     } catch (error) {
         console.log(error);
-        res.status(500).send("homepage loading error")
+        return res.redirect('/500')
     }
 }
 
@@ -78,7 +78,7 @@ const loadDashboard = async function(req, res) {
         return res.render('user_Dashboard', { user, orderData, wallet });
     } catch (error) {
         console.log(error);
-        res.status(500).send("Could not load dashboard");
+        return res.redirect('/500')
     }
 };
 
@@ -87,7 +87,7 @@ const loadForgotPassword = async function(req,res){
     try {
         res.render('forgot-password')
     } catch (error) {
-        res.status(500).send('forgot page load error')
+        return res.redirect('/500')
     }
 }
 
@@ -97,7 +97,7 @@ const Logout = async function (req,res){
         res.redirect('/')
     } catch (error) {
         console.log(error);
-        res.status(500).send("could not logout")
+        return res.redirect('/500')
     }
 }
 
@@ -164,7 +164,7 @@ const registerAuth = async function (req,res){
 
     } catch (error) {
         console.log("Error in registration",error.message);
-        res.status(500).send("registration error contact admin")
+        return res.redirect('/500')
     }
 }
 
@@ -236,7 +236,7 @@ const verifyUser = async function(req,res){
       }
     } catch (error) {
         console.log(error);
-        res.status(500).send("user verification error")
+        return res.redirect('/500')
     }
 }
 const googleAuth = async function(req, res) {
@@ -252,8 +252,9 @@ const googleAuth = async function(req, res) {
         // console.log('Display Name:', displayName);
         // console.log('Email:', email);
         // console.log('Phone number:', mobile);
+        
        
-        const existingUser = await User.findOne({ googleId: id });
+        const existingUser = await User.findOne({ email });
 
         if (!existingUser) {
           
@@ -275,7 +276,7 @@ const googleAuth = async function(req, res) {
         return res.redirect('/');
     } catch (error) {
         console.error('Google authentication failure:', error);
-        return res.status(500).send('Google authentication failure');
+        return res.redirect('/500')
     }
 };
 
@@ -287,7 +288,7 @@ const loadproducts = async (req, res) => {
         const product = await Products.findOne({ _id: req.params.id, isActive: true }).populate('product_category');
         
         if (!product) {
-            return res.status(404).send('Product not found');
+            return res.redirect('/404')
         }
 
         const relatedProducts = await Products.find({ product_category: product.product_category._id, isActive: true })
@@ -302,7 +303,7 @@ const loadproducts = async (req, res) => {
         
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Product details page error');
+        return res.redirect('/500')
     }
 };
 
@@ -429,7 +430,7 @@ const loadShop = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(500).send('Server Error');
+        return res.redirect('/500')
     }
 };
 
@@ -462,7 +463,7 @@ const checkoutaddAddress  =  async(req,res)=>{
 
     } catch (error) {
         console.log(error.message);
-        res.status(500).send('address add error')        
+        return res.redirect('/500')     
     }
 }
 const addAddress  =  async(req,res)=>{
@@ -485,7 +486,7 @@ const addAddress  =  async(req,res)=>{
         res.redirect('/userDashboard')
     } catch (error) {
         console.log(error.message);
-        res.status(500).send('address add error')        
+        return res.redirect('/500') 
     }
 }
 
@@ -514,7 +515,7 @@ const updateAddress = async(req,res)=>{
         return res.redirect('/userDashboard')
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('address update  eroror')        
+        return res.redirect('/500')   
     }
 }
 
@@ -526,7 +527,7 @@ const deleteAdress = async (req,res)=>{
         return res.redirect('/userDashboard')
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('address delete error')
+        return res.redirect('/500')
     }
     
 }
@@ -844,7 +845,7 @@ const loadCart = async (req, res) => {
 
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Error loading cart page');
+        return res.redirect('/500')
     }
 };
 
@@ -1015,7 +1016,7 @@ const addtoCart = async (req, res) => {
         
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error');
+         return res.redirect('/500')
     }
 };
 
@@ -1289,7 +1290,7 @@ const loadCheckout = async(req,res)=>{
         
     } catch (error) {
         console.error(error.message)
-        return res.status(500).send('checkout page loaded error')
+        return res.redirect('/500')
     }
 }
 
@@ -1346,10 +1347,10 @@ const placeOrder = async (req, res) => {
         if (paymentMethod === 'wallet') {
             const wallet = await Wallet.findOne({ user: cart.user });
             if (!wallet) {
-                return res.status(404).send('Wallet not found. Please check your wallet.');
+                return res.redirect('/404')
             }
             if (wallet.balance < cart.summary.total) {
-                return res.status(400).send('Insufficient balance');
+                return res.redirect('/404')
             }
 
             const transaction = {
@@ -1380,7 +1381,7 @@ const placeOrder = async (req, res) => {
 
     } catch (error) {
         console.error('Error placing order:', error.message);
-        return res.status(500).send('Internal server error');
+         return res.redirect('/500')
     }
 };
 
@@ -1407,7 +1408,7 @@ const checkoutupdateAddress = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('address update  eroror')        
+        return res.redirect('/500')
     }
 }
 
@@ -1494,6 +1495,7 @@ const loadPaymentFailedPage = async(req,res)=>{
         return res.render('paymentFailed',{orderId:req.params.id})
     } catch (error) {
         console.log(error)
+        return res.redirect('/404')
     }
 }
 
@@ -1532,7 +1534,7 @@ const retryPayment = async(req,res)=>{
         
     } catch (error) {
         console.log(error)
-        return res.status(500).send('Internal Server Error')
+        return res.redirect('/500')
     }
 }
 
@@ -1592,7 +1594,7 @@ const retryPlaceOrder = async(req,res)=>{
 
     } catch (error) {
         console.log(error)
-        return res.status(500).send('Internal Server Error')
+        return res.redirect('/500')
     }
 }
 
@@ -1886,7 +1888,7 @@ const downloadInvoice = async (req, res) => {
         doc.end();
     } catch (error) {
         console.error('Error generating invoice:', error);
-        return res.status(500).send('Internal Server Error');
+        return res.redirect('/500')
     }
 };
 
@@ -2116,7 +2118,7 @@ const loadWishlist = async (req,res)=>{
         return res.render('wishlist',{wishlist})
     } catch (error) {
         console.log(error.message);
-        return res.send('Internal Server Error')
+        return res.redirect('/500')
     }
   }
 

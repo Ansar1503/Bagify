@@ -17,7 +17,7 @@ const loadCustomer = async function(req, res) {
         res.render('customers', { users: userData, currentPage: page, totalPages });
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error");
+        return res.redirect('/admin/500')
     }
 };
 
@@ -28,7 +28,7 @@ const blockCustomer = async function(req,res){
         res.redirect('/admin/customers')
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        return res.redirect('/admin/500')
     }
 }
 const unblockCustomer = async function (req,res){
@@ -37,7 +37,7 @@ const unblockCustomer = async function (req,res){
        res.redirect('/admin/customers')
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        return res.redirect('/admin/500')
     }
 }
 

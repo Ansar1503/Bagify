@@ -5,6 +5,7 @@ const upload = multer()
 // user middles
 const userController = require('../controllers/user_controller')
 const userAuth = require('../middlewares/user_session');
+const errorController = require('../controllers/errorController')
 
 // express
 const userRoute = express()
@@ -27,6 +28,9 @@ userRoute.get('/shop',userController.loadShop)
 userRoute.get('/delete-address/:id',userAuth.isLoggedin,userController.deleteAdress)
 // userRoute.get('/edit-address',userAuth.isLoggedin,userController.loadEditAddress)
 
+//errror
+userRoute.get('/500',errorController.load500)
+userRoute.get('/404',errorController.load404)
 
 // forgot
 userRoute.post('/forgot/send-otp',userAuth.notLoggedin,userController.forgotSendOtp)

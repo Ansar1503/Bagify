@@ -7,7 +7,7 @@ const loadCoupon =  async (req, res) => {
         return res.render('coupons',{coupon})
     } catch (error) {
         console.log(error.message);
-        return res.send('Internal server Error')      
+        return res.redirect('/admin/404')  
     }
 }
 
@@ -16,7 +16,7 @@ const loadAddCouponpage = async (req,res)=>{
         return res.render('addCoupon')
     } catch (error) {
         console.log(error.message)
-        return res.send('Internal   server Error')
+        return res.redirect('/admin/404')
 
     }
 }
@@ -49,7 +49,7 @@ const addCoupon = async (req,res)=>{
 
     }catch(err){
         console.log(err.message)
-        return res.send('Internal server Error')
+        return res.redirect('/admin/500')
     }
 } 
 
@@ -73,7 +73,7 @@ const  loadEditCouponpage = async (req,res)=>{
         return res.render('edit-coupon',{coupon})
     } catch (error) {
       console.log(error.message);
-      return res.status(500).send('Internal serveer Error')  
+      return res.redirect('/admin/500')
     }
 }
 const editCoupon = async (req,res)=>{
@@ -91,7 +91,7 @@ const editCoupon = async (req,res)=>{
         return res.redirect('/admin/coupons')
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error')
+        return res.redirect('/admin/500')
     }
 }
 

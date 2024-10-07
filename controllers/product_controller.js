@@ -24,7 +24,7 @@ const loadProducts = async function (req, res) {
         return res.render('products', { products, currentPage: page, totalPages });
     } catch (error) {
         console.log(error);
-        res.status(500).send("Server error");
+        return res.redirect('/admin/404')
     }
 };
 
@@ -35,7 +35,7 @@ const loadAddproduct=async function(req,res){
         res.render('add_product',{categories})
     } catch (error) {
         console.log(error);
-        res.status(500).send("server error")
+        return res.redirect('/admin/404')
     }
 }
 const addProduct = async function(req, res) {
@@ -88,7 +88,7 @@ const loadEditProduct = async function(req,res){
         }
     } catch (error) {
         console.log(error.message);
-       res.status(500).send('edit product page loading error') 
+        return res.redirect('/admin/404')
     }
 }
 const  editProduct = async function(req,res){
@@ -118,7 +118,7 @@ const  editProduct = async function(req,res){
         });
        
     if (!updatedProduct) {
-        return res.status(404).send("Product update failed!");
+        return res.redirect('/admin/404')
     }
     
 
@@ -132,7 +132,7 @@ const  editProduct = async function(req,res){
         })
     }
     } catch (error) {
-        return res.status(404).send('file unlink error')
+        return res.redirect('/admin/404')
     }
 
     return res.redirect('/admin/products');
@@ -140,7 +140,7 @@ const  editProduct = async function(req,res){
 
     } catch (error) {
         console.log(error.message);
-        res.status(500).send('edit product error')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -157,7 +157,7 @@ const deleteImage = async function(req,res){
 
     } catch (error) {
         console.log(error)
-        return status(500).json({success:false,message:'Internal Server Error'})
+        return res.redirect('/admin/500')
     }
 }
 
@@ -168,7 +168,7 @@ const deactivateProduct = async function(req,res){
         return res.redirect('/admin/products')
 
     } catch (error) {
-        res.status(500).send('could not deactivate product')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -179,7 +179,7 @@ const activateProduct = async function(req,res){
         return res.redirect('/admin/products')
 
     } catch (error) {
-        res.status(500).send('couldnot activate account')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -189,7 +189,7 @@ const productdetail = async(req,res)=>{
         return res.render('productDetails',{product})
     } catch (error) {
         console.log(error.message);
-        return  res.satus(500).send('product details page loaded error')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -198,7 +198,7 @@ const addProductOfferPage = async(req,res)=>{
         return res.render('addProductOfferpage',{productId:req.params.id})
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error')        
+        return res.redirect('/admin/500')
     }
 }
 
@@ -229,7 +229,7 @@ const addProductOffer = async(req,res)=>{
         
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -239,7 +239,7 @@ const editProductOfferPage = async(req,res)=>{
         return res.render('editProductOfferPage',{offer:product.offer,productId:product._id})
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Internal Server Error')        
+        return res.redirect('/admin/500')
     }
 } 
 

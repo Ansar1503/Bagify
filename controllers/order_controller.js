@@ -23,7 +23,7 @@ const orderList = async (req, res) => {
         return res.render('orderList', { orderData, currentPage: page, totalPages });
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Couldn’t find order list');        
+        return res.redirect('/admin/404') 
     }
 };
 
@@ -34,8 +34,8 @@ const orderDetails = async (req, res) => {
         const orderData = await orderModel.findOne({ _id: req.params.id }).populate('user')
         
         if (!orderData) {
-            console.log('Order data not found');
-            return res.status(404).send('Order not found');
+            // console.log('Order data not found');
+            return res.redirect('/admin/404')
         }
 
    
@@ -47,7 +47,7 @@ const orderDetails = async (req, res) => {
         return res.render('orderDetails', { orderData, formattedDate });
     } catch (error) {
         console.log(error.message);
-        return res.status(500).send('Order details page loaded error');
+        return res.redirect('/admin/500')
     }
 };
 
@@ -118,7 +118,7 @@ const returnList = async (req,res)=> {
         return res.render('returnOrder',{returnList})
     } catch (error) {
         console.error('error:',error.message)
-        return res.status(400).send('internal server error')
+        return res.redirect('/admin/500')
     }
 }
 
@@ -127,23 +127,23 @@ const returnStatusChange = async (req, res) => {
         const accept = req.query.accept === 'true';  
         
         if (accept === null || accept === undefined) {
-            return res.status(400).send('Please choose accept or reject');
+            return res.redirect('/admin/404')
         }
 
         const returnId = new mongoose.Types.ObjectId(req.query.return);
         const returnData = await Return.findById(returnId);
         if (!returnData) {
-            return res.status(400).send('Return request not found');
+            return res.redirect('/admin/404')
         }
 
         const orderData = await orderModel.findOne({ "items._id": returnData.orderItemId });
         if (!orderData) {
-            return res.status(400).send('Order not found');
+            return res.redirect('/admin/404')
         }
 
         const itemDetails = orderData.items.find(item => item._id.toString() === returnData.orderItemId.toString());
         if (!itemDetails) {
-            return res.status(400).send('Item not found in the order');
+            return res.redirect('/admin/404')
         }
 
         const wallet = await Wallet.findOne({ user: orderData.user });
@@ -231,7 +231,7 @@ const returnStatusChange = async (req, res) => {
 
     } catch (error) {
         console.error(error.message);
-        return res.status(500).send('Internal server error');
+        return res.redirect('/admin/500')
     }
 };
 

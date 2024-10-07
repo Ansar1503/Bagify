@@ -14,14 +14,16 @@ const product_controller = require('../controllers/product_controller')
 const order_controller = require('../controllers/order_controller')
 const coupon_controller = require('../controllers/coupon_controller')
 const sales_controller = require('../controllers/sales_controller')
-
+const errorController = require('../controllers/errorController')
 
 
 // set view engine
 adminRoute.set('view engine','ejs');
 adminRoute.set('views','./views/admin');
 
-
+// error
+adminRoute.get('/500',errorController.load500)
+adminRoute.get('/404',errorController.load404)
 
 adminRoute.get('/',admin_session.notLoggedin,admin_controller.loadlogin)
 adminRoute.get('/logout',admin_controller.logout)
