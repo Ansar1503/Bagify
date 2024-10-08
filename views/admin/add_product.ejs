@@ -54,11 +54,8 @@
                 <div class="mb-3">
                     <label for="productImages" class="form-label">Add New Images (Max 3 total)</label>
                     <input type="file" id="productImages" class="form-control" name="pro_images" multiple accept="image/*" required>
-                    <div id="croppieContainer" style="display: none;"></div>
-                    <button id="btnCrop" type="button" class="btn btn-secondary" style="display: none;">Crop Image</button>
-                    <button id="btnRefresh" type="button" class="btn btn-secondary" style="display: none;">Crop Another Image</button>
                     <div id="imagePreview" class="d-flex flex-wrap mt-2">
-                        <!-- Preview images will be shown here -->
+                        
                     </div>
                     <div class="invalid-feedback">Please upload up to 3 images.</div>
                 </div>
@@ -69,132 +66,53 @@
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('productForm');
         const fileInput = document.getElementById('productImages');
-        const croppieContainer = document.getElementById('croppieContainer');
         const imagePreview = document.getElementById('imagePreview');
-        const btnCrop = document.getElementById('btnCrop');
-        const btnRefresh = document.getElementById('btnRefresh');
-        let addedFiles = [];
-        let croppieInstance;
-        let currentFileIndex = 0;
-        let formData = new FormData(); 
+        let originalFiles = [];
+
+        fileInput.addEventListener('change', function () {
+            imagePreview.innerHTML = '';
+            const files = Array.from(fileInput.files);
     
-        function handleFileInput() {
-            const files = fileInput.files;
-    
-            if (files.length > 0 && addedFiles.length + files.length > 3) {
+            if (files.length > 3) {
                 fileInput.setCustomValidity('You can only add up to 3 total images.');
                 fileInput.reportValidity();
                 return;
             }
     
             fileInput.setCustomValidity('');
-            addedFiles = Array.from(files);
-            currentFileIndex = 0;
-            processNextImage();
-        }
-    
-        function processNextImage() {
-            if (currentFileIndex < addedFiles.length) {
-                const file = addedFiles[currentFileIndex];
+            originalFiles = files;
+            files.forEach(file => {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    initCroppie(e.target.result);
+                reader.onload = function (e) {
+                    addImagePreview(e.target.result);
                 };
                 reader.readAsDataURL(file);
-            } else {
-                croppieContainer.style.display = 'none';
-                btnCrop.style.display = 'none';
-                btnRefresh.style.display = 'none';
-                updateFileInputValidation();
-            }
-        }
-    
-        function initCroppie(imageData) {
-            if (croppieInstance) {
-                croppieInstance.destroy();
-            }
-            croppieContainer.style.display = 'block';
-            croppieContainer.innerHTML = '';
-    
-            croppieInstance = new Croppie(croppieContainer, {
-                viewport: { width: 200, height: 200, type: 'square' },
-                boundary: { width: 300, height: 300 },
-                enableExif: true
-            });
-    
-            croppieInstance.bind({
-                url: imageData,
-            });
-    
-            btnCrop.style.display = 'block';
-            btnRefresh.style.display = 'none';
-        }
-    
-        btnCrop.addEventListener('click', function() {
-            croppieInstance.result('base64').then(function(base64) {
-                const blob = dataURItoBlob(base64);
-                const fileName = `cropped-image-${currentFileIndex}.png`;
-        
-                formData.append('croppedImages', blob, fileName);
-        
-                addCroppedImage(base64);
-                currentFileIndex++;
-                processNextImage();
             });
         });
-        
     
-        function addCroppedImage(base64) {
+        function addImagePreview(src) {
             const imgDiv = document.createElement('div');
             imgDiv.classList.add('image-preview', 'position-relative');
             imgDiv.style.marginRight = '10px';
             imgDiv.style.marginBottom = '10px';
     
             const img = document.createElement('img');
-            img.src = base64;
+            img.src = src;
             img.style.maxWidth = '200px';
     
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'position-absolute');
-            removeBtn.style.top = '5px';
-            removeBtn.style.right = '5px';
-            removeBtn.textContent = 'Remove';
-            removeBtn.onclick = function() {
-                imgDiv.remove();
-                updateFileInputValidation();
-            };
-    
             imgDiv.appendChild(img);
-            imgDiv.appendChild(removeBtn);
             imagePreview.appendChild(imgDiv);
         }
     
-        btnRefresh.addEventListener('click', function() {
-            croppieContainer.style.display = 'none';
-            fileInput.value = '';
-            addedFiles = [];
-            imagePreview.innerHTML = '';
-            updateFileInputValidation();
-        });
-    
-        fileInput.addEventListener('change', handleFileInput);
-    
-        function updateFileInputValidation() {
-            const totalImages = imagePreview.children.length;
-            fileInput.disabled = totalImages >= 3;
-        }
-    
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); 
-    
+        form.addEventListener('submit', function (event) {
             const regPrice = parseFloat(document.getElementById('productPrice').value);
             const salePrice = parseFloat(document.getElementById('offerPrice').value);
     
             if (salePrice > regPrice) {
+                event.preventDefault();
                 Swal.fire({
                     icon: 'error',
                     text: 'Offer price cannot be greater than the regular price.',
@@ -204,75 +122,9 @@
                     timerProgressBar: true,
                     timer: 3000
                 });
-                return;
             }
-    
-            
-            formData.append('pro_name', document.getElementById('productName').value);
-            formData.append('pro_brand', document.getElementById('productBrand').value);
-            formData.append('pro_description', document.getElementById('productDescription').value);
-            formData.append('pro_category', document.getElementById('category').value);
-            formData.append('pro_reg_price', document.getElementById('productPrice').value);
-            formData.append('pro_sale_price', document.getElementById('offerPrice').value);
-            formData.append('pro_quantity', document.getElementById('productQuantity').value);
-    
-           
-            submitFormData(formData);
         });
-    
-        
-        function submitFormData(formData) {
-            console.log('form:',...formData)
-            fetch('/admin/products/addproduct', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                console.log('Response:', response);
-                if (!response.ok) {
-                    return response.json().then(err => {
-                        // If the response is not ok, throw a detailed error
-                        throw new Error(err.message || 'Error occurred while submitting the product');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    window.location.href = '/admin/products';
-                } else {
-                    throw new Error(data.message || 'Error submitting product.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    text: error.message || 'An error occurred while submitting the form.',
-                    toast: true,
-                    position: 'top-right',
-                    showConfirmButton: false,
-                    timerProgressBar: true,
-                    timer: 3000
-                });
-            });
-        }
-        
-        
-        function dataURItoBlob(dataURI) {
-            const byteString = atob(dataURI.split(',')[1]);
-            const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-    
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-    
-            return new Blob([ab], { type: mimeString });
-        }
     });
-    
 </script>
 
 <%- include('../layout/admin_footer.ejs') %>

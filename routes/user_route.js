@@ -7,14 +7,13 @@ const userController = require('../controllers/user_controller')
 const userAuth = require('../middlewares/user_session');
 const errorController = require('../controllers/errorController')
 
-// express
+// express 
 const userRoute = express()
 
 // set view engine
 userRoute.set('view engine','ejs');
 userRoute.set('views','./views/user');
-
-
+ 
 // GET requests
 userRoute.get('/',userController.loadHome)
 userRoute.get('/register',userAuth.notLoggedin,userController.loadRegister)

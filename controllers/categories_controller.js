@@ -4,7 +4,7 @@ const Products = require('../model/product_schema')
 
 const loadCategory = async function (req,res){
       
-        const categories = await Category.find()
+        const categories = await Category.find() 
             .sort({createdAt:-1})
         if(!categories){
         return res.redirect('/admin/404')
@@ -13,10 +13,10 @@ const loadCategory = async function (req,res){
         
         return res.render('categories',{categories})
           
-    } catch (error) {
+    } catch (error) { 
         return res.redirect('/admin/500')
-    }
-}
+    } 
+}  
 const LoadAddCategory = async(req,res)=>{
     try {
         return res.render('add-category')

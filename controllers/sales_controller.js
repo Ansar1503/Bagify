@@ -10,7 +10,7 @@ const salesReport = async (req, res) => {
         console.log(error.message);
         return res.redirect('/500')
     }
-};
+}; 
 
 const generateReport = async (req, res) => {
     try {

@@ -43,15 +43,13 @@ adminRoute.get('/customers',admin_session.isLoggedin,admin_customer_controller.l
 adminRoute.post('/customers/block/:id',admin_session.isLoggedin,admin_customer_controller.blockCustomer) 
 adminRoute.post('/customers/unblock/:id',admin_session.isLoggedin,admin_customer_controller.unblockCustomer)
 
-
-
-// request of products page
+// request of products page 
 adminRoute.get('/products',admin_session.isLoggedin,product_controller.loadProducts);
 adminRoute.get('/products/addproduct',admin_session.isLoggedin,product_controller.loadAddproduct);
 adminRoute.get('/products/edit-product/:id',admin_session.isLoggedin,product_controller.loadEditProduct)
 adminRoute.get('/products/productdetail/:id',admin_session.isLoggedin,product_controller.productdetail)
 adminRoute.post('/products/edit-product',admin_session.isLoggedin,multer.product_upload.array("pro_images",3),imageResizer.multimageCrop,product_controller.editProduct)
-adminRoute.post('/products/addproduct', multer.product_upload.array('croppedImages', 3),imageResizer.multimageCrop,product_controller.addProduct);
+adminRoute.post('/products/addproduct', multer.product_upload.array('pro_images', 3),product_controller.addProduct);
 adminRoute.post('/products/deactivate-product/:id',admin_session.isLoggedin,product_controller.deactivateProduct)
 adminRoute.post('/products/activate-product/:id',admin_session.isLoggedin,product_controller.activateProduct)
 adminRoute.get('/products/addProductOfferPage/:id',admin_session.isLoggedin,product_controller.addProductOfferPage)

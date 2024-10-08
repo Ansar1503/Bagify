@@ -39,36 +39,43 @@ const loadAddproduct=async function(req,res){
     }
 }
 const addProduct = async function(req, res) {
-    try {
-        // if(!req.session.admin_id){
-        //     return res.status(400).json({ success: false, message: 'Please login' });
-        // }
-        const product_images = req.files ? req.files.map(file => file.filename) : [];
 
-        if (product_images.length === 0) {
-            return res.status(400).json({success: false, message: "At least one product image is required"});
-        }
+    try {
+        console.log(req.body)
+        const { pro_name, pro_brand, pro_description, pro_category, pro_reg_price, pro_sale_price, pro_quantity, images } = req.body;
+        console.log(req.files)
+        const product_images = req.files ? req.files.map(file=>file.filename) : []
 
         const product = new Products({
-            product_name: req.body.pro_name,
-            product_sale_price: req.body.pro_sale_price, 
-            product_regular_price: req.body.pro_reg_price,
-            product_category: req.body.pro_category,
-            product_description: req.body.pro_description,
-            product_quantity: req.body.pro_quantity,
-            product_images,  
-            product_brand: req.body.pro_brand,
+            product_name: pro_name,
+            product_sale_price: pro_sale_price,
+            product_regular_price: pro_reg_price,
+            product_category: pro_category,
+            product_description: pro_description,
+            product_quantity: pro_quantity,
+            product_images, 
+            product_brand: pro_brand,
         });
 
+
         const newProduct = await product.save();
-        console.log('Product:', newProduct);
-        // res.setHeader('Content-Type', 'application/json');
-        return res.status(200).json({ success: true, message: "Product added successfully"});
-    } catch (error) {  
-        // console.error(error);
-        return res.status(500).json({ success: false, message: "Server error occurred while adding the product" });
+
+        return res.redirect('/admin/products')
+
+    } catch (error) {
+        console.error('Error in addProduct:', error);
+        return res.redirect('/admin/500')
     }
 };
+
+
+function saveBase64Image(base64Image) {
+    const base64Data = base64Image.replace(/^data:image\/png;base64,/, "");
+    const filename = `image-${Date.now()}.png`;
+    fs.writeFileSync(`uploads/${filename}`, base64Data, 'base64');
+    return filename;
+}
+
 
 
 const loadEditProduct = async function(req,res){
