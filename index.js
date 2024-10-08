@@ -6,6 +6,7 @@ const  morgan = require('morgan');
 const nocache = require('nocache');
 const env = require('dotenv').config()
 const db = require('./config/db')
+const cookieParser = require('cookie-parser');
 db();
 
 
@@ -14,6 +15,7 @@ app.use(nocache())
 app.use(express.static('public'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
+app.use(cookieParser());
 app.use(session({
     secret:process.env.SESSION_SECRET,
     resave:false,
