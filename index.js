@@ -39,4 +39,4 @@ app.use('/',user_route);
 app.use('/admin/',admin_route);
 
 
-app.listen(3000,console.log("user--http://localhost:3000 || admin--http://localhost:3000/admin"))
+app.listen(3000,console.log("port 3000"))
