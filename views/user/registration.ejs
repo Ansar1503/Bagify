@@ -52,7 +52,6 @@
     </div>
 </div>
 
-
 <script>
     function togglePasswordVisibility(inputId) {
         const input = document.getElementById(inputId);
@@ -65,17 +64,15 @@
             icon.classList.replace('bi-eye-slash', 'bi-eye');
         }
     }
-    
+
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('registration-form');
         
         form.addEventListener('submit', function(event) {
             let isValid = true;
     
-            // Clear previous errors
             clearErrors();
     
-            // Validate Name
             const nameElement = document.getElementById('name');
             if (nameElement) {
                 const name = nameElement.value.trim();
@@ -85,7 +82,6 @@
                 }
             }
     
-            // Validate Email
             const emailElement = document.getElementById('email');
             if (emailElement) {
                 const email = emailElement.value.trim();
@@ -96,7 +92,6 @@
                 }
             }
     
-            // Validate Mobile Number
             const mobileElement = document.getElementById('mobile');
             if (mobileElement) {
                 const mobile = mobileElement.value.trim();
@@ -107,7 +102,6 @@
                 }
             }
     
-            // Validate Password
             const passwordElement = document.getElementById('password');
             if (passwordElement) {
                 const password = passwordElement.value.trim();
@@ -117,7 +111,7 @@
                 }
             }
     
-            // Validate Confirm Password
+
             const cpasswordElement = document.getElementById('cpassword');
             const password = document.getElementById('password').value.trim();
             if (cpasswordElement) {
@@ -128,9 +122,20 @@
                 }
             }
     
-            // Prevent form submission if validation fails
+
             if (!isValid) {
                 event.preventDefault();
+            } else {
+
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait while we create your account.',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
             }
         });
     
@@ -153,7 +158,7 @@
             });
         }
     });
-    
-    </script>
+</script>
+
     
 <%- include('../layout/user_footer.ejs') %>
