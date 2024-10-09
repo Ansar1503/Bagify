@@ -7,9 +7,17 @@ const nocache = require('nocache');
 const env = require('dotenv').config()
 const db = require('./config/db')
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 db();
 
 
+const corsOptions = {
+    origin: 'http://bagify.com',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
 // middlewares
 app.use(nocache())
 app.use(express.static('public'))
