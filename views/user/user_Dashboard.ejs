@@ -156,14 +156,6 @@
                                                             <% } %>
                                                         </div>
                                                         <div class="text-end">
-                                                            <% const orderCancelable = order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled'; %>
-                                                            <% if (orderCancelable) { %>
-                                                                <button class="btn btn-secondary btn-sm" 
-                                                                    onclick="cancelOrder('<%= order._id %>')" 
-                                                                    <%= order.items.some(item => ['returnInitiated', 'returnApproved', 'returnRejected'].includes(item.itemOrderStatus)) ? 'disabled' : '' %>>
-                                                                    Cancel Order
-                                                                </button>
-                                                            <% } %>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1321,7 +1313,7 @@
                     cancelButtonText: 'No, keep it'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch('http://localhost:3000/orders/cancelItem', {
+                        fetch('/orders/cancelItem', {
                             method: "PATCH",
                             headers: {
                                 "Content-Type": "application/json"

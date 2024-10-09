@@ -121,7 +121,7 @@
                     confirmButtonText: `Yes, ${isBlocking ? 'Activate' : 'Deactivate'}`
                   }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`http://localhost:3000/admin/coupons/${couponId}`, {
+                        fetch(`/admin/coupons/${couponId}`, {
                             method: 'PATCH',
                             headers: {
                                 'Content-Type': 'application/json'
