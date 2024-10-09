@@ -12,7 +12,7 @@ db();
 
 
 const corsOptions = {
-    origin: 'http://bagify.com',
+    origin: 'http://bagify.fun',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
 };
