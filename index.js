@@ -40,5 +40,8 @@ app.use('/',user_route);
 // admin
 app.use('/admin/',admin_route);
 
+app.all('*', (req, res) => {
+    res.redirect('/404');
+});
 
 app.listen(3000,console.log("port 3000"))
