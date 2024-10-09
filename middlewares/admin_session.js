@@ -1,11 +1,11 @@
 
 const isLoggedin =async function(req,res,next){
     try {
-        // if(req.session.admin_id){
+        if(req.session.admin_id){
             next();
-        // }else{
-        //     res.redirect('/admin/')
-        // }
+        }else{
+            res.redirect('/admin/')
+        }
     } catch (error) {
         console.log(error);
     }
@@ -14,11 +14,11 @@ const isLoggedin =async function(req,res,next){
 
 const notLoggedin = async(req,res,next)=>{
     try {
-        // if(req.session.admin_id){
-        //     res.redirect('/admin/dashboard')
-        // }else{
+        if(req.session.admin_id){
+            res.redirect('/admin/dashboard')
+        }else{
             next();
-        // }
+        }
     } catch (error) {
         console.log(error.message);
     }
