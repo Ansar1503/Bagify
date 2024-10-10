@@ -2,6 +2,7 @@ const { format, parseISO, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfM
 const Order = require('../model/order_schema');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
+const path = require('path');
 
 const salesReport = async (req, res) => {
     try {
@@ -65,8 +66,8 @@ const downloadReport = async (req, res) => {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', 'attachment; filename=sales_report.pdf');
 
-            doc.registerFont('Roboto-Medium',`D:\\E-commerce\\public\\fonts\\Roboto\\Roboto-Medium.ttf`)
-            doc.registerFont('Roboto-Light','D:\\E-commerce\\public\\fonts\\Roboto\\Roboto-Light.ttf')
+            doc.registerFont('Roboto-Medium',path.join(__dirname,'../public/fonts/Roboto/Roboto-Medium.ttf'))
+            doc.registerFont('Roboto-Light',path.join(__dirname,'../public/fonts/Roboto/Roboto-Light.ttf'))
             doc.pipe(res);
             doc.font('Roboto-Medium')
             doc.fontSize(22).text('Sales Report', { align: 'center', underline: true });
